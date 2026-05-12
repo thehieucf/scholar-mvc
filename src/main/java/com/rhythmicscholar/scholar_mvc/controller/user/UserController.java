@@ -1,4 +1,4 @@
-package com.rhythmicscholar.scholar_mvc.controller;
+package com.rhythmicscholar.scholar_mvc.controller.user;
 
 import com.rhythmicscholar.scholar_mvc.dto.CategoryProgressDto;
 import com.rhythmicscholar.scholar_mvc.model.Category;

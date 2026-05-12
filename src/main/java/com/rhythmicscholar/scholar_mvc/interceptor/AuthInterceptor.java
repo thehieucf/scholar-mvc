@@ -22,7 +22,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         String serverName = request.getServerName();
         String scheme = request.getScheme();
 
-        // Normalize URI: remove context path and leading slash
+        // 1. Chuẩn hóa URI: Xóa contextPath và dấu '/' ở đầu
         String path = uri;
         if (contextPath != null && !contextPath.isEmpty() && path.startsWith(contextPath)) {
             path = path.substring(contextPath.length());
@@ -33,70 +33,62 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         logger.debug("Request URI: {}, Normalized Path: {}, Port: {}", uri, path, port);
 
-        // Base URLs for port switching
+        // Các URL chuẩn để chuyển hướng
         String baseUrl8080 = scheme + "://" + serverName + ":8080" + contextPath;
         String baseUrl8081 = scheme + "://" + serverName + ":8081" + contextPath;
 
-        // --- Logic Phân Cổng ---
-        
+        // 2. Luôn cho phép các file tĩnh (CSS, JS, Images...) đi qua
+        if (isStaticResource(path)) {
+            return true;
+        }
+
+        // 3. Khai báo các đường dẫn công khai không cần đăng nhập
+        boolean isPublicPath = path.equals("login") || path.equals("login.html") ||
+                path.equals("register") || path.equals("register.html") ||
+                path.equals("admin/login") || path.equals("admin/login.html");
+
+        // 4. Kiểm tra luồng Cổng (Port Routing)
         if (port == 8081) {
-            // Cổng Admin: Chỉ cho phép admin path và static resources
-            if (!path.startsWith("admin") && !isStaticResource(path)) {
-                logger.info("Non-admin request on port 8081, redirecting to admin login");
+            // Nếu ở cổng 8081 mà không phải trang admin thì đẩy về trang đăng nhập admin
+            if (!path.startsWith("admin")) {
                 response.sendRedirect(baseUrl8081 + "/admin/login");
                 return false;
             }
         } else {
-            // Cổng User (thường là 8080): Không cho phép admin path
+            // Nếu ở cổng 8080 (hoặc cổng khác) mà vào đường dẫn admin thì đẩy sang cổng 8081
             if (path.startsWith("admin")) {
-                logger.info("Admin request on port {}, redirecting to port 8081", port);
                 response.sendRedirect(baseUrl8081 + "/admin/login");
                 return false;
             }
-            
-            // Nếu không phải 8080 (ví dụ 80), chuyển hướng về 8080 cho trang user
-            if (port != 8080 && !isStaticResource(path)) {
-                logger.info("User request on port {}, redirecting to port 8080", port);
-                response.sendRedirect(baseUrl8080 + "/login");
-                return false;
-            }
         }
 
-        // --- Logic Xác Thực ---
-
-        // Allowed paths that don't require authentication
-        if (path.isEmpty() || // Allow root but we handle redirect below if not logged in
-            path.equals("login") || path.equals("login.html") ||
-            path.equals("register") || path.equals("register.html") ||
-            path.equals("admin/login") || path.equals("admin/login.html") ||
-            isStaticResource(path)) {
+        // --- Chặn lỗi lặp vô hạn (Infinite Loop) ---
+        // Nếu là URL công khai thì cho qua luôn tại đây, không kiểm tra session nữa
+        if (isPublicPath) {
             return true;
         }
 
+        // 5. Kiểm tra Xác Thực (Authentication)
         HttpSession session = request.getSession();
         Object userId = session.getAttribute("userId");
         Object userRole = session.getAttribute("userRole");
 
         if (userId == null) {
-            logger.info("Unauthorized access to {}, redirecting to login", path);
+            logger.info("Người dùng chưa đăng nhập, truy cập path: {}. Chuyển hướng về trang đăng nhập.", path);
             if (path.startsWith("admin")) {
                 response.sendRedirect(baseUrl8081 + "/admin/login");
             } else {
-                // Sử dụng đường dẫn tương đối nếu đang ở đúng cổng
-                if (port == 8080) {
-                    response.sendRedirect(contextPath + "/login");
-                } else {
-                    response.sendRedirect(baseUrl8080 + "/login");
-                }
+                response.sendRedirect(baseUrl8080 + "/login");
             }
             return false;
         }
 
-        // Kiểm tra quyền Admin
+        // 6. Kiểm tra Phân Quyền (Authorization) cho Admin
         if (path.startsWith("admin")) {
+            // Kiểm tra role: Đảm bảo trong Database cột role của bạn được lưu là "ADMIN"
             if (!"ADMIN".equals(userRole)) {
-                logger.warn("User {} tried to access admin path without ADMIN role", userId);
-                response.sendRedirect(contextPath + "/?error=nopermission");
+                logger.warn("Tài khoản ID {} cố gắng truy cập trang Admin nhưng không có quyền", userId);
+                response.sendRedirect(baseUrl8080 + "/?error=nopermission");
                 return false;
             }
         }

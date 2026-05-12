@@ -1,4 +1,4 @@
-package com.rhythmicscholar.scholar_mvc.controller;
+package com.rhythmicscholar.scholar_mvc.controller.user;
 
 import com.rhythmicscholar.scholar_mvc.model.VocabGroup;
 import com.rhythmicscholar.scholar_mvc.model.VocabGroupItem;

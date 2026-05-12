@@ -1,4 +1,4 @@
-package com.rhythmicscholar.scholar_mvc.controller;
+package com.rhythmicscholar.scholar_mvc.controller.user;
 
 import com.rhythmicscholar.scholar_mvc.model.User;
 import com.rhythmicscholar.scholar_mvc.model.Vocabulary;
@@ -60,7 +60,7 @@ public class StudyController {
             
             // Nếu hôm nay chưa có từ mới, lấy mặc định tất cả để người dùng vẫn có thể học
             if (vocabList.isEmpty()) {
-                vocabList = vocabularyRepository.findAll();
+                vocabList = vocabularyRepository.findTop10ByOrderById();
             }
         } else if (categoryId != null) {
             // Lấy từ vựng theo danh mục cụ thể
