@@ -1,0 +1,56 @@
+/* ================================================
+   game.html — Quiz Specific Styles
+   ================================================ */
+
+.hangul-text {
+    line-height: 1.25;
+}
+
+.option-btn {
+    width: 100%;
+    padding: 1.25rem 1.5rem;
+    background: #f1f4f3;
+    border: 2px solid transparent;
+    border-radius: 0.875rem;
+    text-align: left;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #181c1c;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.option-btn:hover:not(:disabled) {
+    background: #8afff0;
+    border-color: #006a62;
+    color: #005049;
+}
+
+.option-btn.correct {
+    background: #8afff0 !important;
+    border-color: #006a62 !important;
+    color: #005049 !important;
+}
+
+.option-btn.correct .opt-icon {
+    opacity: 1 !important;
+    color: #006a62;
+}
+
+.option-btn.wrong {
+    background: #ffdad6 !important;
+    border-color: #ba1a1a !important;
+    color: #93000a !important;
+}
+
+.option-btn.wrong .opt-icon {
+    opacity: 1 !important;
+    color: #ba1a1a;
+}
+
+.option-btn:disabled {
+    cursor: default;
+}

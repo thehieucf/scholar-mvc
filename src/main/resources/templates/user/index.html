@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Rhythmic Scholar - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@300;400;500;600&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/user/style.css}" />
+    <script th:src="@{/js/user/tailwind-config.js}"></script>
+</head>
+
+<body
+    class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
+    <!-- Static Header -->
+    <header class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-8 h-16 border-b border-outline-variant/10">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl font-bold tracking-tight text-emerald-800 font-headline">Rhythmic Scholar</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <form th:action="@{/dictionary}" method="GET" class="hidden sm:block relative">
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-outline">
+                    <span class="material-symbols-outlined" data-icon="search">search</span>
+                </div>
+                <input name="q"
+                    class="bg-surface-container-highest border-none rounded-full py-1.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 w-64 md:w-80 transition-all"
+                    placeholder="Search topic, vocabulary..." type="text" />
+            </form>
+            <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
+                <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+            </button>
+            <!-- Avatar Dropdown -->
+            <div class="relative group">
+                <button
+                    class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 peer">
+                    <img class="w-full h-full object-cover" data-alt="User Avatar"
+                        th:src="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty() ? user.avatarUrl : 'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&background=059669&color=fff'}" />
+                </button>
+                
+                <!-- Dropdown Menu -->
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-outline-variant/10 opacity-0 invisible peer-focus:opacity-100 peer-focus:visible hover:opacity-100 hover:visible transition-all duration-200 transform origin-top-right translate-y-2 peer-focus:translate-y-0 hover:translate-y-0 z-50">
+                    <div class="p-2">
+                        <a th:href="@{/profile}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-on-surface hover:bg-surface-container-low transition-colors">
+                            <span class="material-symbols-outlined text-lg">person</span> Profile
+                        </a>
+                        <!-- Admin Link -->
+                        <a th:if="${user != null and user.role == 'ADMIN'}" th:href="@{/admin/vocabularies}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-primary hover:bg-primary/5 transition-colors font-bold">
+                            <span class="material-symbols-outlined text-lg">admin_panel_settings</span> Admin Panel
+                        </a>
+                        <a th:href="@{/settings}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-on-surface hover:bg-surface-container-low transition-colors">
+                            <span class="material-symbols-outlined text-lg">settings</span> Settings
+                        </a>
+                        <a th:href="@{/change-password}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-on-surface hover:bg-surface-container-low transition-colors">
+                            <span class="material-symbols-outlined text-lg">key</span> Change Password
+                        </a>
+                        <div class="h-px bg-outline-variant/10 my-1"></div>
+                        <a th:href="@{/logout}" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-error hover:bg-error-container/20 transition-colors">
+                            <span class="material-symbols-outlined text-lg">logout</span> Log out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Static Sidebar -->
+    <aside class="hidden md:flex flex-col h-screen fixed left-0 w-64 bg-slate-50 p-4 pt-20 gap-2 border-r border-outline-variant/10 z-30">
+        <div class="px-4 py-6 mb-4 bg-surface-container-low rounded-xl">
+            <p class="text-sm font-label text-slate-500">Annyeong!</p>
+            <h3 class="text-lg font-headline font-bold text-emerald-700" th:text="${user.currentLevel + ' Scholar'}">Level 4 Scholar</h3>
+        </div>
+        <nav class="flex flex-col gap-1">
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out bg-emerald-50 text-emerald-700 font-bold"
+                data-nav="index" th:href="@{/}">
+                <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                <span class="font-label">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
+                data-nav="library" th:href="@{/library}">
+                <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+                <span class="font-label">Library</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
+                data-nav="vocabulary" th:href="@{/vocabulary}">
+                <span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+                <span class="font-label">My Vocabulary</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
+                data-nav="progress" th:href="@{/progress}">
+                <span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+                <span class="font-label">Progress</span>
+            </a>
+        </nav>
+        <div class="mt-auto p-4">
+            <a th:href="@{/study}"
+                class="block text-center w-full bg-primary text-on-primary font-bold py-4 rounded-full transition-transform active:scale-95">
+                Start Study
+            </a>
+        </div>
+    </aside>
+    <!-- Main Content Canvas -->
+    <main class="md:ml-64 pt-20 px-6 pb-24 md:px-12">
+        <!-- Welcome Hero -->
+        <section class="relative py-12 mb-8 overflow-hidden rounded-xl signature-glow px-8">
+            <div class="hangul-bg text-[12rem] -top-12 -right-4">안녕하세요</div>
+            <div class="max-w-2xl">
+                <h1 class="text-4xl md:text-5xl font-headline font-extrabold tracking-tight mb-4 text-on-surface">
+                    Annyeong, <span th:text="${user.fullName}">Min-jun</span>! <br />
+                    <span class="text-primary">Ready to learn today?</span>
+                </h1>
+                <p class="text-lg text-on-surface-variant font-body leading-relaxed max-w-md">
+                    You're doing great. Keep the rhythm going and unlock your next milestone in the <span
+                        class="font-bold">Business Korean</span> module.
+                </p>
+            </div>
+        </section>
+        <!-- Bento Grid Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Daily Goal Progress -->
+            <div
+                class="md:col-span-2 bg-surface-container-lowest rounded-xl p-8 flex flex-col justify-between shadow-sm border border-outline-variant/10">
+                <div class="flex justify-between items-start mb-8">
+                    <div>
+                        <h3 class="text-xl font-headline font-bold text-on-surface">Daily Goal</h3>
+                        <p class="text-on-surface-variant text-sm">Vocabulary retention</p>
+                    </div>
+                    <span class="text-2xl font-black text-primary" th:text="${percentage + '%'}">25%</span>
+                </div>
+                <div class="flex-grow flex items-center justify-center mb-8">
+                    <div class="relative w-48 h-48 flex items-center justify-center">
+                        <svg class="w-full h-full transform -rotate-90">
+                            <circle class="text-surface-container-high" cx="96" cy="96" fill="transparent" r="80"
+                                stroke="currentColor" stroke-width="12"></circle>
+                            <circle class="transition-all duration-1000" cx="96" cy="96" fill="transparent" r="80"
+                                stroke="url(#gradient)" th:stroke-dasharray="502" 
+                                th:stroke-dashoffset="${502 - (502 * percentage / 100)}"
+                                stroke-linecap="round" stroke-width="12"></circle>
+                            <defs>
+                                <lineargradient id="gradient" x1="0%" x2="100%" y1="0%" y2="100%">
+                                    <stop class="from-primary" offset="0%" stop-color="var(--tw-gradient-from)"></stop>
+                                    <stop class="to-secondary" offset="100%" stop-color="var(--tw-gradient-to)"></stop>
+                                </lineargradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute text-center">
+                            <span class="block text-4xl font-extrabold text-on-surface" th:text="${studiedToday + '/' + dailyGoal}">5/20</span>
+                            <span class="text-xs uppercase tracking-widest text-outline">Words</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-4 bg-tertiary-container/30 rounded-lg">
+                    <span class="material-symbols-outlined text-tertiary" data-icon="auto_awesome">auto_awesome</span>
+                    <p class="text-sm font-medium text-on-tertiary-container" 
+                       th:text="${studiedToday >= dailyGoal ? 'Goal reached! Amazing work today!' : 'Only ' + (dailyGoal - studiedToday) + ' more words to reach your goal!'}">Only 15 more words to reach your goal!</p>
+                </div>
+            </div>
+            <!-- Keep Learning Card -->
+            <div class="md:col-span-1 lg:col-span-1 bg-surface-container-low rounded-xl overflow-hidden relative group">
+                <div class="h-40 relative">
+                    <img class="w-full h-full object-cover"
+                        data-alt="High angle shot of a messy but aesthetic study desk with Korean textbooks, coffee, and sunlight shadows"
+                        th:src="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty() ? user.avatarUrl : 'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&background=059669&color=fff'}" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-surface-container-low to-transparent"></div>
+                </div>
+                <div class="p-6">
+                    <span
+                        class="px-3 py-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded-full uppercase tracking-tighter">Current
+                        Topic</span>
+                    <h3 class="text-xl font-headline font-bold mt-3 text-on-surface leading-tight">Advanced Particles
+                        <br />(은/는 vs 이/가)
+                    </h3>
+                    <p class="text-sm text-on-surface-variant mt-2 mb-6">Last active 2 hours ago</p>
+                    <button
+                        class="w-full bg-on-surface text-surface py-3 rounded-full font-bold flex items-center justify-center gap-2 group-hover:bg-primary transition-colors">
+                        Keep Learning
+                        <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Quick Stats & Actions -->
+            <div class="lg:col-span-1 flex flex-col gap-6">
+                <!-- Streak Counter -->
+                <div
+                    class="bg-white rounded-xl p-6 shadow-sm border border-outline-variant/10 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-label text-outline uppercase tracking-widest">Daily Streak</p>
+                        <h4 class="text-3xl font-black text-tertiary mt-1">12 Days</h4>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-tertiary-container flex items-center justify-center">
+                        <span class="material-symbols-outlined text-tertiary" data-icon="local_fire_department"
+                            style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                    </div>
+                </div>
+                <!-- Flashcard Button -->
+                <a th:href="@{/study(filter='today')}"
+                    class="flex-grow bg-secondary text-on-secondary rounded-xl p-6 flex flex-col justify-between hover:bg-on-secondary-fixed-variant transition-colors group">
+                    <span class="material-symbols-outlined text-4xl" data-icon="style"
+                        style="font-variation-settings: 'FILL' 1;">style</span>
+                    <div class="text-left mt-4">
+                        <h4 class="text-xl font-headline font-bold">Quick Review</h4>
+                        <p class="text-sm text-secondary-fixed mt-1">Review 14 weak cards</p>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <div
+                            class="w-10 h-10 rounded-full border border-secondary-fixed/30 flex items-center justify-center group-hover:bg-on-secondary transition-colors group-hover:text-secondary">
+                            <span class="material-symbols-outlined" data-icon="play_arrow"
+                                style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- Recent Achievements (Asymmetric Layout) -->
+            <div class="md:col-span-3 lg:col-span-4 bg-surface-container-low rounded-xl p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-headline font-bold text-on-surface">Milestones</h3>
+                    <button class="text-primary font-bold text-sm flex items-center gap-1">
+                        View All Achievements
+                        <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <div class="bg-surface-container-lowest p-4 rounded-lg flex flex-col items-center text-center">
+                        <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-3">
+                            <span class="material-symbols-outlined text-emerald-600" data-icon="school">school</span>
+                        </div>
+                        <p class="text-xs font-bold text-on-surface">The Grammarian</p>
+                    </div>
+                    <div class="bg-surface-container-lowest p-4 rounded-lg flex flex-col items-center text-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                            <span class="material-symbols-outlined text-blue-600" data-icon="forum">forum</span>
+                        </div>
+                        <p class="text-xs font-bold text-on-surface">Social Butterfly</p>
+                    </div>
+                    <div
+                        class="bg-surface-container-lowest p-4 rounded-lg flex flex-col items-center text-center opacity-40">
+                        <div class="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mb-3">
+                            <span class="material-symbols-outlined text-slate-500" data-icon="lock">lock</span>
+                        </div>
+                        <p class="text-xs font-bold text-on-surface">50-Day Hero</p>
+                    </div>
+                    <div
+                        class="bg-surface-container-lowest p-4 rounded-lg flex flex-col items-center text-center opacity-40">
+                        <div class="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mb-3">
+                            <span class="material-symbols-outlined text-slate-500" data-icon="lock">lock</span>
+                        </div>
+                        <p class="text-xs font-bold text-on-surface">Top 1% Club</p>
+                    </div>
+                    <div
+                        class="hidden lg:flex bg-surface-container-lowest p-4 rounded-lg flex-col items-center text-center opacity-40">
+                        <div class="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mb-3">
+                            <span class="material-symbols-outlined text-slate-500" data-icon="lock">lock</span>
+                        </div>
+                        <p class="text-xs font-bold text-on-surface">The Legend</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Static Bottom Nav -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel h-16 flex items-center justify-around px-4 z-50 border-t border-outline-variant/10">
+        <a th:href="@{/}" class="flex flex-col items-center text-primary" data-nav="index">
+            <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+            <span class="text-[10px] font-medium mt-1">Home</span>
+        </a>
+        <a th:href="@{/library}" class="flex flex-col items-center text-on-surface-variant" data-nav="library">
+            <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+            <span class="text-[10px] font-medium mt-1">Library</span>
+        </a>
+        <a th:href="@{/study}"
+            class="-mt-8 w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-3xl" data-icon="play_arrow"
+                style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+        </a>
+        <a th:href="@{/vocabulary}" class="flex flex-col items-center text-on-surface-variant" data-nav="vocabulary">
+            <span class="material-symbols-outlined" data-icon="person">person</span>
+            <span class="text-[10px] font-medium mt-1">Vocab</span>
+        </a>
+        <a th:href="@{/progress}" class="flex flex-col items-center text-on-surface-variant" data-nav="progress">
+            <span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+            <span class="text-[10px] font-medium mt-1">Stats</span>
+        </a>
+    </nav>
+</body>
+
+</html>

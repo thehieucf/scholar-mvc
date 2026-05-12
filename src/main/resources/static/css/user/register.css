@@ -1,0 +1,42 @@
+/* ================================================
+   register.html — Registration Form Styles
+   ================================================ */
+
+.input-field {
+    width: 100%;
+    background: #f1f4f3;
+    border: 1.5px solid transparent;
+    border-radius: 9999px;
+    padding: 0.75rem 1rem 0.75rem 2.75rem !important;
+    font-size: 0.9rem;
+    color: #181c1c;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.input-field:focus {
+    border-color: #006a62;
+    box-shadow: 0 0 0 3px rgba(0, 106, 98, 0.12);
+    background: #ffffff;
+}
+
+.level-btn {
+    flex: 1;
+    padding: 0.6rem 0.5rem;
+    border-radius: 0.75rem;
+    border: 1.5px solid #bdc9c2;
+    background: #f7faf9;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #3e4944;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.level-btn.active,
+.level-btn:hover {
+    background: #8afff0;
+    border-color: #006a62;
+    color: #005049;
+}

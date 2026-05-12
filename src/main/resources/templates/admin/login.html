@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en" xmlns:th="http://www.thymeleaf.org"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hangeul Academy Admin Portal - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script th:src="@{/js/admin/common.js}" src="/js/admin/common.js"></script>
+<link th:href="@{/css/admin/common.css}" href="/css/admin/common.css" rel="stylesheet"/>
+</head>
+<body class="bg-surface-container-low min-h-screen flex flex-col items-center justify-center p-4">
+<!-- Canvas (Main Content) -->
+<main class="w-full max-w-[440px] flex flex-col gap-stack-lg">
+<!-- Brand / Header -->
+<div class="flex flex-col items-center text-center gap-stack-sm">
+<div class="w-16 h-16 bg-primary-container rounded-xl flex items-center justify-center text-on-primary shadow-sm mb-2">
+<span class="material-symbols-outlined ms-icon-32-filled">
+                    school
+                </span>
+</div>
+<h1 class="font-headline-md text-headline-md text-on-surface">Hangeul Academy</h1>
+<p class="font-title-sm text-title-sm text-on-surface-variant">Admin Portal</p>
+</div>
+<!-- Login Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 p-8 flex flex-col gap-stack-md">
+<form class="flex flex-col gap-stack-lg" th:action="@{/admin/login}" method="post">
+<div th:if="${error}" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+<span th:text="${error}">Error</span>
+</div>
+<!-- Email -->
+<div class="flex flex-col gap-2">
+<label class="font-data-table text-data-table text-on-surface" for="email">Email</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">
+                            person
+                        </span>
+<input class="w-full pl-10 pr-4 py-3 rounded-lg border border-outline-variant bg-surface focus:bg-surface-container-lowest focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-colors font-body-md text-body-md text-on-surface outline-none" id="email" name="email" placeholder="admin@hangeulacademy.edu" required="" type="email"/>
+</div>
+</div>
+<!-- Password Input -->
+<div class="flex flex-col gap-2">
+<label class="font-data-table text-data-table text-on-surface" for="password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">
+                            lock
+                        </span>
+<input class="w-full pl-10 pr-10 py-3 rounded-lg border border-outline-variant bg-surface focus:bg-surface-container-lowest focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-colors font-body-md text-body-md text-on-surface outline-none" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface-variant transition-colors flex items-center" type="button">
+<span class="material-symbols-outlined">
+                                visibility_off
+                            </span>
+</button>
+</div>
+</div>
+<!-- Options Row -->
+<div class="flex items-center justify-between">
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="w-4 h-4 rounded border-outline-variant text-primary-container focus:ring-primary-container bg-surface cursor-pointer" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Remember me</span>
+</label>
+<a class="font-body-sm text-body-sm text-primary-container hover:text-primary transition-colors hover:underline" href="#">Forgot password?</a>
+</div>
+<!-- Submit Button -->
+<button class="w-full bg-primary-container text-on-primary rounded-lg py-3 font-title-sm text-title-sm hover:bg-primary transition-colors shadow-sm flex items-center justify-center gap-2" type="submit">
+                    Sign In
+                    <span class="material-symbols-outlined ms-icon-20">
+                        arrow_forward
+                    </span>
+</button>
+</form>
+</div>
+<!-- Footer -->
+<div class="text-center mt-4">
+<p class="font-body-sm text-body-sm text-outline">
+                © 2024 Hangeul Academy. All rights reserved.
+            </p>
+</div>
+</main>
+</body></html>

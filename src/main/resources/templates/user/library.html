@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html class="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Library | Rhythmic Scholar</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@300;400;500;600&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/user/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/user/library.css}" />
+    <script th:src="@{/js/user/tailwind-config.js}"></script>
+
+    <!-- Color palette map cho category cards -->
+    <style>
+        /* Bảng màu cho icon box — mỗi theme có bg nhạt + text đậm */
+        .theme-red    .cat-icon { background-color: #fee2e2; color: #dc2626; }
+        .theme-orange .cat-icon { background-color: #ffedd5; color: #ea580c; }
+        .theme-amber  .cat-icon { background-color: #fef3c7; color: #d97706; }
+        .theme-yellow .cat-icon { background-color: #fef9c3; color: #ca8a04; }
+        .theme-lime   .cat-icon { background-color: #ecfccb; color: #65a30d; }
+        .theme-green  .cat-icon { background-color: #dcfce7; color: #16a34a; }
+        .theme-emerald .cat-icon { background-color: #d1fae5; color: #059669; }
+        .theme-teal   .cat-icon { background-color: #ccfbf1; color: #0d9488; }
+        .theme-cyan   .cat-icon { background-color: #cffafe; color: #0891b2; }
+        .theme-sky    .cat-icon { background-color: #e0f2fe; color: #0284c7; }
+        .theme-blue   .cat-icon { background-color: #dbeafe; color: #2563eb; }
+        .theme-indigo .cat-icon { background-color: #e0e7ff; color: #4f46e5; }
+        .theme-violet .cat-icon { background-color: #ede9fe; color: #7c3aed; }
+        .theme-purple .cat-icon { background-color: #f3e8ff; color: #9333ea; }
+        .theme-fuchsia .cat-icon { background-color: #fae8ff; color: #c026d3; }
+        .theme-pink   .cat-icon { background-color: #fce7f3; color: #db2777; }
+        .theme-rose   .cat-icon { background-color: #ffe4e6; color: #e11d48; }
+
+        /* Hover: icon box chuyển sang màu solid */
+        .theme-red:hover    .cat-icon { background-color: #dc2626; color: #fff; }
+        .theme-orange:hover .cat-icon { background-color: #ea580c; color: #fff; }
+        .theme-amber:hover  .cat-icon { background-color: #d97706; color: #fff; }
+        .theme-yellow:hover .cat-icon { background-color: #ca8a04; color: #fff; }
+        .theme-lime:hover   .cat-icon { background-color: #65a30d; color: #fff; }
+        .theme-green:hover  .cat-icon { background-color: #16a34a; color: #fff; }
+        .theme-emerald:hover .cat-icon { background-color: #059669; color: #fff; }
+        .theme-teal:hover   .cat-icon { background-color: #0d9488; color: #fff; }
+        .theme-cyan:hover   .cat-icon { background-color: #0891b2; color: #fff; }
+        .theme-sky:hover    .cat-icon { background-color: #0284c7; color: #fff; }
+        .theme-blue:hover   .cat-icon { background-color: #2563eb; color: #fff; }
+        .theme-indigo:hover .cat-icon { background-color: #4f46e5; color: #fff; }
+        .theme-violet:hover .cat-icon { background-color: #7c3aed; color: #fff; }
+        .theme-purple:hover .cat-icon { background-color: #9333ea; color: #fff; }
+        .theme-fuchsia:hover .cat-icon { background-color: #c026d3; color: #fff; }
+        .theme-pink:hover   .cat-icon { background-color: #db2777; color: #fff; }
+        .theme-rose:hover   .cat-icon { background-color: #e11d48; color: #fff; }
+
+        /* Hover: tiêu đề card đổi màu */
+        .theme-red:hover    .cat-title { color: #dc2626; }
+        .theme-orange:hover .cat-title { color: #ea580c; }
+        .theme-amber:hover  .cat-title { color: #d97706; }
+        .theme-yellow:hover .cat-title { color: #ca8a04; }
+        .theme-lime:hover   .cat-title { color: #65a30d; }
+        .theme-green:hover  .cat-title { color: #16a34a; }
+        .theme-emerald:hover .cat-title { color: #059669; }
+        .theme-teal:hover   .cat-title { color: #0d9488; }
+        .theme-cyan:hover   .cat-title { color: #0891b2; }
+        .theme-sky:hover    .cat-title { color: #0284c7; }
+        .theme-blue:hover   .cat-title { color: #2563eb; }
+        .theme-indigo:hover .cat-title { color: #4f46e5; }
+        .theme-violet:hover .cat-title { color: #7c3aed; }
+        .theme-purple:hover .cat-title { color: #9333ea; }
+        .theme-fuchsia:hover .cat-title { color: #c026d3; }
+        .theme-pink:hover   .cat-title { color: #db2777; }
+        .theme-rose:hover   .cat-title { color: #e11d48; }
+
+        /* Transition cho cat-icon */
+        .cat-icon {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .cat-title {
+            transition: color 0.3s ease;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
+    <!-- Header: Thanh điều hướng trên cùng, chứa Logo, Tìm kiếm và User Profile -->
+    <header class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-8 h-16 border-b border-outline-variant/10">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl font-bold tracking-tight text-emerald-800 font-headline">Rhythmic Scholar</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <form th:action="@{/dictionary}" method="GET" class="hidden sm:block relative">
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-outline">
+                    <span class="material-symbols-outlined" data-icon="search">search</span>
+                </div>
+                <input name="q"
+                    class="bg-surface-container-highest border-none rounded-full py-1.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 w-64 md:w-80 transition-all"
+                    placeholder="Search topic, vocabulary..." type="text" />
+            </form>
+            <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
+                <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+            </button>
+            <!-- Avatar Dropdown -->
+            <div class="relative group">
+                <button
+                    class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 peer">
+                    <img class="w-full h-full object-cover" data-alt="User Avatar"
+                        th:src="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty() ? user.avatarUrl : 'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&background=059669&color=fff'}" />
+                </button>
+                
+                <!-- Dropdown Menu -->
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-outline-variant/10 opacity-0 invisible peer-focus:opacity-100 peer-focus:visible hover:opacity-100 hover:visible transition-all duration-200 transform origin-top-right translate-y-2 peer-focus:translate-y-0 hover:translate-y-0 z-50">
+                    <div class="p-2">
+                        <a th:href="@{/profile}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-on-surface hover:bg-surface-container-low transition-colors">
+                            <span class="material-symbols-outlined text-lg">person</span> Profile
+                        </a>
+                        <a th:href="@{/settings}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-on-surface hover:bg-surface-container-low transition-colors">
+                            <span class="material-symbols-outlined text-lg">settings</span> Settings
+                        </a>
+                        <a th:href="@{/change-password}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-on-surface hover:bg-surface-container-low transition-colors">
+                            <span class="material-symbols-outlined text-lg">key</span> Change Password
+                        </a>
+                        <div class="h-px bg-outline-variant/10 my-1"></div>
+                        <a th:href="@{/logout}" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-error hover:bg-error-container/20 transition-colors">
+                            <span class="material-symbols-outlined text-lg">logout</span> Log out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar: Thanh menu bên trái (chỉ hiển thị trên Desktop) -->
+    <aside class="hidden md:flex flex-col h-screen fixed left-0 w-64 bg-slate-50 p-4 pt-20 gap-2 border-r border-outline-variant/10 z-30">
+        <div class="px-4 py-6 mb-4 bg-surface-container-low rounded-xl">
+            <p class="text-sm font-label text-slate-500">Annyeong!</p>
+            <h3 class="text-lg font-headline font-bold text-emerald-700" th:text="${user != null ? user.currentLevel + ' Scholar' : 'Scholar'}">Scholar</h3>
+        </div>
+        <nav class="flex flex-col gap-1">
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
+                data-nav="index" th:href="@{/}">
+                <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                <span class="font-label">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out bg-emerald-50 text-emerald-700 font-bold"
+                data-nav="library" th:href="@{/library}">
+                <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+                <span class="font-label">Library</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
+                data-nav="vocabulary" th:href="@{/vocabulary}">
+                <span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+                <span class="font-label">My Vocabulary</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
+                data-nav="progress" th:href="@{/progress}">
+                <span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+                <span class="font-label">Progress</span>
+            </a>
+        </nav>
+        <div class="mt-auto p-4">
+            <a th:href="@{/study}"
+                class="block text-center w-full bg-primary text-on-primary font-bold py-4 rounded-full transition-transform active:scale-95">
+                Start Study
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content: Phần nội dung chính của trang Library -->
+    <main class="md:ml-64 pt-20 pb-24 px-6 md:px-12 min-h-screen">
+        <div class="max-w-5xl mx-auto">
+            <!-- Header Section -->
+            <div class="mb-12 relative">
+                <div
+                    class="absolute -top-10 -left-6 text-[120px] font-bold text-primary/5 select-none pointer-events-none">
+                    도서관</div>
+                <h1 class="text-4xl md:text-5xl font-extrabold font-headline text-on-surface mb-4 tracking-tight">
+                    Vocabulary <span class="text-primary">Library</span></h1>
+                <p class="text-lg text-on-surface-variant max-w-2xl leading-relaxed">
+                    Browse our curated vocabulary topics. Click on any group to explore the words, listen to
+                    pronunciation, and master new expressions.
+                </p>
+            </div>
+
+            <!-- Categories Grid: Hiển thị các danh mục từ vựng dưới dạng các thẻ (Cards) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Category Cards -->
+                <!-- Màu icon được xác định qua class theme-{colorTheme} + CSS selector .cat-icon -->
+                <button th:each="cat : ${categories}"
+                    th:data-id="${cat.id}" th:data-title="${cat.nameEn}" th:data-icon="${cat.iconName}" th:data-theme="${cat.colorTheme}"
+                    onclick="openModal(this.getAttribute('data-id'), this.getAttribute('data-title'), this.getAttribute('data-icon'), this.getAttribute('data-theme'))"
+                    th:class="'theme-' + ${cat.colorTheme} + ' text-left bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/15 hover:shadow-lg transition-all relative overflow-hidden flex flex-col h-48'">
+                    <!-- Chữ nền tiếng Hàn (watermark) -->
+                    <div
+                        class="absolute -bottom-4 -right-4 text-6xl font-black text-on-surface transition-colors z-0 opacity-5"
+                        th:text="${cat.nameKr}">음식</div>
+                    <div class="flex justify-between items-start mb-4 z-10">
+                        <!-- Icon box: màu được xác định bởi class .cat-icon kết hợp .theme-{colorTheme} -->
+                        <div class="cat-icon w-12 h-12 rounded-xl flex items-center justify-center shadow-sm">
+                            <span class="material-symbols-outlined text-2xl"
+                                style="font-variation-settings: 'FILL' 1;" th:text="${cat.iconName}">restaurant</span>
+                        </div>
+                        <span th:if="${cat.isPopular == true}"
+                            class="bg-surface-container-high text-on-surface-variant px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase">Popular</span>
+                    </div>
+                    <div class="mt-auto z-10">
+                        <!-- Tiêu đề: đổi màu khi hover theo theme -->
+                        <h3 class="cat-title text-2xl font-bold font-headline text-on-surface mb-1"
+                            th:text="${cat.nameEn}">Food &amp; Dining</h3>
+                        <p class="text-sm text-on-surface-variant" th:text="${cat.description}">Restaurants, cuisines, drinks</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Vocabulary Modal Overlay: Cửa sổ hiện lên khi nhấn vào một danh mục để xem danh sách từ -->
+    <div id="word-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 modal-backdrop hidden">
+        <!-- Backdrop clickable area to close -->
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
+
+        <!-- Modal Content -->
+        <div
+            class="modal-content relative bg-surface-container-lowest rounded-3xl w-full max-w-2xl max-h-[85vh] shadow-2xl flex flex-col border border-outline-variant/20 z-10 overflow-hidden">
+
+            <!-- Modal Header -->
+            <div
+                class="px-6 py-5 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-lowest sticky top-0 z-20">
+                <div class="flex items-center gap-3">
+                    <div id="modal-icon-container"
+                        class="w-10 h-10 rounded-lg flex items-center justify-center bg-primary-container text-on-primary-container">
+                        <span id="modal-icon" class="material-symbols-outlined"
+                            style="font-variation-settings: 'FILL' 1;">category</span>
+                    </div>
+                    <div>
+                        <h2 id="modal-title" class="text-2xl font-bold font-headline text-on-surface">Category Name</h2>
+                        <p id="modal-subtitle" class="text-xs text-on-surface-variant font-medium">Vocabulary List</p>
+                    </div>
+                </div>
+                <button onclick="closeModal()"
+                    class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Modal Body (Scrollable Word List) -->
+            <div class="p-6 overflow-y-auto bg-surface flex-1">
+                <div id="modal-word-list" class="space-y-3">
+                    <!-- Word cards will be injected here via JS -->
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div
+                class="px-6 py-4 border-t border-outline-variant/10 bg-surface-container-lowest flex justify-end gap-3 sticky bottom-0">
+                <a id="modal-practice-btn" th:href="@{/study}"
+                    class="px-6 py-2.5 bg-primary text-on-primary rounded-full font-bold text-sm hover:bg-primary/90 transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">style</span> Practice This Group
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Static Bottom Nav -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel h-16 flex items-center justify-around px-4 z-50 border-t border-outline-variant/10">
+        <a th:href="@{/}" class="flex flex-col items-center text-on-surface-variant" data-nav="index">
+            <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+            <span class="text-[10px] font-medium mt-1">Home</span>
+        </a>
+        <a th:href="@{/library}" class="flex flex-col items-center text-primary" data-nav="library">
+            <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+            <span class="text-[10px] font-medium mt-1">Library</span>
+        </a>
+        <a th:href="@{/study}"
+            class="-mt-8 w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-3xl" data-icon="play_arrow"
+                style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+        </a>
+        <a th:href="@{/vocabulary}" class="flex flex-col items-center text-on-surface-variant" data-nav="vocabulary">
+            <span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+            <span class="text-[10px] font-medium mt-1">Vocab</span>
+        </a>
+        <a th:href="@{/progress}" class="flex flex-col items-center text-on-surface-variant" data-nav="progress">
+            <span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+            <span class="text-[10px] font-medium mt-1">Stats</span>
+        </a>
+    </nav>
+    <script th:src="@{/js/user/library.js}"></script>
+</body>
+
+</html>
