@@ -10,7 +10,6 @@ import com.rhythmicscholar.scholar_mvc.repository.VocabularyRepository;
 import com.rhythmicscholar.scholar_mvc.repository.VocabGroupItemRepository;
 import com.rhythmicscholar.scholar_mvc.repository.VocabGroupRepository;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,20 +31,23 @@ import org.slf4j.LoggerFactory;
 public class VocabularyController {
     private static final Logger logger = LoggerFactory.getLogger(VocabularyController.class);
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
+    private final VocabularyRepository vocabularyRepository;
+    private final UserRepository userRepository;
+    private final VocabGroupRepository vocabGroupRepository;
+    private final VocabGroupItemRepository vocabGroupItemRepository;
 
-    @Autowired
-    private VocabularyRepository vocabularyRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private VocabGroupRepository vocabGroupRepository;
-
-    @Autowired
-    private VocabGroupItemRepository vocabGroupItemRepository;
+    public VocabularyController(CategoryRepository categoryRepository,
+                                VocabularyRepository vocabularyRepository,
+                                UserRepository userRepository,
+                                VocabGroupRepository vocabGroupRepository,
+                                VocabGroupItemRepository vocabGroupItemRepository) {
+        this.categoryRepository = categoryRepository;
+        this.vocabularyRepository = vocabularyRepository;
+        this.userRepository = userRepository;
+        this.vocabGroupRepository = vocabGroupRepository;
+        this.vocabGroupItemRepository = vocabGroupItemRepository;
+    }
 
     /**
      * Hiển thị trang từ vựng cá nhân của người dùng.

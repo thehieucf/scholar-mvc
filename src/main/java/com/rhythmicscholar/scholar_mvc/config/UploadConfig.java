@@ -1,6 +1,7 @@
 package com.rhythmicscholar.scholar_mvc.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -11,7 +12,7 @@ import java.nio.file.Paths;
 public class UploadConfig implements WebMvcConfigurer {
 
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
         Path uploadDir = Paths.get("uploads").toAbsolutePath();
         String uploadPath = uploadDir.toString();
 
