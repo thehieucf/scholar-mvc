@@ -55,6 +55,12 @@ public class AdminController {
         return "admin/login";
     }
 
+    @GetMapping("/logout")
+    public String adminLogout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/admin/login";
+    }
+
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
         model.addAttribute("totalUsers", userRepository.count());
@@ -62,30 +68,5 @@ public class AdminController {
         model.addAttribute("totalVocabularies", vocabularyRepository.count());
         model.addAttribute("totalQuizzes", quizQuestionRepository.count());
         return "admin/index";
-    }
-
-    @GetMapping("/userManagement")
-    public String userManagement(Model model) {
-        model.addAttribute("users", userRepository.findAll());
-        return "admin/userManagement";
-    }
-
-    @GetMapping("/categoryManagement")
-    public String categoryManagement(Model model) {
-        model.addAttribute("categories", categoryRepository.findAll());
-        return "admin/categoryManagement";
-    }
-
-    @GetMapping("/vocabularyManagement")
-    public String vocabularyManagement(Model model) {
-        model.addAttribute("vocabularies", vocabularyRepository.findAll());
-        model.addAttribute("categories", categoryRepository.findAll());
-        return "admin/vocabularyManagement";
-    }
-
-    @GetMapping("/quizManagement")
-    public String quizManagement(Model model) {
-        model.addAttribute("quizzes", quizQuestionRepository.findAll());
-        return "admin/quizManagement";
     }
 }

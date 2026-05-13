@@ -20,13 +20,18 @@
     background: rgba(247, 250, 249, 0.8);
 }
 
-/* Decorative Hangul background text */
+/* Decorative Hangul background text
+ * Dùng pointer-events: none để không chặn click.
+ * z-index: -1 chỉ hoạt động đúng khi parent có isolation hoặc
+ * không có overflow:hidden. Với overflow:hidden containers,
+ * dùng z-index: 0 và đặt content phía sau trong DOM thay thế.
+ */
 .hangul-bg {
     position: absolute;
     font-family: 'Plus Jakarta Sans';
     font-weight: 800;
     color: rgba(0, 106, 98, 0.03);
-    z-index: -1;
+    z-index: 0;
     pointer-events: none;
     user-select: none;
 }

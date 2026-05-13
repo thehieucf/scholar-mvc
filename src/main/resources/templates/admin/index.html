@@ -1,14 +1,69 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html class="light" lang="en" xmlns:th="http://www.thymeleaf.org"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Hangeul Academy - Admin Portal</title>
+<title>Rhythmic Scholar - Admin Portal</title>
+<script>
+window.tailwind = window.tailwind || {};
+window.tailwind.config = {
+    darkMode: 'class',
+    theme: {
+        extend: {
+            colors: {
+                "outline-variant": "#c4c5d5", "secondary-container": "#2170e4",
+                "surface-tint": "#3755c3", "tertiary": "#303539",
+                "surface-container-low": "#eff4ff", "on-primary-container": "#a8b8ff",
+                "background": "#f8f9ff", "on-secondary-container": "#fefcff",
+                "on-tertiary-fixed-variant": "#43474b", "surface-container-lowest": "#ffffff",
+                "primary-fixed-dim": "#b8c4ff", "on-tertiary": "#ffffff",
+                "on-primary": "#ffffff", "on-secondary": "#ffffff",
+                "on-surface-variant": "#444653", "surface": "#f8f9ff",
+                "on-tertiary-fixed": "#171c1f", "surface-container": "#e5eeff",
+                "surface-variant": "#d3e4fe", "on-primary-fixed-variant": "#173bab",
+                "secondary-fixed-dim": "#adc6ff", "surface-bright": "#f8f9ff",
+                "on-primary-fixed": "#001453", "surface-dim": "#cbdbf5",
+                "on-secondary-fixed-variant": "#004395", "inverse-on-surface": "#eaf1ff",
+                "on-background": "#0b1c30", "surface-container-highest": "#d3e4fe",
+                "error": "#ba1a1a", "primary-container": "#1e40af",
+                "inverse-primary": "#b8c4ff", "on-secondary-fixed": "#001a42",
+                "tertiary-fixed-dim": "#c3c7cb", "secondary-fixed": "#d8e2ff",
+                "secondary": "#0058be", "outline": "#757684",
+                "surface-container-high": "#dce9ff", "on-error": "#ffffff",
+                "tertiary-container": "#474c4f", "error-container": "#ffdad6",
+                "tertiary-fixed": "#dfe3e7", "on-surface": "#0b1c30",
+                "on-error-container": "#93000a", "on-tertiary-container": "#b8bcc0",
+                "primary-fixed": "#dde1ff", "primary": "#00288e", "inverse-surface": "#213145"
+            },
+            borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+            spacing: {
+                gutter: "1.5rem", "container-max-width": "1440px",
+                "stack-md": "1rem", "stack-sm": "0.5rem",
+                "margin-mobile": "1rem", "sidebar-width": "260px",
+                "stack-lg": "1.5rem", "margin-desktop": "2rem"
+            },
+            fontFamily: {
+                "body-sm": ["Noto Sans"], "data-table": ["Inter"],
+                "display-lg": ["Noto Sans"], "title-sm": ["Noto Sans"],
+                "body-md": ["Noto Sans"], "label-caps": ["Inter"], "headline-md": ["Noto Sans"]
+            },
+            fontSize: {
+                "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                "data-table": ["14px", { lineHeight: "20px", fontWeight: "500" }],
+                "display-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                "title-sm": ["18px", { lineHeight: "24px", fontWeight: "600" }],
+                "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600" }],
+                "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }]
+            }
+        }
+    }
+};
+</script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script th:src="@{/js/admin/common.js}" src="/js/admin/common.js"></script>
 <link th:href="@{/css/admin/common.css}" href="/css/admin/common.css" rel="stylesheet"/>
 </head>
 <body class="bg-background text-on-background antialiased">
@@ -17,7 +72,7 @@
 <div class="px-6 mb-8 flex items-center gap-3">
 <img alt="Korean Self-Study Admin Logo" class="w-8 h-8 rounded-full" data-alt="A modern, abstract logo featuring stylized Korean geometric shapes intersecting, rendered in clean lines and bright primary blue against a stark white background. High-quality corporate branding asset." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeZAt1Gh3YjxCRqIZ05oc63Z10NB65J7zHLxQNeCJzqtBLDc3sI9EDrCngX8JCA5SQoZv2XFgAQ3oo2ZZUlXUufMTm0tuTGelp40PKt1H8lQpGRNGQd9W-O0mqfzNgJ2fW-Ne9RdSXY5TUHkfgpwcsrcxiM45g0qIe4auKiMLys3pHtoTqK9EJIlfOYV-MqpA1TnwgoHGfGf6pSOGJX7jiMTiDMknsbLc8nSMUYft9wNTdX1rFgIs01DCJK_1d_TPr6nYZTayYhPM"/>
 <div>
-<h1 class="font-headline-md text-headline-md font-bold text-primary">Hangeul Academy</h1>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Rhythmic Scholar</h1>
 <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Admin Portal</p>
 </div>
 </div>
@@ -26,21 +81,27 @@
 <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
 <span>Dashboard</span>
 </a>
-<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/userManagement}" href="/admin/userManagement">
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/users}" href="/admin/users">
 <span class="material-symbols-outlined" data-icon="group">group</span>
 <span>User Management</span>
 </a>
-<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/categoryManagement}" href="/admin/categoryManagement">
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/categories}" href="/admin/categories">
 <span class="material-symbols-outlined" data-icon="category">category</span>
 <span>Category Management</span>
 </a>
-<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/vocabularyManagement}" href="/admin/vocabularyManagement">
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/vocabularies}" href="/admin/vocabularies">
 <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
 <span>Vocabulary Management</span>
 </a>
-<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/quizManagement}" href="/admin/quizManagement">
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/quizzes}" href="/admin/quizzes">
 <span class="material-symbols-outlined" data-icon="quiz">quiz</span>
 <span>Quiz Management</span>
+</a>
+</div>
+<div class="px-2 mt-auto border-t border-outline-variant pt-4">
+<a class="text-error flex items-center gap-3 px-4 py-3 hover:bg-error-container transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/logout}" href="/admin/logout">
+<span class="material-symbols-outlined text-error" data-icon="logout">logout</span>
+<span>Log Out</span>
 </a>
 </div>
 </nav>
@@ -81,37 +142,37 @@
 <span class="material-symbols-outlined text-primary bg-surface-container p-1.5 rounded-lg text-sm">group</span>
 </div>
 <div class="flex items-end gap-3 mt-2">
-<span class="font-display-lg text-display-lg text-on-surface">12,450</span>
+<span class="font-display-lg text-display-lg text-on-surface" th:text="${totalUsers}">12,450</span>
 <span class="font-body-sm text-body-sm text-green-600 bg-green-50 px-2 py-0.5 rounded-full mb-1 flex items-center"><span class="material-symbols-outlined text-[14px] mr-0.5">arrow_upward</span>12%</span>
 </div>
 </div>
 <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-2">
 <div class="flex justify-between items-start">
-<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Active Today</span>
-<span class="material-symbols-outlined text-secondary bg-secondary-fixed p-1.5 rounded-lg text-sm">bolt</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Categories</span>
+<span class="material-symbols-outlined text-secondary bg-secondary-fixed p-1.5 rounded-lg text-sm">category</span>
 </div>
 <div class="flex items-end gap-3 mt-2">
-<span class="font-display-lg text-display-lg text-on-surface">3,892</span>
+<span class="font-display-lg text-display-lg text-on-surface" th:text="${totalCategories}">3,892</span>
 <span class="font-body-sm text-body-sm text-green-600 bg-green-50 px-2 py-0.5 rounded-full mb-1 flex items-center"><span class="material-symbols-outlined text-[14px] mr-0.5">arrow_upward</span>5%</span>
 </div>
 </div>
 <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-2">
 <div class="flex justify-between items-start">
-<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">New Vocabulary</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Total Vocabulary</span>
 <span class="material-symbols-outlined text-primary-container bg-primary-fixed p-1.5 rounded-lg text-sm">translate</span>
 </div>
 <div class="flex items-end gap-3 mt-2">
-<span class="font-display-lg text-display-lg text-on-surface">450</span>
+<span class="font-display-lg text-display-lg text-on-surface" th:text="${totalVocabularies}">450</span>
 <span class="font-body-sm text-body-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full mb-1 flex items-center">This week</span>
 </div>
 </div>
 <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-2">
 <div class="flex justify-between items-start">
-<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Completed Lessons</span>
-<span class="material-symbols-outlined text-tertiary bg-tertiary-fixed p-1.5 rounded-lg text-sm">school</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Total Quizzes</span>
+<span class="material-symbols-outlined text-tertiary bg-tertiary-fixed p-1.5 rounded-lg text-sm">quiz</span>
 </div>
 <div class="flex items-end gap-3 mt-2">
-<span class="font-display-lg text-display-lg text-on-surface">89,210</span>
+<span class="font-display-lg text-display-lg text-on-surface" th:text="${totalQuizzes}">89,210</span>
 <span class="font-body-sm text-body-sm text-green-600 bg-green-50 px-2 py-0.5 rounded-full mb-1 flex items-center"><span class="material-symbols-outlined text-[14px] mr-0.5">arrow_upward</span>18%</span>
 </div>
 </div>

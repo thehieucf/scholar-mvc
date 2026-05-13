@@ -1,14 +1,69 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html class="light" lang="en" xmlns:th="http://www.thymeleaf.org"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>User Management - Hangeul Academy Admin</title>
+<title>User Management - Rhythmic Scholar Admin</title>
+<script>
+window.tailwind = window.tailwind || {};
+window.tailwind.config = {
+    darkMode: 'class',
+    theme: {
+        extend: {
+            colors: {
+                "outline-variant": "#c4c5d5", "secondary-container": "#2170e4",
+                "surface-tint": "#3755c3", "tertiary": "#303539",
+                "surface-container-low": "#eff4ff", "on-primary-container": "#a8b8ff",
+                "background": "#f8f9ff", "on-secondary-container": "#fefcff",
+                "on-tertiary-fixed-variant": "#43474b", "surface-container-lowest": "#ffffff",
+                "primary-fixed-dim": "#b8c4ff", "on-tertiary": "#ffffff",
+                "on-primary": "#ffffff", "on-secondary": "#ffffff",
+                "on-surface-variant": "#444653", "surface": "#f8f9ff",
+                "on-tertiary-fixed": "#171c1f", "surface-container": "#e5eeff",
+                "surface-variant": "#d3e4fe", "on-primary-fixed-variant": "#173bab",
+                "secondary-fixed-dim": "#adc6ff", "surface-bright": "#f8f9ff",
+                "on-primary-fixed": "#001453", "surface-dim": "#cbdbf5",
+                "on-secondary-fixed-variant": "#004395", "inverse-on-surface": "#eaf1ff",
+                "on-background": "#0b1c30", "surface-container-highest": "#d3e4fe",
+                "error": "#ba1a1a", "primary-container": "#1e40af",
+                "inverse-primary": "#b8c4ff", "on-secondary-fixed": "#001a42",
+                "tertiary-fixed-dim": "#c3c7cb", "secondary-fixed": "#d8e2ff",
+                "secondary": "#0058be", "outline": "#757684",
+                "surface-container-high": "#dce9ff", "on-error": "#ffffff",
+                "tertiary-container": "#474c4f", "error-container": "#ffdad6",
+                "tertiary-fixed": "#dfe3e7", "on-surface": "#0b1c30",
+                "on-error-container": "#93000a", "on-tertiary-container": "#b8bcc0",
+                "primary-fixed": "#dde1ff", "primary": "#00288e", "inverse-surface": "#213145"
+            },
+            borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+            spacing: {
+                gutter: "1.5rem", "container-max-width": "1440px",
+                "stack-md": "1rem", "stack-sm": "0.5rem",
+                "margin-mobile": "1rem", "sidebar-width": "260px",
+                "stack-lg": "1.5rem", "margin-desktop": "2rem"
+            },
+            fontFamily: {
+                "body-sm": ["Noto Sans"], "data-table": ["Inter"],
+                "display-lg": ["Noto Sans"], "title-sm": ["Noto Sans"],
+                "body-md": ["Noto Sans"], "label-caps": ["Inter"], "headline-md": ["Noto Sans"]
+            },
+            fontSize: {
+                "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                "data-table": ["14px", { lineHeight: "20px", fontWeight: "500" }],
+                "display-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                "title-sm": ["18px", { lineHeight: "24px", fontWeight: "600" }],
+                "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600" }],
+                "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }]
+            }
+        }
+    }
+};
+</script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=Inter:wght@500;600&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script th:src="@{/js/admin/common.js}" src="/js/admin/common.js"></script>
 <link th:href="@{/css/admin/common.css}" href="/css/admin/common.css" rel="stylesheet"/>
 </head>
 <body class="bg-background text-on-background antialiased">
@@ -17,7 +72,7 @@
 <div class="px-6 mb-8 flex items-center gap-3">
 <img alt="Korean Self-Study Admin Logo" class="w-8 h-8 rounded-full" data-alt="A modern, abstract logo featuring stylized Korean geometric shapes intersecting, rendered in clean lines and bright primary blue against a stark white background. High-quality corporate branding asset." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeZAt1Gh3YjxCRqIZ05oc63Z10NB65J7zHLxQNeCJzqtBLDc3sI9EDrCngX8JCA5SQoZv2XFgAQ3oo2ZZUlXUufMTm0tuTGelp40PKt1H8lQpGRNGQd9W-O0mqfzNgJ2fW-Ne9RdSXY5TUHkfgpwcsrcxiM45g0qIe4auKiMLys3pHtoTqK9EJIlfOYV-MqpA1TnwgoHGfGf6pSOGJX7jiMTiDMknsbLc8nSMUYft9wNTdX1rFgIs01DCJK_1d_TPr6nYZTayYhPM"/>
 <div>
-<h1 class="font-headline-md text-headline-md font-bold text-primary">Hangeul Academy</h1>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Rhythmic Scholar</h1>
 <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Admin Portal</p>
 </div>
 </div>
@@ -26,21 +81,27 @@
 <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
 <span>Dashboard</span>
 </a>
-<a class="text-primary bg-surface-container border-l-4 border-primary flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-r-lg mx-2" th:href="@{/admin/userManagement}" href="/admin/userManagement">
+<a class="text-primary bg-surface-container border-l-4 border-primary flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-r-lg mx-2" th:href="@{/admin/users}" href="/admin/users">
 <span class="material-symbols-outlined" data-icon="group">group</span>
 <span>User Management</span>
 </a>
-<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/categoryManagement}" href="/admin/categoryManagement">
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/categories}" href="/admin/categories">
 <span class="material-symbols-outlined" data-icon="category">category</span>
 <span>Category Management</span>
 </a>
-<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/vocabularyManagement}" href="/admin/vocabularyManagement">
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/vocabularies}" href="/admin/vocabularies">
 <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
 <span>Vocabulary Management</span>
 </a>
-<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/quizManagement}" href="/admin/quizManagement">
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/quizzes}" href="/admin/quizzes">
 <span class="material-symbols-outlined" data-icon="quiz">quiz</span>
 <span>Quiz Management</span>
+</a>
+</div>
+<div class="px-2 mt-auto border-t border-outline-variant pt-4">
+<a class="text-error flex items-center gap-3 px-4 py-3 hover:bg-error-container transition-colors active:scale-[0.99] transition-transform duration-150 rounded-lg mx-2" th:href="@{/admin/logout}" href="/admin/logout">
+<span class="material-symbols-outlined text-error" data-icon="logout">logout</span>
+<span>Log Out</span>
 </a>
 </div>
 </nav>
@@ -136,157 +197,81 @@
 </tr>
 </thead>
 <tbody class="font-data-table text-data-table text-on-background divide-y divide-outline-variant">
-<!-- Row 1 -->
-<tr class="hover:bg-surface-container-lowest/50 transition-colors h-[56px] group">
-<td class="py-3 px-6 text-on-surface-variant">#1042</td>
+<!-- Dynamic Rows -->
+<tr th:each="user : ${users}" class="hover:bg-surface-container-lowest/50 transition-colors h-[56px] group">
+<td class="py-3 px-6 text-on-surface-variant" th:text="'#' + ${user.id}">#1042</td>
 <td class="py-3 px-6">
 <div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full bg-surface-container text-primary flex items-center justify-center font-bold font-body-sm">SJ</div>
+<div class="w-8 h-8 rounded-full bg-surface-container text-primary flex items-center justify-center font-bold font-body-sm" th:text="${#strings.substring(user.fullName,0,1)}">SJ</div>
 <div>
-<div class="font-medium text-on-background">Sarah Jenkins</div>
-<div class="font-body-sm text-body-sm text-on-surface-variant font-normal">sarah.j@example.com</div>
+<div class="font-medium text-on-background" th:text="${user.fullName}">Sarah Jenkins</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant font-normal" th:text="${user.email}">sarah.j@example.com</div>
 </div>
 </div>
 </td>
 <td class="py-3 px-6 hidden md:table-cell">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-[#E0E7FF] text-[#3730A3]">Intermediate</span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-[#E0E7FF] text-[#3730A3]" th:text="${user.currentLevel}">Intermediate</span>
 </td>
-<td class="py-3 px-6 text-on-surface-variant hidden lg:table-cell font-body-sm">Oct 12, 2023</td>
+<td class="py-3 px-6 text-on-surface-variant hidden lg:table-cell font-body-sm" th:text="${#temporals.format(user.createdAt, 'MMM dd, yyyy')}">Oct 12, 2023</td>
 <td class="py-3 px-6">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-[#DCFCE7] text-[#166534]">Active</span>
+<span th:if="${studyStatus[user.id]}" class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-[#DCFCE7] text-[#166534]">Completed</span>
+<span th:unless="${studyStatus[user.id]}" class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-[#FEE2E2] text-[#991B1B]">Not Started</span>
 </td>
 <td class="py-3 px-6 text-right">
 <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
 <button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors" title="Edit">
 <span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
 </button>
-<button class="p-1.5 text-on-surface-variant hover:text-[#B91C1C] rounded transition-colors" title="Block">
-<span class="material-symbols-outlined text-[20px]" data-icon="block">block</span>
+<form th:action="@{/admin/users/reset-password/{id}(id=${user.id})}" method="post" class="inline" onsubmit="return confirm('Reset password to 123456789?')">
+<button type="submit" class="p-1.5 text-on-surface-variant hover:text-secondary rounded transition-colors" title="Reset Password">
+<span class="material-symbols-outlined text-[20px]" data-icon="lock_reset">lock_reset</span>
 </button>
-<button class="p-1.5 text-on-surface-variant hover:text-[#B91C1C] rounded transition-colors" title="Delete">
+</form>
+<form th:action="@{/admin/users/delete/{id}(id=${user.id})}" method="post" onsubmit="return confirm('Are you sure?')">
+<button type="submit" class="p-1.5 text-on-surface-variant hover:text-[#B91C1C] rounded transition-colors" title="Delete">
 <span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
 </button>
-</div>
-</td>
-</tr>
-<!-- Row 2 -->
-<tr class="hover:bg-surface-container-lowest/50 transition-colors h-[56px] group">
-<td class="py-3 px-6 text-on-surface-variant">#1041</td>
-<td class="py-3 px-6">
-<div class="flex items-center gap-3">
-<img alt="User Avatar" class="w-8 h-8 rounded-full" data-alt="Headshot of a young male professional smiling against a clean white background. He is wearing a dark grey t-shirt. Even, bright corporate lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQZ5IwpDOpYbbXHCC1c8IBTmfpqh6E1AWr3iEq4y94tcvtsNSXfLjrVBx4-ccXogK9coa6WjIVhmlh2ac0e4tFhh_VEgJEly9V8F960KSDUVpCnxFrkaNo45DlUQTajKTKrEqsT5JUqssvVFl-MyNmruu_DdO-Wibcqlxy-R-_vETQ6IeDwKEID3YSuzQ5POH2GqzEAS-h7JrzcVfvufqnimX3GqNn6GNKWnpVGE5ipyQlN1kEaJQBa1jMc4sTyXD3yv5kVd1eBfY"/>
-<div>
-<div class="font-medium text-on-background">David Kim</div>
-<div class="font-body-sm text-body-sm text-on-surface-variant font-normal">dkim.studies@email.com</div>
-</div>
-</div>
-</td>
-<td class="py-3 px-6 hidden md:table-cell">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-[#FEF08A] text-[#854D0E]">Beginner</span>
-</td>
-<td class="py-3 px-6 text-on-surface-variant hidden lg:table-cell font-body-sm">Oct 10, 2023</td>
-<td class="py-3 px-6">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-[#DCFCE7] text-[#166534]">Active</span>
-</td>
-<td class="py-3 px-6 text-right">
-<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors" title="Edit">
-<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
-</button>
-<button class="p-1.5 text-on-surface-variant hover:text-[#B91C1C] rounded transition-colors" title="Block">
-<span class="material-symbols-outlined text-[20px]" data-icon="block">block</span>
-</button>
-<button class="p-1.5 text-on-surface-variant hover:text-[#B91C1C] rounded transition-colors" title="Delete">
-<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 3 -->
-<tr class="hover:bg-surface-container-lowest/50 transition-colors h-[56px] group">
-<td class="py-3 px-6 text-on-surface-variant">#1038</td>
-<td class="py-3 px-6">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full bg-surface-container text-primary flex items-center justify-center font-bold font-body-sm">EL</div>
-<div>
-<div class="font-medium text-on-background">Elena Rodriguez</div>
-<div class="font-body-sm text-body-sm text-on-surface-variant font-normal">elena.rodriguez99@test.com</div>
-</div>
-</div>
-</td>
-<td class="py-3 px-6 hidden md:table-cell">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-[#F3E8FF] text-[#6B21A8]">Advanced</span>
-</td>
-<td class="py-3 px-6 text-on-surface-variant hidden lg:table-cell font-body-sm">Sep 28, 2023</td>
-<td class="py-3 px-6">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-[#FEE2E2] text-[#991B1B]">Inactive</span>
-</td>
-<td class="py-3 px-6 text-right">
-<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors" title="Edit">
-<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
-</button>
-<button class="p-1.5 text-on-surface-variant hover:text-[#B91C1C] rounded transition-colors" title="Block">
-<span class="material-symbols-outlined text-[20px]" data-icon="block">block</span>
-</button>
-<button class="p-1.5 text-on-surface-variant hover:text-[#B91C1C] rounded transition-colors" title="Delete">
-<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 4 -->
-<tr class="hover:bg-surface-container-lowest/50 transition-colors h-[56px] group border-transparent">
-<td class="py-3 px-6 text-on-surface-variant">#1035</td>
-<td class="py-3 px-6">
-<div class="flex items-center gap-3">
-<img alt="User Avatar" class="w-8 h-8 rounded-full" data-alt="Portrait of a young woman with a warm smile, diverse ethnicity, wearing a yellow top against a light grey studio background. Bright, natural-looking light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDb9B3YxlVHUrIi13CjNXvKsxqLR2TdCYjzjNgR1f_sJa022GLMzSpFAtKpoJuyuxIxjwJ-99mf6xkKM-BCrWHUR80UMIdUwccajotAfuCZ1jq56XCbHx5CEcyQNo6CXYU029v0wrAaCED-FXtUZcda70cM_mB-Iz9H95-e7ANrlYXu3ZxCv4Y5N2oaVzaufnRfvALNM_TWIBKnwCqzv65coSKo9m16QhfCWlLjSACDqeP6beV-XqiR3VVwfyfRV2LgukNmvKsaFLw"/>
-<div>
-<div class="font-medium text-on-background">Aisha Patel</div>
-<div class="font-body-sm text-body-sm text-on-surface-variant font-normal">apatel.learns@email.com</div>
-</div>
-</div>
-</td>
-<td class="py-3 px-6 hidden md:table-cell">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-[#E0E7FF] text-[#3730A3]">Intermediate</span>
-</td>
-<td class="py-3 px-6 text-on-surface-variant hidden lg:table-cell font-body-sm">Sep 15, 2023</td>
-<td class="py-3 px-6">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-[#DCFCE7] text-[#166534]">Active</span>
-</td>
-<td class="py-3 px-6 text-right">
-<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors" title="Edit">
-<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
-</button>
-<button class="p-1.5 text-on-surface-variant hover:text-[#B91C1C] rounded transition-colors" title="Block">
-<span class="material-symbols-outlined text-[20px]" data-icon="block">block</span>
-</button>
-<button class="p-1.5 text-on-surface-variant hover:text-[#B91C1C] rounded transition-colors" title="Delete">
-<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
-</button>
+</form>
 </div>
 </td>
 </tr>
 </tbody>
+</tbody>
 </table>
 </div>
-<!-- Pagination -->
-<div class="p-4 border-t border-outline-variant flex items-center justify-between bg-surface-bright">
-<p class="font-body-sm text-body-sm text-on-surface-variant">Showing 1 to 4 of 12,450 users</p>
-<div class="flex gap-1">
-<button class="px-3 py-1 border border-outline-variant rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-50" disabled="">
-<span class="material-symbols-outlined text-[18px] align-middle" data-icon="chevron_left">chevron_left</span>
-</button>
-<button class="px-3 py-1 border border-primary rounded bg-primary text-on-primary font-body-sm">1</button>
-<button class="px-3 py-1 border border-outline-variant rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container transition-colors font-body-sm">2</button>
-<button class="px-3 py-1 border border-outline-variant rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container transition-colors font-body-sm">3</button>
-<span class="px-2 py-1 text-on-surface-variant">...</span>
-<button class="px-3 py-1 border border-outline-variant rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container transition-colors">
-<span class="material-symbols-outlined text-[18px] align-middle" data-icon="chevron_right">chevron_right</span>
-</button>
-</div>
-</div>
+        <!-- Pagination -->
+        <div class="p-4 border-t border-outline-variant flex items-center justify-between bg-surface-bright" th:if="${totalPages > 0}">
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+                Showing <span th:text="${currentPage * usersPage.size + 1}">1</span> 
+                to <span th:text="${(currentPage + 1) * usersPage.size > totalItems ? totalItems : (currentPage + 1) * usersPage.size}">10</span> 
+                of <span th:text="${totalItems}">100</span> users
+            </p>
+            <div class="flex gap-1">
+                <!-- Previous Button -->
+                <a th:href="@{/admin/users(page=${currentPage - 1})}" 
+                   th:classappend="${currentPage == 0} ? 'pointer-events-none opacity-50' : ''"
+                   class="px-3 py-1 border border-outline-variant rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container transition-colors">
+                    <span class="material-symbols-outlined text-[18px] align-middle" data-icon="chevron_left">chevron_left</span>
+                </a>
+                
+                <!-- Page Numbers -->
+                <div class="flex gap-1">
+                    <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                       th:href="@{/admin/users(page=${i})}"
+                       th:text="${i + 1}"
+                       th:classappend="${i == currentPage} ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container-lowest text-on-surface-variant border-outline-variant hover:bg-surface-container'"
+                       class="px-3 py-1 border rounded font-body-sm transition-colors">
+                    </a>
+                </div>
+
+                <!-- Next Button -->
+                <a th:href="@{/admin/users(page=${currentPage + 1})}" 
+                   th:classappend="${currentPage >= totalPages - 1} ? 'pointer-events-none opacity-50' : ''"
+                   class="px-3 py-1 border border-outline-variant rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container transition-colors">
+                    <span class="material-symbols-outlined text-[18px] align-middle" data-icon="chevron_right">chevron_right</span>
+                </a>
+            </div>
+        </div>
 </div>
 </div>
 </main>

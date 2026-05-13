@@ -2,13 +2,22 @@
    library.html — Vocabulary Modal Animations
    ================================================ */
 
+/*
+ * Fix: Dùng visibility thay vì dựa vào Tailwind's 'hidden' (display:none)
+ * để CSS transition hoạt động đúng.
+ * JS vẫn dùng hidden/show class, nhưng ta override display ở đây.
+ */
 .modal-backdrop {
+    display: flex !important;   /* luôn flex để transition hoạt động */
+    visibility: hidden;         /* ẩn bằng visibility thay vì display */
     opacity: 0;
-    transition: opacity 0.3s ease;
     pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
+/* Khi Tailwind's 'hidden' bị remove và 'show' được add */
 .modal-backdrop.show {
+    visibility: visible;
     opacity: 1;
     pointer-events: auto;
 }

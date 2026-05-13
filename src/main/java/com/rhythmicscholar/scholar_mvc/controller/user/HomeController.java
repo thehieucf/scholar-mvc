@@ -40,6 +40,9 @@ public class HomeController {
     public String index(HttpSession session, Model model) {
         // Lấy userId từ session an toàn
         Object sessionUserId = session.getAttribute("userId");
+        if (sessionUserId == null) {
+            return "redirect:/login";
+        }
         Long userId;
         if (sessionUserId instanceof Long) {
             userId = (Long) sessionUserId;
@@ -48,7 +51,7 @@ public class HomeController {
         } else if (sessionUserId instanceof String) {
             userId = Long.parseLong((String) sessionUserId);
         } else {
-            userId = 1L; // Fallback
+            return "redirect:/login";
         }
         
         // Lấy thông tin chi tiết người dùng

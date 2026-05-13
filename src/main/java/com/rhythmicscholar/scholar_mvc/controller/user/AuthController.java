@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * Controller xử lý các chức năng xác thực người dùng (Đăng nhập, Đăng ký, Đăng xuất).
+ * Controller xử lý các chức năng xác thực người dùng (Đăng nhập, Đăng ký, Đăng
+ * xuất).
  */
 @Controller
 public class AuthController {
@@ -24,8 +25,9 @@ public class AuthController {
     /**
      * Hiển thị trang đăng nhập.
      */
-    @GetMapping({"/login", "/login.html"})
+    @GetMapping({ "/login", "/login.html" })
     public String login(HttpSession session) {
+        System.out.println(">>> AuthController: Rendering Login Page");
         if (session.getAttribute("userId") != null) {
             return "redirect:/";
         }
@@ -34,25 +36,27 @@ public class AuthController {
 
     /**
      * Xử lý yêu cầu đăng nhập.
-     * @param email Email người dùng nhập
+     * 
+     * @param email    Email người dùng nhập
      * @param password Mật khẩu người dùng nhập
      */
-    @PostMapping({"/login", "/login.html"})
-    public String handleLogin(@RequestParam String email, 
-                              @RequestParam String password, 
-                              HttpSession session, 
-                              Model model) {
+    @PostMapping({ "/login", "/login.html" })
+    public String handleLogin(@RequestParam String email,
+            @RequestParam String password,
+            HttpSession session,
+            Model model) {
         // Tìm người dùng theo email trong database
         User user = userRepository.findByEmail(email).orElse(null);
-        
-        // Kiểm tra người dùng tồn tại và mật khẩu khớp (Lưu ý: Thực tế nên mã hóa mật khẩu)
+
+        // Kiểm tra người dùng tồn tại và mật khẩu khớp (Lưu ý: Thực tế nên mã hóa mật
+        // khẩu)
         if (user != null && user.getPasswordHash().equals(password)) {
             // Lưu thông tin người dùng vào session để đánh dấu đã đăng nhập
             session.setAttribute("userId", user.getId());
             session.setAttribute("userRole", user.getRole()); // Lưu vai trò
             return "redirect:/";
         }
-        
+
         // Trả về lỗi nếu đăng nhập thất bại
         model.addAttribute("error", "Email hoặc mật khẩu không chính xác.");
         return "user/login";
@@ -61,7 +65,7 @@ public class AuthController {
     /**
      * Hiển thị trang đăng ký tài khoản mới.
      */
-    @GetMapping({"/register", "/register.html"})
+    @GetMapping({ "/register", "/register.html" })
     public String register() {
         return "user/register";
     }
@@ -69,19 +73,19 @@ public class AuthController {
     /**
      * Xử lý yêu cầu đăng ký.
      */
-    @PostMapping({"/register", "/register.html"})
+    @PostMapping({ "/register", "/register.html" })
     public String handleRegister(@RequestParam String fullName,
-                                 @RequestParam String email,
-                                 @RequestParam String password,
-                                 @RequestParam(defaultValue = "Beginner") String currentLevel,
-                                 HttpSession session,
-                                 Model model) {
+            @RequestParam String email,
+            @RequestParam String password,
+            @RequestParam(defaultValue = "Beginner") String currentLevel,
+            HttpSession session,
+            Model model) {
         // Kiểm tra xem email đã được sử dụng chưa
         if (userRepository.findByEmail(email).isPresent()) {
             model.addAttribute("error", "Email này đã được sử dụng cho một tài khoản khác.");
             return "user/register";
         }
-        
+
         // Tạo đối tượng User mới và lưu vào database
         User user = new User();
         user.setFullName(fullName);
@@ -91,7 +95,7 @@ public class AuthController {
         user.setTotalXp(0);
         user.setCurrentStreak(0);
         userRepository.save(user);
-        
+
         // Tự động đăng nhập sau khi đăng ký thành công
         session.setAttribute("userId", user.getId());
         session.setAttribute("userRole", user.getRole()); // Lưu vai trò

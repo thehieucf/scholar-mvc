@@ -4,9 +4,7 @@ import com.rhythmicscholar.scholar_mvc.dto.CategoryProgressDto;
 import com.rhythmicscholar.scholar_mvc.model.Category;
 import com.rhythmicscholar.scholar_mvc.model.User;
 import com.rhythmicscholar.scholar_mvc.model.UserWordProgress;
-import com.rhythmicscholar.scholar_mvc.model.Vocabulary;
 import com.rhythmicscholar.scholar_mvc.repository.CategoryRepository;
-import com.rhythmicscholar.scholar_mvc.repository.UserProgressRepository;
 import com.rhythmicscholar.scholar_mvc.repository.UserRepository;
 import com.rhythmicscholar.scholar_mvc.repository.UserWordProgressRepository;
 import com.rhythmicscholar.scholar_mvc.repository.VocabularyRepository;
@@ -40,18 +38,15 @@ public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     private final UserRepository userRepository;
-    private final UserProgressRepository userProgressRepository;
     private final UserWordProgressRepository userWordProgressRepository;
     private final CategoryRepository categoryRepository;
     private final VocabularyRepository vocabularyRepository;
 
     public UserController(UserRepository userRepository,
-                          UserProgressRepository userProgressRepository,
                           UserWordProgressRepository userWordProgressRepository,
                           CategoryRepository categoryRepository,
                           VocabularyRepository vocabularyRepository) {
         this.userRepository = userRepository;
-        this.userProgressRepository = userProgressRepository;
         this.userWordProgressRepository = userWordProgressRepository;
         this.categoryRepository = categoryRepository;
         this.vocabularyRepository = vocabularyRepository;
@@ -88,7 +83,6 @@ public class UserController {
 
         // Lấy tất cả category
         List<Category> categories = categoryRepository.findAll();
-        if (categories == null) categories = new ArrayList<>();
 
         // Lấy dữ liệu tổng hợp từ database trong 2 query thay vì N*2 query
         List<Object[]> totalCountsRaw = vocabularyRepository.countAllWordsGroupedByCategory();
