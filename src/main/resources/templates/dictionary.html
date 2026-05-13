@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html class="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Dictionary Lookup | Rhythmic Scholar</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <script th:src="@{/js/tailwind-config.js}"></script>
+</head>
+
+<body
+    class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
+
+    <!-- Header -->
+    <header
+        class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-8 h-16 border-b border-outline-variant/10">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl font-bold tracking-tight text-emerald-800 font-headline">Rhythmic Scholar</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <form th:action="@{/dictionary}" method="GET" class="hidden sm:block relative">
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-outline">
+                    <span class="material-symbols-outlined text-[20px]">search</span>
+                </div>
+                <input name="q"
+                    th:value="${query}"
+                    class="bg-surface-container-highest border-none rounded-full py-1.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 w-64 md:w-80 transition-all"
+                    placeholder="Search topic, vocabulary..." type="text" />
+            </form>
+            <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
+                <span class="material-symbols-outlined">notifications</span>
+            </button>
+            <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
+                <span class="material-symbols-outlined">settings</span>
+            </button>
+            <!-- Fix: tách điều kiện null check ra khỏi string concat để tránh NPE -->
+            <a th:href="@{/profile}"
+                class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer">
+                <img class="w-full h-full object-cover"
+                    th:if="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty()}"
+                    th:src="${user.avatarUrl}"
+                    alt="User Avatar" />
+                <img class="w-full h-full object-cover"
+                    th:unless="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty()}"
+                    th:src="${'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&background=059669&color=fff'}"
+                    alt="User Avatar" />
+            </a>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside
+        class="hidden md:flex flex-col h-screen fixed left-0 w-64 bg-slate-50 p-4 pt-20 gap-2 border-r border-outline-variant/10 z-30">
+        <div class="px-4 py-6 mb-4 bg-surface-container-low rounded-xl">
+            <p class="text-sm font-label text-slate-500">Annyeong!</p>
+            <h3 class="text-lg font-headline font-bold text-emerald-700"
+                th:text="${user != null ? user.currentLevel + ' Scholar' : 'Scholar'}">Scholar</h3>
+        </div>
+        <nav class="flex flex-col gap-1">
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
+                th:href="@{/index}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="font-label">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
+                th:href="@{/library}">
+                <span class="material-symbols-outlined">menu_book</span>
+                <span class="font-label">Library</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
+                th:href="@{/vocabulary}">
+                <span class="material-symbols-outlined">bookmark</span>
+                <span class="font-label">My Vocabulary</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
+                href="progress.html">
+                <span class="material-symbols-outlined">leaderboard</span>
+                <span class="font-label">Progress</span>
+            </a>
+        </nav>
+        <div class="mt-auto p-4">
+            <a th:href="@{/study}"
+                class="block text-center w-full bg-primary text-on-primary font-bold py-4 rounded-full transition-transform active:scale-95">
+                Start Study
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="md:ml-64 pt-24 pb-24 px-6 md:px-12 min-h-screen">
+        <div class="max-w-4xl mx-auto">
+
+            <!-- Search Hero -->
+            <div class="mb-10 relative text-center pt-8">
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 text-[100px] md:text-[140px] font-bold text-primary/5 select-none pointer-events-none whitespace-nowrap">
+                    사전</div>
+                <h1 class="text-4xl md:text-5xl font-extrabold font-headline text-on-surface mb-8 tracking-tight relative z-10">
+                    Korean <span class="text-primary">Dictionary</span>
+                </h1>
+
+                <!-- Filter chips -->
+                <div class="flex flex-wrap justify-center gap-3 relative z-10">
+                    <button class="px-5 py-2 bg-primary-container text-on-primary-container rounded-full text-sm font-bold border border-primary/20 hover:shadow-sm transition-all">All Words</button>
+                    <button class="px-5 py-2 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/30 rounded-full text-sm font-medium transition-all">Nouns</button>
+                    <button class="px-5 py-2 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/30 rounded-full text-sm font-medium transition-all">Verbs</button>
+                    <button class="px-5 py-2 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/30 rounded-full text-sm font-medium transition-all">Adjectives</button>
+                    <button class="px-5 py-2 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/30 rounded-full text-sm font-medium transition-all">Grammar</button>
+                </div>
+            </div>
+
+            <!-- ===== SEARCH RESULTS ===== -->
+            <div th:if="${query != null and !#strings.isEmpty(query)}">
+
+                <!-- Result count -->
+                <p th:if="${results != null and !#lists.isEmpty(results)}"
+                   class="text-sm text-on-surface-variant mb-6">
+                    Found
+                    <span class="font-bold text-primary" th:text="${#lists.size(results)}">0</span>
+                    result(s) for &ldquo;<span class="font-semibold text-on-surface" th:text="${query}"></span>&rdquo;
+                </p>
+
+                <!-- Result cards -->
+                <div class="space-y-6">
+                    <div th:each="vocab : ${results}"
+                         class="bg-white rounded-3xl p-8 border border-outline-variant/20 shadow-sm hover:shadow-md transition-shadow">
+
+                        <!-- Top row: word + badges | Add to List button -->
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <!-- Korean word + type/category badges -->
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <h2 class="text-5xl font-extrabold font-headline text-on-surface"
+                                        th:text="${vocab.koreanWord}">사과</h2>
+                                    <div class="flex flex-col gap-1 mt-1">
+                                        <span th:if="${vocab.wordType != null}"
+                                              class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider w-fit uppercase"
+                                              th:text="${vocab.wordType}">NOUN</span>
+                                        <span th:if="${vocab.category != null}"
+                                              class="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider w-fit"
+                                              th:text="${vocab.category.nameEn}">Category</span>
+                                    </div>
+                                </div>
+
+                                <!-- Romaji + audio button -->
+                                <!-- Fix: dùng data-word thay vì th:onclick để tránh lỗi khi từ có ký tự đặc biệt -->
+                                <div class="flex items-center gap-3 mt-4">
+                                    <p class="text-base text-on-surface-variant font-medium tracking-wide"
+                                       th:text="'[' + ${vocab.romaji} + ']'">[sa-gwa]</p>
+                                    <button type="button"
+                                            class="speak-btn w-9 h-9 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 hover:bg-teal-100 transition-colors"
+                                            th:attr="data-text=${vocab.koreanWord}">
+                                        <span class="material-symbols-outlined text-[18px]"
+                                              style="font-variation-settings:&apos;FILL&apos; 1;">volume_up</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Add to List -->
+                            <button
+                                class="flex items-center gap-2 text-primary bg-primary-container/30 hover:bg-primary-container px-5 py-2.5 rounded-full transition-colors font-bold text-sm border border-primary/10 shrink-0">
+                                <span class="material-symbols-outlined text-lg">bookmark_add</span>
+                                <span class="hidden sm:inline">Add to List</span>
+                            </button>
+                        </div>
+
+                        <!-- Meanings section -->
+                        <div class="space-y-5 mt-8">
+
+                            <!-- Meaning — English meaning -->
+                            <div class="rounded-2xl p-5 border border-outline-variant/15 bg-slate-50/60">
+                                <h3 class="text-lg font-bold text-on-surface mb-4 flex items-center gap-3">
+                                    <span class="w-7 h-7 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-sm font-black">1</span>
+                                    <span th:text="${vocab.englishMeaning}">Apple</span>
+                                </h3>
+
+                                <!-- Example sentence -->
+                                <div th:if="${vocab.exampleKr != null}"
+                                     class="bg-white rounded-2xl px-5 py-4 border-l-4 border-teal-400 shadow-sm">
+                                    <div class="flex justify-between items-start gap-4">
+                                        <div>
+                                            <p class="text-on-surface text-base font-medium mb-1 tracking-wide"
+                                               th:text="${vocab.exampleKr}">저는 아침에 사과를 먹어요.</p>
+                                            <p class="text-on-surface-variant text-sm"
+                                               th:text="${vocab.exampleEn}">I eat an apple in the morning.</p>
+                                        </div>
+                                        <!-- Fix: dùng data-text thay vì th:onclick -->
+                                        <button type="button"
+                                                class="speak-btn text-teal-500 p-2 rounded-full hover:bg-teal-50 transition-colors shrink-0"
+                                                th:attr="data-text=${vocab.exampleKr}">
+                                            <span class="material-symbols-outlined text-[20px]">volume_up</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mnemonic -->
+                            <div th:if="${vocab.mnemonic != null}"
+                                 class="flex items-start gap-3 bg-amber-50 border border-amber-200/60 rounded-2xl px-5 py-4">
+                                <span class="material-symbols-outlined text-amber-500 mt-0.5 shrink-0">lightbulb</span>
+                                <p class="text-sm text-on-surface-variant" th:text="${vocab.mnemonic}">Memory tip</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No results -->
+                <div th:if="${results == null or #lists.isEmpty(results)}"
+                     class="text-center py-24">
+                    <span class="material-symbols-outlined text-6xl text-outline-variant mb-4 block">search_off</span>
+                    <h3 class="text-xl font-bold text-on-surface mb-2">No results found</h3>
+                    <p class="text-on-surface-variant">
+                        No words matched &ldquo;<span class="font-semibold text-on-surface" th:text="${query}"></span>&rdquo;.
+                        Try a different keyword.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ===== DEFAULT STATE (no search yet) ===== -->
+            <div th:if="${query == null or #strings.isEmpty(query)}">
+                <div class="mt-4 bg-surface-container-low rounded-3xl p-8 border border-outline-variant/10">
+                    <h3 class="text-lg font-bold font-headline mb-6 flex items-center gap-2 text-on-surface-variant">
+                        <span class="material-symbols-outlined text-tertiary">trending_up</span>
+                        Trending Searches Today
+                    </h3>
+                    <div class="flex flex-wrap gap-3">
+                        <a th:href="@{/dictionary(q='사랑')}"
+                           class="px-5 py-2.5 bg-surface-container-lowest border border-outline-variant/20 rounded-full text-sm font-medium hover:bg-surface-container cursor-pointer transition-colors flex items-center gap-2 shadow-sm">
+                            사랑 <span class="text-xs text-outline font-normal">Love</span>
+                        </a>
+                        <a th:href="@{/dictionary(q='행복')}"
+                           class="px-5 py-2.5 bg-surface-container-lowest border border-outline-variant/20 rounded-full text-sm font-medium hover:bg-surface-container cursor-pointer transition-colors flex items-center gap-2 shadow-sm">
+                            행복 <span class="text-xs text-outline font-normal">Happiness</span>
+                        </a>
+                        <a th:href="@{/dictionary(q='감사하다')}"
+                           class="px-5 py-2.5 bg-surface-container-lowest border border-outline-variant/20 rounded-full text-sm font-medium hover:bg-surface-container cursor-pointer transition-colors flex items-center gap-2 shadow-sm">
+                            감사하다 <span class="text-xs text-outline font-normal">Thank you</span>
+                        </a>
+                        <a th:href="@{/dictionary(q='귀엽다')}"
+                           class="px-5 py-2.5 bg-surface-container-lowest border border-outline-variant/20 rounded-full text-sm font-medium hover:bg-surface-container cursor-pointer transition-colors flex items-center gap-2 shadow-sm">
+                            귀엽다 <span class="text-xs text-outline font-normal">Cute</span>
+                        </a>
+                        <a th:href="@{/dictionary(q='도서관')}"
+                           class="px-5 py-2.5 bg-surface-container-lowest border border-outline-variant/20 rounded-full text-sm font-medium hover:bg-surface-container cursor-pointer transition-colors flex items-center gap-2 shadow-sm">
+                            도서관 <span class="text-xs text-outline font-normal">Library</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Bottom Nav (mobile) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel h-16 flex items-center justify-around px-4 z-50 border-t border-outline-variant/10">
+        <a th:href="@{/index}" class="flex flex-col items-center text-on-surface-variant">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="text-[10px] font-medium mt-1">Home</span>
+        </a>
+        <a th:href="@{/library}" class="flex flex-col items-center text-on-surface-variant">
+            <span class="material-symbols-outlined">menu_book</span>
+            <span class="text-[10px] font-medium mt-1">Library</span>
+        </a>
+        <a th:href="@{/study}"
+            class="-mt-8 w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-3xl" style="font-variation-settings:&apos;FILL&apos; 1;">play_arrow</span>
+        </a>
+        <a th:href="@{/vocabulary}" class="flex flex-col items-center text-on-surface-variant">
+            <span class="material-symbols-outlined">person</span>
+            <span class="text-[10px] font-medium mt-1">Vocab</span>
+        </a>
+        <a href="progress.html" class="flex flex-col items-center text-on-surface-variant">
+            <span class="material-symbols-outlined">leaderboard</span>
+            <span class="text-[10px] font-medium mt-1">Stats</span>
+        </a>
+    </nav>
+
+    <!-- TTS: dùng event delegation thay vì inline onclick -->
+    <script>
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('.speak-btn');
+            if (!btn) return;
+            var text = btn.getAttribute('data-text');
+            if (!text || !window.speechSynthesis) return;
+            var utt = new SpeechSynthesisUtterance(text);
+            utt.lang = 'ko-KR';
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utt);
+        });
+    </script>
+</body>
+</html>

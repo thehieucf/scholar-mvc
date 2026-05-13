@@ -22,8 +22,8 @@ public interface VocabGroupItemRepository extends JpaRepository<VocabGroupItem, 
      */
     long countByGroupId(Long groupId);
 
-    @org.springframework.data.jpa.repository.Query(value = "SELECT group_id, COUNT(*) FROM vocab_group_items GROUP BY group_id", nativeQuery = true)
-    List<Object[]> countItemsGroupedByGroupId();
-
+    /**
+     * Xóa tất cả từ thuộc một nhóm (khi xóa nhóm).
+     */
     void deleteByGroupId(Long groupId);
 }

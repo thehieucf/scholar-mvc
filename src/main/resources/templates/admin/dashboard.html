@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Admin — Rhythmic Scholar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+</head>
+<body class="admin-body">
+
+    <div th:replace="~{admin/layout-fragment :: sidebar('dashboard')}"></div>
+    <div th:replace="~{admin/layout-fragment :: header('Dashboard')}"></div>
+
+    <div class="admin-main">
+        <div class="admin-content">
+
+            <h1 class="admin-page-title">Dashboard</h1>
+            <p class="admin-page-subtitle">System overview for Rhythmic Scholar</p>
+
+            <!-- Flash messages -->
+            <div th:if="${success}" style="background:#dcfce7;color:#15803d;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.875rem;"
+                 th:text="${success}"></div>
+            <div th:if="${error}" style="background:#fee2e2;color:#b91c1c;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.875rem;"
+                 th:text="${error}"></div>
+
+            <!-- Stat Cards -->
+            <div class="admin-stats-grid">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-card__icon admin-stat-card__icon--blue">
+                        <span class="material-symbols-outlined">group</span>
+                    </div>
+                    <div>
+                        <div class="admin-stat-card__value" th:text="${totalUsers}">0</div>
+                        <div class="admin-stat-card__label">Total Users</div>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-card__icon admin-stat-card__icon--green">
+                        <span class="material-symbols-outlined">menu_book</span>
+                    </div>
+                    <div>
+                        <div class="admin-stat-card__value" th:text="${totalVocab}">0</div>
+                        <div class="admin-stat-card__label">Vocabulary Words</div>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-card__icon admin-stat-card__icon--amber">
+                        <span class="material-symbols-outlined">manage_accounts</span>
+                    </div>
+                    <div>
+                        <div class="admin-stat-card__value" th:text="${adminCount}">0</div>
+                        <div class="admin-stat-card__label">Admins</div>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-card__icon admin-stat-card__icon--red">
+                        <span class="material-symbols-outlined">person</span>
+                    </div>
+                    <div>
+                        <div class="admin-stat-card__value" th:text="${userCount}">0</div>
+                        <div class="admin-stat-card__label">Regular Users</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Users Table -->
+            <div class="admin-table-card">
+                <div class="admin-table-card__header">
+                    <span class="admin-table-card__title">Recent Users</span>
+                    <a th:href="@{/admin/users}" class="admin-btn admin-btn--ghost admin-btn--sm">
+                        View All
+                    </a>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Level</th>
+                            <th>Role</th>
+                            <th>XP</th>
+                            <th>Studied Today</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${recentUsers}">
+                            <td th:text="${u.id}">1</td>
+                            <td th:text="${u.fullName}">John Doe</td>
+                            <td th:text="${u.email}">john@example.com</td>
+                            <td th:text="${u.currentLevel}">Beginner</td>
+                            <td>
+                                <span th:classappend="${u.role == 'ADMIN'} ? 'admin-badge--admin' : 'admin-badge--user'"
+                                      class="admin-badge"
+                                      th:text="${u.role}">USER</span>
+                            </td>
+                            <td th:text="${u.totalXp}">0</td>
+                            <td>
+                                <span th:if="${studiedTodayMap[u.id]}"
+                                      style="display:inline-flex;align-items:center;gap:4px;color:#16a34a;font-weight:600;font-size:0.8rem;">
+                                    <span class="material-symbols-outlined" style="font-size:1rem;">check_circle</span> Yes
+                                </span>
+                                <span th:unless="${studiedTodayMap[u.id]}"
+                                      style="display:inline-flex;align-items:center;gap:4px;color:#94a3b8;font-size:0.8rem;">
+                                    <span class="material-symbols-outlined" style="font-size:1rem;">cancel</span> No
+                                </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentUsers)}">
+                            <td colspan="7" style="text-align:center;color:#94a3b8;padding:2rem;">No users found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

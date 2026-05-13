@@ -2,8 +2,6 @@ package com.rhythmicscholar.scholar_mvc.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -14,7 +12,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "user_word_progress")
 @Data
-@NoArgsConstructor
 public class UserWordProgress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,14 +20,14 @@ public class UserWordProgress {
     /**
      * Người dùng đang học từ này.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     /**
      * Từ vựng đang được học.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "vocabulary_id", nullable = false)
     private Vocabulary vocabulary;
 
@@ -68,7 +65,6 @@ public class UserWordProgress {
     /**
      * Thời điểm cuối cùng người dùng học từ này.
      */
-    @UpdateTimestamp
-    @Column(name = "last_studied_at")
+    @Column(name = "last_studied_at", insertable = false, updatable = false)
     private LocalDateTime lastStudiedAt;
 }

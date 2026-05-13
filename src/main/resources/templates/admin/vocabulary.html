@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Vocabulary | Admin — Rhythmic Scholar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <style>
+        .admin-pagination {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 1.5rem; border-top: 1px solid var(--admin-border);
+            flex-wrap: wrap; gap: 0.75rem;
+        }
+        .admin-pagination__info { font-size: 0.8rem; color: var(--admin-text-muted); }
+        .admin-pagination__pages { display: flex; align-items: center; gap: 0.25rem; }
+        .admin-page-btn {
+            min-width: 34px; height: 34px; padding: 0 0.5rem;
+            border-radius: 6px; border: 1px solid var(--admin-border);
+            background: var(--admin-surface); color: var(--admin-text);
+            font-size: 0.8rem; font-weight: 500; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+            text-decoration: none; transition: background 0.15s, border-color 0.15s;
+        }
+        .admin-page-btn:hover:not(.disabled):not(.active) { background: #f1f5f9; border-color: #cbd5e1; }
+        .admin-page-btn.active { background: var(--admin-primary); border-color: var(--admin-primary); color: #fff; font-weight: 700; cursor: default; }
+        .admin-page-btn.disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+        .admin-page-btn .material-symbols-outlined { font-size: 16px; }
+        .admin-page-size { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--admin-text-muted); }
+        .admin-page-size select { border: 1px solid var(--admin-border); border-radius: 6px; padding: 0.25rem 0.5rem; font-size: 0.8rem; color: var(--admin-text); background: var(--admin-surface); cursor: pointer; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45); z-index: 1000;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: var(--admin-surface, #fff);
+            border-radius: 14px; padding: 2rem;
+            width: 100%; max-width: 560px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-box h2 { font-size: 1.1rem; font-weight: 700; margin: 0 0 1.25rem; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .form-grid .full { grid-column: 1 / -1; }
+        .form-field { display: flex; flex-direction: column; gap: 0.3rem; }
+        .form-field label { font-size: 0.78rem; font-weight: 600; color: var(--admin-text-muted, #64748b); }
+        .form-field input, .form-field select, .form-field textarea {
+            border: 1px solid var(--admin-border, #e2e8f0);
+            border-radius: 7px; padding: 0.45rem 0.65rem;
+            font-size: 0.875rem; font-family: inherit;
+            color: var(--admin-text, #1e293b);
+            background: var(--admin-bg, #f8fafc);
+            transition: border-color 0.15s;
+        }
+        .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+            outline: none; border-color: var(--admin-primary, #1e40af);
+        }
+        .form-field textarea { resize: vertical; min-height: 64px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem; }
+    </style>
+</head>
+<body class="admin-body">
+
+    <div th:replace="~{admin/layout-fragment :: sidebar('vocabulary')}"></div>
+    <div th:replace="~{admin/layout-fragment :: header('Manage Vocabulary')}"></div>
+
+    <div class="admin-main">
+        <div class="admin-content">
+
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.25rem;">
+                <div>
+                    <h1 class="admin-page-title" style="margin-bottom:0.1rem;">Manage Vocabulary</h1>
+                    <p class="admin-page-subtitle"
+                       th:text="'Showing ' + ${vocabPage.numberOfElements} + ' of ' + ${totalElements} + ' words'">
+                        All vocabulary words in the system
+                    </p>
+                </div>
+                <button class="admin-btn admin-btn--primary" onclick="openAddModal()">
+                    <span class="material-symbols-outlined" style="font-size:16px;">add</span>
+                    Add Word
+                </button>
+            </div>
+
+            <!-- Flash messages -->
+            <div th:if="${success}" style="background:#dcfce7;color:#15803d;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.875rem;"
+                 th:text="${success}"></div>
+            <div th:if="${error}" style="background:#fee2e2;color:#b91c1c;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.875rem;"
+                 th:text="${error}"></div>
+
+            <div class="admin-table-card">
+
+                <div class="admin-table-card__header">
+                    <span class="admin-table-card__title"
+                          th:text="${totalElements} + ' words total'">0 words</span>
+                    <div class="admin-page-size">
+                        <span>Rows per page:</span>
+                        <select onchange="changePageSize(this.value)">
+                            <option th:value="10"  th:selected="${pageSize == 10}">10</option>
+                            <option th:value="15"  th:selected="${pageSize == 15}">15</option>
+                            <option th:value="25"  th:selected="${pageSize == 25}">25</option>
+                            <option th:value="50"  th:selected="${pageSize == 50}">50</option>
+                        </select>
+                    </div>
+                </div>
+
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Korean Word</th>
+                            <th>Romanization</th>
+                            <th>English Meaning</th>
+                            <th>Word Type</th>
+                            <th>Category</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="v : ${vocabPage.content}">
+                            <td th:text="${v.id}">1</td>
+                            <td style="font-size:1.1rem;font-weight:600;" th:text="${v.koreanWord}">사과</td>
+                            <td th:text="${v.romaji}">sagwa</td>
+                            <td th:text="${v.englishMeaning}">Apple</td>
+                            <td th:text="${v.wordType != null ? v.wordType : '—'}">Noun</td>
+                            <td th:text="${v.category != null ? v.category.nameEn : '—'}">—</td>
+                            <td>
+                                <form th:action="@{/admin/vocabulary/{id}/delete(id=${v.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('Delete this word?')">
+                                    <input type="hidden" name="page" th:value="${currentPage}" />
+                                    <input type="hidden" name="size" th:value="${pageSize}" />
+                                    <button type="submit"
+                                            class="admin-btn admin-btn--danger admin-btn--sm"
+                                            style="font-size:0.75rem;padding:0.25rem 0.6rem;">
+                                        <span class="material-symbols-outlined" style="font-size:14px;">delete</span>
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${vocabPage.numberOfElements == 0}">
+                            <td colspan="7" style="text-align:center;color:#94a3b8;padding:2rem;">No vocabulary words found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Pagination controls -->
+                <div class="admin-pagination" th:if="${totalPages > 1}">
+                    <span class="admin-pagination__info"
+                          th:text="'Page ' + (${currentPage} + 1) + ' of ' + ${totalPages}">
+                        Page 1 of 1
+                    </span>
+                    <div class="admin-pagination__pages">
+                        <a th:href="@{/admin/vocabulary(page=0, size=${pageSize})}"
+                           th:classappend="${currentPage == 0} ? ' disabled' : ''"
+                           class="admin-page-btn" title="First page">
+                            <span class="material-symbols-outlined">first_page</span>
+                        </a>
+                        <a th:href="@{/admin/vocabulary(page=${currentPage - 1}, size=${pageSize})}"
+                           th:classappend="${currentPage == 0} ? ' disabled' : ''"
+                           class="admin-page-btn" title="Previous page">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </a>
+                        <th:block th:with="
+                            startPage=${T(java.lang.Math).max(0, currentPage - 2)},
+                            endPage=${T(java.lang.Math).min(totalPages - 1, currentPage + 2)}">
+                            <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
+                               th:href="@{/admin/vocabulary(page=${i}, size=${pageSize})}"
+                               th:text="${i + 1}"
+                               th:classappend="${i == currentPage} ? ' active' : ''"
+                               class="admin-page-btn">1</a>
+                        </th:block>
+                        <a th:href="@{/admin/vocabulary(page=${currentPage + 1}, size=${pageSize})}"
+                           th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
+                           class="admin-page-btn" title="Next page">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </a>
+                        <a th:href="@{/admin/vocabulary(page=${totalPages - 1}, size=${pageSize})}"
+                           th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
+                           class="admin-page-btn" title="Last page">
+                            <span class="material-symbols-outlined">last_page</span>
+                        </a>
+                    </div>
+                </div>
+
+            </div><!-- /.admin-table-card -->
+
+        </div>
+    </div>
+
+    <!-- ===== Add Word Modal ===== -->
+    <div class="modal-overlay" id="addWordModal">
+        <div class="modal-box">
+            <h2>
+                <span class="material-symbols-outlined" style="vertical-align:middle;font-size:1.2rem;margin-right:4px;">add_circle</span>
+                Add New Word
+            </h2>
+            <form th:action="@{/admin/vocabulary/add}" method="post">
+                <input type="hidden" name="page" th:value="${currentPage}" />
+                <input type="hidden" name="size" th:value="${pageSize}" />
+                <div class="form-grid">
+                    <!-- Korean Word -->
+                    <div class="form-field">
+                        <label for="koreanWord">Korean Word <span style="color:#ef4444">*</span></label>
+                        <input type="text" id="koreanWord" name="koreanWord" required placeholder="예: 사과" />
+                    </div>
+                    <!-- Romaji -->
+                    <div class="form-field">
+                        <label for="romaji">Romanization <span style="color:#ef4444">*</span></label>
+                        <input type="text" id="romaji" name="romaji" required placeholder="e.g. sagwa" />
+                    </div>
+                    <!-- English Meaning -->
+                    <div class="form-field full">
+                        <label for="englishMeaning">English Meaning <span style="color:#ef4444">*</span></label>
+                        <input type="text" id="englishMeaning" name="englishMeaning" required placeholder="e.g. Apple" />
+                    </div>
+                    <!-- Category -->
+                    <div class="form-field">
+                        <label for="categoryId">Category <span style="color:#ef4444">*</span></label>
+                        <select id="categoryId" name="categoryId" required>
+                            <option value="">— Select category —</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.id}"
+                                    th:text="${cat.nameEn} + ' (' + ${cat.nameKr} + ')'">Category</option>
+                        </select>
+                    </div>
+                    <!-- Word Type -->
+                    <div class="form-field">
+                        <label for="wordType">Word Type</label>
+                        <select id="wordType" name="wordType">
+                            <option value="">— Optional —</option>
+                            <option value="Noun">Noun</option>
+                            <option value="Verb">Verb</option>
+                            <option value="Adjective">Adjective</option>
+                            <option value="Adverb">Adverb</option>
+                            <option value="Expression">Expression</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <!-- Example KR -->
+                    <div class="form-field full">
+                        <label for="exampleKr">Example (Korean)</label>
+                        <textarea id="exampleKr" name="exampleKr" placeholder="Korean example sentence (optional)"></textarea>
+                    </div>
+                    <!-- Example EN -->
+                    <div class="form-field full">
+                        <label for="exampleEn">Example (English)</label>
+                        <textarea id="exampleEn" name="exampleEn" placeholder="English translation of example (optional)"></textarea>
+                    </div>
+                    <!-- Mnemonic -->
+                    <div class="form-field full">
+                        <label for="mnemonic">Mnemonic / Note</label>
+                        <textarea id="mnemonic" name="mnemonic" placeholder="Memory tip (optional)"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="admin-btn admin-btn--ghost" onclick="closeAddModal()">Cancel</button>
+                    <button type="submit" class="admin-btn admin-btn--primary">
+                        <span class="material-symbols-outlined" style="font-size:15px;">save</span>
+                        Save Word
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        function changePageSize(size) {
+            window.location.href = '/admin/vocabulary?page=0&size=' + size;
+        }
+        function openAddModal() {
+            document.getElementById('addWordModal').classList.add('open');
+        }
+        function closeAddModal() {
+            document.getElementById('addWordModal').classList.remove('open');
+        }
+        // Close on overlay click
+        document.getElementById('addWordModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAddModal();
+        });
+    </script>
+
+</body>
+</html>

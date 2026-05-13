@@ -25,7 +25,7 @@ public class Category {
     private String colorTheme;
 
     @Column(name = "is_popular")
-    private Boolean isPopular = false;
+    private Boolean popular = false;
 
     @Column(columnDefinition = "TEXT")
     private String description;

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<!-- Shared fragment for admin: sidebar + header -->
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ===== SIDEBAR FRAGMENT ===== -->
+<aside class="admin-sidebar" th:fragment="sidebar(activePage)">
+    <div class="admin-sidebar__brand">
+        <div class="admin-sidebar__brand-name">Rhythmic Scholar</div>
+        <div class="admin-sidebar__brand-sub">Admin Panel</div>
+    </div>
+
+    <nav class="admin-sidebar__nav">
+        <span class="admin-sidebar__section-label">Overview</span>
+
+        <a th:href="@{/admin/dashboard}"
+           th:classappend="${activePage == 'dashboard'} ? ' active' : ''"
+           class="admin-nav-link">
+            <span class="material-symbols-outlined">dashboard</span>
+            Dashboard
+        </a>
+
+        <span class="admin-sidebar__section-label">Manage</span>
+
+        <a th:href="@{/admin/users}"
+           th:classappend="${activePage == 'users'} ? ' active' : ''"
+           class="admin-nav-link">
+            <span class="material-symbols-outlined">group</span>
+            Users
+        </a>
+
+        <a th:href="@{/admin/vocabulary}"
+           th:classappend="${activePage == 'vocabulary'} ? ' active' : ''"
+           class="admin-nav-link">
+            <span class="material-symbols-outlined">menu_book</span>
+            Vocabulary
+        </a>
+
+        <a th:href="@{/admin/questions}"
+           th:classappend="${activePage == 'questions'} ? ' active' : ''"
+           class="admin-nav-link">
+            <span class="material-symbols-outlined">quiz</span>
+            Quiz Questions
+        </a>
+
+        <a th:href="@{/admin/categories}"
+           th:classappend="${activePage == 'categories'} ? ' active' : ''"
+           class="admin-nav-link">
+            <span class="material-symbols-outlined">category</span>
+            Categories
+        </a>
+    </nav>
+
+    <div class="admin-sidebar__footer">
+        <a th:href="@{/logout}" class="admin-nav-link" style="color:#f87171;">
+            <span class="material-symbols-outlined">logout</span>
+            Sign Out
+        </a>
+    </div>
+</aside>
+
+<!-- ===== HEADER FRAGMENT ===== -->
+<header class="admin-header" th:fragment="header(pageTitle)">
+    <span class="admin-header__title" th:text="${pageTitle}">Admin</span>
+    <div class="admin-header__actions">
+        <div class="admin-header__user">
+            <img class="admin-header__avatar"
+                 th:src="${admin != null and admin.avatarUrl != null and !admin.avatarUrl.isEmpty()}
+                         ? ${admin.avatarUrl}
+                         : ${'https://ui-avatars.com/api/?name=' + (admin != null ? admin.fullName : 'Admin') + '&background=1e40af&color=fff'}"
+                 alt="Admin Avatar" />
+            <span th:text="${admin != null ? admin.fullName : 'Admin'}">Admin</span>
+        </div>
+    </div>
+</header>
+
+</body>
+</html>

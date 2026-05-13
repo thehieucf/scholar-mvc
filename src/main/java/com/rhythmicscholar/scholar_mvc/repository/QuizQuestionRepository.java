@@ -9,5 +9,4 @@ import java.util.List;
 public interface QuizQuestionRepository extends JpaRepository<QuizQuestion, Long> {
     List<QuizQuestion> findByTopic(String topic);
     List<QuizQuestion> findByVocabularyIdIn(List<Long> vocabularyIds);
-    List<QuizQuestion> findTop10ByOrderById();
 }

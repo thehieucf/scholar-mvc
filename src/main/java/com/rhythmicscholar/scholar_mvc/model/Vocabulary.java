@@ -1,6 +1,5 @@
 package com.rhythmicscholar.scholar_mvc.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -20,9 +19,9 @@ public class Vocabulary {
     /**
      * Danh mục mà từ vựng này thuộc về (VD: Food, Travel).
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
-    @JsonIgnore
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Category category;
 
     /**

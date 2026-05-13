@@ -2,8 +2,6 @@ package com.rhythmicscholar.scholar_mvc.repository;
 
 import com.rhythmicscholar.scholar_mvc.model.UserProgress;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -19,6 +17,5 @@ public interface UserProgressRepository extends JpaRepository<UserProgress, Long
      * @param userId ID của người dùng cần tìm kiếm.
      * @return Danh sách các bản ghi UserProgress.
      */
-    @Query("SELECT up FROM UserProgress up JOIN FETCH up.category WHERE up.user.id = :userId")
-    List<UserProgress> findByUserId(@Param("userId") Long userId);
+    List<UserProgress> findByUserId(Long userId);
 }

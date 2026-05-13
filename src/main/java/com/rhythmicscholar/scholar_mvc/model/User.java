@@ -33,8 +33,12 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    /**
+     * Role của người dùng: "USER" hoặc "ADMIN"
+     * Mặc định là "USER" khi đăng ký mới.
+     */
     @Column(nullable = false)
-    private String role = "USER"; // Default role is USER
+    private String role = "USER";
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;

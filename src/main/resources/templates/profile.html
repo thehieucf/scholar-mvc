@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html class="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>My Profile | Rhythmic Scholar</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <script src="js/tailwind-config.js"></script>
+    <style>
+        /* Avatar dropdown */
+        .avatar-dropdown { display: none; position: absolute; right: 0; top: calc(100% + 10px); min-width: 200px; background: white; border-radius: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.13); border: 1px solid rgba(0,0,0,0.07); z-index: 200; overflow: hidden; }
+        .avatar-dropdown.open { display: block; }
+        .avatar-dropdown-item { display: flex; align-items: center; gap: 10px; padding: 11px 16px; font-size: 0.875rem; font-weight: 500; color: #1e293b; cursor: pointer; transition: background 0.15s; text-decoration: none; }
+        .avatar-dropdown-item:hover { background: #f1f5f9; }
+        .avatar-dropdown-item.danger { color: #dc2626; }
+        .avatar-dropdown-item.danger:hover { background: #fef2f2; }
+        .avatar-dropdown-divider { height: 1px; background: #f1f5f9; margin: 4px 0; }
+    </style>
+</head>
+
+<body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-8 h-16 border-b border-outline-variant/10">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl font-bold tracking-tight text-emerald-800 font-headline">Rhythmic Scholar</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <form action="dictionary.html" method="GET" class="hidden sm:block relative">
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-outline">
+                    <span class="material-symbols-outlined">search</span>
+                </div>
+                <input name="q" class="bg-surface-container-highest border-none rounded-full py-1.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 w-64 md:w-80 transition-all" placeholder="Search topic, vocabulary..." type="text" />
+            </form>
+            <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
+                <span class="material-symbols-outlined">notifications</span>
+            </button>
+            <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
+                <span class="material-symbols-outlined">settings</span>
+            </button>
+
+            <!-- Avatar with dropdown -->
+            <div class="relative" id="avatarMenuWrapper">
+                <button id="avatarMenuBtn" class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer focus:outline-none">
+                    <img id="headerAvatar" class="w-full h-full object-cover"
+                        th:src="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty() ? user.avatarUrl : 'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&background=059669&color=fff'}"
+                        alt="Avatar" />
+                </button>
+                <div class="avatar-dropdown" id="avatarDropdown">
+                    <div style="padding:12px 16px 8px;">
+                        <div class="text-xs text-slate-400 font-medium">Signed in as</div>
+                        <div class="text-sm font-bold text-slate-800 truncate" th:text="${user != null ? user.fullName : 'Scholar'}">Scholar</div>
+                    </div>
+                    <div class="avatar-dropdown-divider"></div>
+                    <a th:href="@{/profile}" class="avatar-dropdown-item">
+                        <span class="material-symbols-outlined" style="font-size:18px;">person</span>
+                        My Profile
+                    </a>
+                    <a th:href="@{/change-password}" class="avatar-dropdown-item">
+                        <span class="material-symbols-outlined" style="font-size:18px;">lock</span>
+                        Change Password
+                    </a>
+                    <div class="avatar-dropdown-divider"></div>
+                    <a th:href="@{/logout}" class="avatar-dropdown-item danger">
+                        <span class="material-symbols-outlined" style="font-size:18px;">logout</span>
+                        Log Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="hidden md:flex flex-col h-screen fixed left-0 w-64 bg-slate-50 p-4 pt-20 gap-2 border-r border-outline-variant/10 z-30">
+        <div class="px-4 py-6 mb-4 bg-surface-container-low rounded-xl">
+            <p class="text-sm font-label text-slate-500">Annyeong!</p>
+            <h3 class="text-lg font-headline font-bold text-emerald-700" th:text="${user != null ? user.currentLevel + ' Scholar' : 'Beginner Scholar'}">Scholar</h3>
+        </div>
+        <nav class="flex flex-col gap-1">
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50" href="/index">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="font-label">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50" href="/library">
+                <span class="material-symbols-outlined">menu_book</span>
+                <span class="font-label">Library</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50" href="/vocabulary">
+                <span class="material-symbols-outlined">bookmark</span>
+                <span class="font-label">My Vocabulary</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50" href="/progress">
+                <span class="material-symbols-outlined">leaderboard</span>
+                <span class="font-label">Progress</span>
+            </a>
+        </nav>
+        <div class="mt-auto p-4">
+            <a href="/study" class="block text-center w-full bg-primary text-on-primary font-bold py-4 rounded-full transition-transform active:scale-95">
+                Start Study
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="md:ml-64 pt-24 px-6 pb-24 md:px-12 flex-1">
+        <div class="max-w-6xl mx-auto space-y-8">
+
+            <!-- Flash messages -->
+            <div th:if="${success}" class="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-3 rounded-xl text-sm font-medium">
+                <span class="material-symbols-outlined text-emerald-600" style="font-size:18px;">check_circle</span>
+                <span th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 px-5 py-3 rounded-xl text-sm font-medium">
+                <span class="material-symbols-outlined text-red-500" style="font-size:18px;">error</span>
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- Hero Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Profile Info Card -->
+                <div class="lg:col-span-2 signature-glow rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-sm">
+                    <div class="hangul-bg text-[10rem] -right-8 -top-8 text-primary/5">학생</div>
+
+                    <!-- Avatar with upload overlay -->
+                    <div class="avatar-upload-wrapper w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden shadow-xl border-4 border-white relative z-10 flex-shrink-0">
+                        <img id="profileAvatar" alt="Profile Avatar" class="w-full h-full object-cover"
+                            th:src="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty() ? user.avatarUrl : 'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&background=059669&color=fff'}" />
+                    </div>
+
+                    <div class="text-center md:text-left z-10">
+                        <h2 class="text-4xl font-extrabold text-on-surface tracking-tight mb-2 font-headline" th:text="${user != null ? user.fullName : 'Scholar'}">Scholar</h2>
+                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary-container text-on-primary-container rounded-full text-sm font-semibold mb-6">
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                            <span th:text="${user != null ? user.currentLevel + ' Scholar' : 'Beginner Scholar'}">Scholar</span>
+                        </div>
+                        <div class="flex flex-wrap justify-center md:justify-start gap-3">
+                            <button type="button" id="edit-btn" onclick="toggleEditMode(true)"
+                                class="px-6 py-2.5 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 transition-all active:scale-95 text-sm">
+                                Edit Profile
+                            </button>
+                            <button class="px-6 py-2.5 bg-white/60 backdrop-blur rounded-full font-bold text-on-surface hover:bg-white transition-all active:scale-95 text-sm">
+                                Share Progress
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Learning Stats Bento -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-surface-container-low rounded-2xl p-6 flex flex-col justify-between hover:bg-surface-container transition-colors shadow-sm">
+                        <span class="material-symbols-outlined text-secondary text-3xl mb-4">auto_stories</span>
+                        <div>
+                            <div class="text-3xl font-bold font-headline text-on-surface" th:text="${user != null ? user.totalXp : 0}">0</div>
+                            <div class="text-xs text-on-surface-variant font-medium mt-1">Total XP</div>
+                        </div>
+                    </div>
+                    <div class="bg-surface-container-low rounded-2xl p-6 flex flex-col justify-between hover:bg-surface-container transition-colors shadow-sm">
+                        <span class="material-symbols-outlined text-primary text-3xl mb-4">local_fire_department</span>
+                        <div>
+                            <div class="text-3xl font-bold font-headline text-on-surface" th:text="${user != null ? user.currentStreak : 0}">0</div>
+                            <div class="text-xs text-on-surface-variant font-medium mt-1">Day Streak</div>
+                        </div>
+                    </div>
+                    <div class="bg-tertiary-container text-on-tertiary-container rounded-2xl p-6 col-span-2 flex items-center justify-between shadow-sm relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors"></div>
+                        <div class="relative z-10">
+                            <div class="text-3xl font-black font-headline" th:text="${user != null ? user.currentLevel : 'Beginner'}">Beginner</div>
+                            <div class="text-xs font-bold uppercase tracking-widest mt-1 opacity-80">Current Level</div>
+                        </div>
+                        <div class="w-16 h-16 bg-white/30 rounded-full flex items-center justify-center relative z-10">
+                            <span class="material-symbols-outlined text-4xl text-tertiary" style="font-variation-settings: 'FILL' 1;">school</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings & Preferences Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-8">
+                <!-- Account Settings -->
+                <section id="edit-form">
+                    <form th:action="@{/profile/update}" method="POST" enctype="multipart/form-data">
+                        <div class="flex items-center gap-4 mb-6">
+                            <h3 class="text-xl font-bold font-headline">Account Settings</h3>
+                            <div class="h-px flex-1 bg-outline-variant/30"></div>
+                            <div id="edit-actions" class="hidden flex items-center gap-2">
+                                <button type="button" onclick="toggleEditMode(false)" class="px-4 py-2 text-on-surface-variant font-bold hover:bg-surface-container transition-all rounded-full text-xs">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-6 py-2 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 transition-all active:scale-95 text-xs shadow-md shadow-primary/20">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <!-- Full Name -->
+                            <div class="group">
+                                <label class="block text-[11px] font-bold text-on-surface-variant mb-1.5 ml-2 uppercase tracking-wider">Full Name</label>
+                                <div class="profile-input-container bg-surface-container-lowest rounded-xl p-4 flex items-center gap-3 border border-outline-variant/20 transition-all">
+                                    <span class="material-symbols-outlined text-outline">person</span>
+                                    <input name="fullName" th:value="${user != null ? user.fullName : ''}"
+                                        class="profile-input bg-transparent border-none w-full p-0 focus:ring-0 text-on-surface font-medium text-sm"
+                                        type="text" readonly />
+                                </div>
+                            </div>
+                            <!-- Email -->
+                            <div class="group">
+                                <label class="block text-[11px] font-bold text-on-surface-variant mb-1.5 ml-2 uppercase tracking-wider">Email Address</label>
+                                <div class="profile-input-container bg-surface-container-lowest rounded-xl p-4 flex items-center gap-3 border border-outline-variant/20 transition-all">
+                                    <span class="material-symbols-outlined text-outline">mail</span>
+                                    <input name="email" th:value="${user != null ? user.email : ''}"
+                                        class="profile-input bg-transparent border-none w-full p-0 focus:ring-0 text-on-surface font-medium text-sm"
+                                        type="email" readonly />
+                                </div>
+                            </div>
+                            <!-- Avatar Upload -->
+                            <div class="group" id="avatarUploadField" style="display:none;">
+                                <label class="block text-[11px] font-bold text-on-surface-variant mb-1.5 ml-2 uppercase tracking-wider">Profile Photo URL</label>
+                                <div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/20 transition-all">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <span class="material-symbols-outlined text-outline">link</span>
+                                        <input type="url" name="avatarUrl" id="avatarUrlInput"
+                                               th:value="${user != null ? user.avatarUrl : ''}"
+                                               class="bg-transparent border-none w-full p-0 focus:ring-0 text-on-surface font-medium text-sm"
+                                               placeholder="https://example.com/your-photo.jpg"
+                                               oninput="previewFromUrl(this.value)" />
+                                    </div>
+                                    <p class="text-xs text-on-surface-variant ml-8">Paste a direct image URL (jpg, png, gif). Changes preview instantly.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Preferences & Notifications -->
+                <section>
+                    <div class="flex items-center gap-4 mb-6">
+                        <h3 class="text-xl font-bold font-headline">Preferences</h3>
+                        <div class="h-px flex-1 bg-outline-variant/30"></div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/20 flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+                            <div class="flex gap-4 items-center">
+                                <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined">notifications_active</span>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-sm text-on-surface">Daily Reminders</div>
+                                    <div class="text-xs text-on-surface-variant">Stay on track with nudge alerts</div>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input checked class="sr-only peer" type="checkbox" />
+                                <div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                        <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/20 flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+                            <div class="flex gap-4 items-center">
+                                <div class="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center text-secondary">
+                                    <span class="material-symbols-outlined">stars</span>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-sm text-on-surface">Achievement Alerts</div>
+                                    <div class="text-xs text-on-surface-variant">Get notified when you level up</div>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input checked class="sr-only peer" type="checkbox" />
+                                <div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+                            </label>
+                        </div>
+                        <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/20 flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+                            <div class="flex gap-4 items-center">
+                                <div class="w-10 h-10 bg-outline/10 rounded-full flex items-center justify-center text-outline">
+                                    <span class="material-symbols-outlined">group</span>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-sm text-on-surface">Community Updates</div>
+                                    <div class="text-xs text-on-surface-variant">Tips from fellow scholars</div>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input class="sr-only peer" type="checkbox" />
+                                <div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+
+                        <!-- Quick links -->
+                        <div class="mt-2 space-y-2">
+                            <a th:href="@{/change-password}"
+                               class="flex items-center gap-3 p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/20 hover:bg-surface-container-low transition-colors group">
+                                <div class="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center text-amber-600">
+                                    <span class="material-symbols-outlined">lock_reset</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-sm text-on-surface">Change Password</div>
+                                    <div class="text-xs text-on-surface-variant">Update your account password</div>
+                                </div>
+                                <span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_right</span>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Bottom Nav (Mobile) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel h-16 flex items-center justify-around px-4 z-50 border-t border-outline-variant/10">
+        <a href="/index" class="flex flex-col items-center text-on-surface-variant">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="text-[10px] font-medium mt-1">Home</span>
+        </a>
+        <a href="/library" class="flex flex-col items-center text-on-surface-variant">
+            <span class="material-symbols-outlined">menu_book</span>
+            <span class="text-[10px] font-medium mt-1">Library</span>
+        </a>
+        <a href="/study" class="-mt-8 w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+        </a>
+        <a href="/vocabulary" class="flex flex-col items-center text-on-surface-variant">
+            <span class="material-symbols-outlined">bookmark</span>
+            <span class="text-[10px] font-medium mt-1">Vocab</span>
+        </a>
+        <a href="/progress" class="flex flex-col items-center text-on-surface-variant">
+            <span class="material-symbols-outlined">leaderboard</span>
+            <span class="text-[10px] font-medium mt-1">Stats</span>
+        </a>
+    </nav>
+
+    <script>
+        // ── Avatar dropdown ──────────────────────────────────────────
+        var avatarBtn = document.getElementById('avatarMenuBtn');
+        var avatarDropdown = document.getElementById('avatarDropdown');
+
+        avatarBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            avatarDropdown.classList.toggle('open');
+        });
+        document.addEventListener('click', function() {
+            avatarDropdown.classList.remove('open');
+        });
+
+        // ── Edit mode ────────────────────────────────────────────────
+        function toggleEditMode(enable) {
+            var inputs = document.querySelectorAll('.profile-input');
+            var containers = document.querySelectorAll('.profile-input-container');
+            var editBtn = document.getElementById('edit-btn');
+            var editActions = document.getElementById('edit-actions');
+            var avatarField = document.getElementById('avatarUploadField');
+
+            if (enable) {
+                inputs.forEach(function(input) { input.removeAttribute('readonly'); });
+                containers.forEach(function(c) {
+                    c.classList.add('border-primary/30');
+                    c.classList.remove('border-outline-variant/20');
+                });
+                editBtn.classList.add('hidden');
+                editActions.classList.remove('hidden');
+                avatarField.style.display = 'block';
+            } else {
+                window.location.reload();
+            }
+        }
+
+        // ── Preview avatar from URL ───────────────────────────────────
+        function previewFromUrl(url) {
+            if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) return;
+            var img = new Image();
+            img.onload = function() {
+                document.getElementById('profileAvatar').src = url;
+                document.getElementById('headerAvatar').src = url;
+            };
+            img.src = url;
+        }
+    </script>
+</body>
+</html>

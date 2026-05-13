@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Flashcard Session | Rhythmic Scholar</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;family=Be+Vietnam+Pro:ital,wght@0,100..900;1,100..900&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <link rel="stylesheet" th:href="@{/css/study.css}" />
+  <script src="js/tailwind-config.js"></script>
+</head>
+
+<body
+  class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container min-h-screen">
+  <!-- TopAppBar -->
+  <header
+    class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-6 h-16">
+    <div class="flex items-center gap-3">
+      <a href="index.html"
+        class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant hover:text-primary">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </a>
+      <span class="text-xl font-bold tracking-tight text-emerald-800 font-headline">Flashcard Session</span>
+    </div>
+    <!-- Progress Bar -->
+    <div class="flex-1 max-w-2xl px-8 hidden sm:block">
+      <div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+        <div id="progress-bar" class="h-full bg-primary rounded-full transition-all duration-500" style="width: 0%"></div>
+      </div>
+      <div class="flex justify-between mt-1.5">
+        <span id="progress-label" class="text-xs font-label text-on-surface-variant font-medium">0 of 0 words</span>
+        <span id="score-label" class="text-xs font-label text-primary font-bold">0% Done</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="hidden md:flex items-center gap-2 px-3 py-1 bg-surface-container rounded-full">
+        <span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+        <span class="text-xs font-bold font-headline" th:text="${user != null ? user.currentStreak + ' Days' : '0 Days'}">12 Days</span>
+      </div>
+      <a th:href="@{/profile}" class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer">
+                <img class="w-full h-full object-cover" data-alt="User Avatar" th:src="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty() ? user.avatarUrl : 'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&background=059669&color=fff'}" />
+            </a>
+    </div>
+  </header>
+
+  <main class="pt-24 pb-12 min-h-screen signature-glow flex flex-col items-center justify-center px-4">
+    <!-- Topic Badge -->
+    <div class="mb-6 flex items-center gap-2">
+      <span class="px-4 py-1.5 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold uppercase tracking-wider" id="topic-badge">Study Session</span>
+    </div>
+
+    <!-- Flashcard Canvas -->
+    <div class="flashcard-container" id="flashcard-container">
+      <div class="flashcard-inner">
+        <!-- Front Side -->
+        <div class="flashcard-front bg-surface-container-lowest">
+          <div class="absolute top-4 right-4 h-10 w-10 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+             <span class="material-symbols-outlined">style</span>
+          </div>
+          <h1 class="hangul-display font-headline text-on-surface" id="card-korean">...</h1>
+          <p class="romaji-display" id="card-romaji">...</p>
+          <div class="mt-8 text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Click to reveal meaning</div>
+        </div>
+        <!-- Back Side -->
+        <div class="flashcard-back bg-emerald-50">
+          <span class="text-secondary font-label font-bold tracking-widest text-xs uppercase mb-4">Meaning</span>
+          <h2 class="meaning-display font-headline" id="card-english">...</h2>
+          
+          <!-- Mnemonic (Optional) -->
+          <div id="mnemonic-container" class="mt-6 bg-tertiary-container/30 rounded-lg px-4 py-3 flex items-start gap-3 border border-tertiary/10 w-full max-w-sm hidden">
+            <span class="material-symbols-outlined text-tertiary mt-0.5" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+            <p class="text-sm text-on-tertiary-container font-medium text-left">
+              <strong class="font-bold">Mnemonic:</strong> <span id="card-mnemonic"></span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interaction Buttons -->
+    <div class="interaction-area">
+      <button id="prev-btn" class="flex-1 flex items-center justify-center gap-2 p-5 bg-surface-container-low rounded-xl hover:bg-surface-container-high transition-all border border-outline-variant/15 disabled:opacity-30" disabled>
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span class="font-bold text-sm">Previous</span>
+      </button>
+      
+      <button id="next-btn" class="flex-[2] relative flex items-center justify-between p-5 bg-primary text-on-primary rounded-xl hover:opacity-95 transition-all shadow-lg shadow-primary/20 overflow-hidden">
+        <div class="relative z-10 flex items-center gap-3 ml-4">
+          <p class="font-bold text-lg font-headline" id="next-btn-text">Next Word</p>
+        </div>
+        <div class="h-10 w-10 rounded-full bg-on-primary/20 flex items-center justify-center relative z-10 mr-2">
+          <span class="material-symbols-outlined text-2xl" id="next-btn-icon">arrow_forward</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Session Stats -->
+    <div class="mt-10 w-full max-w-4xl grid grid-cols-2 md:grid-cols-4 gap-3 opacity-70">
+      <div class="flex flex-col items-center py-4 bg-surface-container/60 rounded-xl">
+        <span class="text-primary font-black text-2xl" id="current-count">1</span>
+        <span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant mt-1">Word</span>
+      </div>
+      <div class="flex flex-col items-center py-4 bg-surface-container/60 rounded-xl">
+        <span class="text-secondary font-black text-2xl" id="total-count">0</span>
+        <span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant mt-1">Total Goal</span>
+      </div>
+    </div>
+  </main>
+
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    const vocabList = /*[[${vocabList}]]*/ [];
+    /*]]>*/
+  </script>
+  <script src="js/study.js"></script>
+
+  <!-- FAB -->
+  <a href="library.html"
+    class="fixed bottom-8 right-8 h-14 w-14 bg-surface-container-lowest text-on-surface rounded-full shadow-[0px_32px_32px_rgba(24,28,28,0.06)] border border-outline-variant/15 flex items-center justify-center hover:bg-surface-container-high transition-colors group">
+    <span class="material-symbols-outlined text-xl">menu_book</span>
+    <span class="absolute right-16 bg-on-surface text-surface px-3 py-1 rounded-full text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Library</span>
+  </a>
+</body>
+
+</html>
