@@ -15,7 +15,7 @@
     rel="stylesheet" />
   <link rel="stylesheet" th:href="@{/css/style.css}" />
   <link rel="stylesheet" th:href="@{/css/study.css}" />
-  <script src="js/tailwind-config.js"></script>
+  <script th:src="@{/js/tailwind-config.js}"></script>
 </head>
 
 <body
@@ -24,7 +24,7 @@
   <header
     class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-6 h-16">
     <div class="flex items-center gap-3">
-      <a href="index.html"
+      <a th:href="@{/}"
         class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant hover:text-primary">
         <span class="material-symbols-outlined">arrow_back</span>
       </a>
@@ -120,10 +120,10 @@
     const vocabList = /*[[${vocabList}]]*/ [];
     /*]]>*/
   </script>
-  <script src="js/study.js"></script>
+  <script th:src="@{/js/study.js}"></script>
 
   <!-- FAB -->
-  <a href="library.html"
+  <a th:href="@{/library}"
     class="fixed bottom-8 right-8 h-14 w-14 bg-surface-container-lowest text-on-surface rounded-full shadow-[0px_32px_32px_rgba(24,28,28,0.06)] border border-outline-variant/15 flex items-center justify-center hover:bg-surface-container-high transition-colors group">
     <span class="material-symbols-outlined text-xl">menu_book</span>
     <span class="absolute right-16 bg-on-surface text-surface px-3 py-1 rounded-full text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Library</span>

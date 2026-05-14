@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,45 @@ public class AdminController {
             studiedTodayMap.put(u.getId(), count > 0);
         }
         model.addAttribute("studiedTodayMap", studiedTodayMap);
+
+        // ---- Chart 1: Active learners per day (last 7 days) ----
+        List<String> chartDayLabels = new ArrayList<>();
+        List<Long>   chartDayCounts = new ArrayList<>();
+        for (int i = 6; i >= 0; i--) {
+            LocalDate day      = LocalDate.now().minusDays(i);
+            LocalDateTime from = day.atStartOfDay();
+            LocalDateTime to   = from.plusDays(1);
+            long cnt = userWordProgressRepository.countDistinctUsersByDay(from, to);
+            chartDayLabels.add(day.getMonthValue() + "/" + day.getDayOfMonth());
+            chartDayCounts.add(cnt);
+        }
+        model.addAttribute("chartDayLabels", chartDayLabels);
+        model.addAttribute("chartDayCounts", chartDayCounts);
+
+        // ---- Chart 2: Word status distribution (NEW / LEARNING / MASTERED) ----
+        List<Object[]> statusRows = userWordProgressRepository.countByLearningStatus();
+        Map<String, Long> statusMap = new HashMap<>();
+        statusMap.put("NEW", 0L);
+        statusMap.put("LEARNING", 0L);
+        statusMap.put("MASTERED", 0L);
+        for (Object[] row : statusRows) {
+            statusMap.put((String) row[0], (Long) row[1]);
+        }
+        model.addAttribute("statusNew",      statusMap.get("NEW"));
+        model.addAttribute("statusLearning", statusMap.get("LEARNING"));
+        model.addAttribute("statusMastered", statusMap.get("MASTERED"));
+
+        // ---- Chart 3: Top 5 categories by word count ----
+        List<Object[]> catRows = vocabularyRepository.countGroupByCategory();
+        List<String> chartCatLabels = new ArrayList<>();
+        List<Long>   chartCatCounts = new ArrayList<>();
+        int limit = Math.min(5, catRows.size());
+        for (int i = 0; i < limit; i++) {
+            chartCatLabels.add((String) catRows.get(i)[0]);
+            chartCatCounts.add((Long)   catRows.get(i)[1]);
+        }
+        model.addAttribute("chartCatLabels", chartCatLabels);
+        model.addAttribute("chartCatCounts", chartCatCounts);
 
         return "admin/dashboard";
     }

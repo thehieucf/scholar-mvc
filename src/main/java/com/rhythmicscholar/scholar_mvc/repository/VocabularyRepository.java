@@ -17,6 +17,14 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Long> {
     long countByCategoryId(Long categoryId);
 
     /**
+     * Lấy top N category có nhiều từ vựng nhất.
+     * Trả về mảng Object[]{categoryNameEn, count}.
+     */
+    @Query("SELECT v.category.nameEn, COUNT(v) FROM Vocabulary v " +
+           "GROUP BY v.category.nameEn ORDER BY COUNT(v) DESC")
+    List<Object[]> countGroupByCategory();
+
+    /**
      * Tìm kiếm từ vựng theo từ Hàn hoặc nghĩa tiếng Anh,
      * đồng thời JOIN FETCH category để tránh LazyInitializationException khi render template.
      */

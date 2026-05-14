@@ -13,7 +13,7 @@
         rel="stylesheet" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <link rel="stylesheet" th:href="@{/css/game.css}" />
-    <script src="js/tailwind-config.js"></script>
+    <script th:src="@{/js/tailwind-config.js}"></script>
 </head>
 
 <body
@@ -23,7 +23,7 @@
     <header
         class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-6 h-16">
         <div class="flex items-center gap-3">
-            <a href="index.html"
+            <a th:href="@{/}"
                 class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant hover:text-primary">
                 <span class="material-symbols-outlined">arrow_back</span>
             </a>
@@ -44,7 +44,7 @@
         <div class="flex items-center gap-3">
             <div class="hidden md:flex items-center gap-2 px-3 py-1 bg-tertiary-container rounded-full">
                 <span class="material-symbols-outlined text-tertiary text-sm"
-                    style="font-variation-settings:&apos;FILL&apos; 1;">local_fire_department</span>
+                    style="font-variation-settings:'FILL' 1;">local_fire_department</span>
                 <span class="text-xs font-bold font-headline text-on-tertiary-container" th:text="${user != null ? user.currentStreak + ' Days' : '0 Days'}">12 Days</span>
             </div>
             <a th:href="@{/profile}" class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer">
@@ -129,7 +129,7 @@
     </main>
 
     <!-- FAB - back to study -->
-    <a href="study.html"
+    <a th:href="@{/study}"
         class="fixed bottom-8 right-8 h-14 w-14 bg-surface-container-lowest text-on-surface rounded-full shadow-[0px_32px_32px_rgba(24,28,28,0.06)] border border-outline-variant/15 flex items-center justify-center hover:bg-surface-container-high transition-colors group">
         <span class="material-symbols-outlined text-xl">style</span>
         <span
@@ -141,7 +141,7 @@
         const serverQuestions = /*[[${questions}]]*/ [];
         /*]]>*/
     </script>
-    <script src="js/game.js"></script>
+    <script th:src="@{/js/game.js}"></script>
 </body>
 
 </html>

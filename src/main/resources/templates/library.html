@@ -22,20 +22,41 @@
         .avatar-dropdown-item.danger { color:#dc2626; }
         .avatar-dropdown-item.danger:hover { background:#fef2f2; }
         .avatar-dropdown-divider { height:1px; background:#f1f5f9; margin:4px 0; }
+
+        /* Category card hover effects — dùng CSS thuần thay vì Tailwind dynamic class */
+        .category-card {
+            transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+        }
+        .category-card:hover {
+            box-shadow: 0 10px 32px rgba(0,0,0,0.10);
+            transform: translateY(-2px);
+        }
+        .category-card:hover .cat-title {
+            color: var(--cat-color);
+        }
+        .category-card:hover {
+            border-color: var(--cat-color) !important;
+        }
+        .category-card:hover .cat-bg-text {
+            opacity: 0.10;
+            color: var(--cat-color);
+        }
+        .cat-bg-text {
+            opacity: 0.05;
+            transition: opacity 0.2s, color 0.2s;
+        }
+        .cat-title {
+            transition: color 0.2s;
+        }
+        .cat-icon-wrap {
+            background-color: var(--cat-bg) !important;
+            color: var(--cat-color) !important;
+        }
     </style>
 </head>
 
 <body
     class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
-    <!--
-        Tailwind CDN safelist: các class động được ghép từ colorTheme (primary/secondary/tertiary).
-        Element ẩn này đảm bảo Tailwind scan và generate đủ các class cần thiết.
-    -->
-    <div class="hidden
-        bg-primary-container text-on-primary-container hover:border-primary group-hover:text-primary
-        bg-secondary-container text-on-secondary-container hover:border-secondary group-hover:text-secondary
-        bg-tertiary-container text-on-tertiary-container hover:border-tertiary group-hover:text-tertiary">
-    </div>
     <!-- Header -->
     <header class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-8 h-16 border-b border-outline-variant/10">
         <div class="flex items-center gap-2">
@@ -136,26 +157,28 @@
             <!-- Categories Grid: Hiển thị các danh mục từ vựng dưới dạng các thẻ (Cards) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Dynamic Category Cards -->
-                <button th:each="cat : ${categories}" 
+                <button th:each="cat : ${categories}"
                     th:data-id="${cat.id}" th:data-title="${cat.nameEn}" th:data-icon="${cat.iconName}" th:data-theme="${cat.colorTheme}"
                     onclick="openModal(this.getAttribute('data-id'), this.getAttribute('data-title'), this.getAttribute('data-icon'), this.getAttribute('data-theme'))"
-                    th:class="'text-left bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/15 hover:shadow-lg transition-all group relative overflow-hidden flex flex-col h-48 hover:border-' + ${cat.colorTheme} + ' hover:border-opacity-40'">
-                    <div
-                        th:class="'absolute -bottom-4 -right-4 text-6xl font-black text-on-surface group-hover:text-' + ${cat.colorTheme} + ' transition-colors z-0 opacity-5 group-hover:opacity-10'"
+                    th:style="'--cat-color:' + ${iconColorMap[cat.colorTheme] ?: '#006a62'} + ';'"
+                    class="category-card text-left bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/15 flex flex-col h-48 relative overflow-hidden">
+                    <!-- Decorative background text -->
+                    <div class="cat-bg-text absolute -bottom-4 -right-4 text-6xl font-black text-on-surface z-0"
                         th:text="${cat.nameKr}">음식</div>
+                    <!-- Icon + Popular badge -->
                     <div class="flex justify-between items-start mb-4 z-10">
-                        <div
-                            th:class="'w-12 h-12 bg-' + ${cat.colorTheme} + '-container text-on-' + ${cat.colorTheme} + '-container rounded-xl flex items-center justify-center'">
+                        <div class="cat-icon-wrap w-12 h-12 rounded-xl flex items-center justify-center"
+                             th:style="'background-color:' + ${iconBgMap[cat.colorTheme] ?: '#8afff0'} + ';color:' + ${iconColorMap[cat.colorTheme] ?: '#006a62'} + ';'">
                             <span class="material-symbols-outlined text-2xl"
                                 style="font-variation-settings: 'FILL' 1;" th:text="${cat.iconName}">restaurant</span>
                         </div>
                         <span th:if="${cat.popular == true}"
                             class="bg-surface-container-high text-on-surface-variant px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase">Popular</span>
                     </div>
+                    <!-- Title + description -->
                     <div class="mt-auto z-10">
-                        <h3
-                            th:class="'text-2xl font-bold font-headline text-on-surface mb-1 group-hover:text-' + ${cat.colorTheme} + ' transition-colors'"
-                            th:text="${cat.nameEn}">Food & Dining</h3>
+                        <h3 class="cat-title text-2xl font-bold font-headline text-on-surface mb-1"
+                            th:text="${cat.nameEn}">Food &amp; Dining</h3>
                         <p class="text-sm text-on-surface-variant" th:text="${cat.description}">Restaurants, cuisines, drinks</p>
                     </div>
                 </button>
@@ -213,30 +236,31 @@
     <!-- Bottom Nav (Mobile) -->
     <!-- Static Bottom Nav -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel h-16 flex items-center justify-around px-4 z-50 border-t border-outline-variant/10">
-        <a href="index.html" class="flex flex-col items-center text-on-surface-variant" data-nav="index">
+        <a th:href="@{/}" class="flex flex-col items-center text-on-surface-variant" data-nav="index">
             <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
             <span class="text-[10px] font-medium mt-1">Home</span>
         </a>
-        <a href="library.html" class="flex flex-col items-center text-primary" data-nav="library">
+        <a th:href="@{/library}" class="flex flex-col items-center text-primary" data-nav="library">
             <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
             <span class="text-[10px] font-medium mt-1">Library</span>
         </a>
-        <a href="study.html"
+        <a th:href="@{/study}"
             class="-mt-8 w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all">
             <span class="material-symbols-outlined text-3xl" data-icon="play_arrow"
                 style="font-variation-settings: 'FILL' 1;">play_arrow</span>
         </a>
-        <a href="vocabulary.html" class="flex flex-col items-center text-on-surface-variant" data-nav="vocabulary">
+        <a th:href="@{/vocabulary}" class="flex flex-col items-center text-on-surface-variant" data-nav="vocabulary">
             <span class="material-symbols-outlined" data-icon="person">person</span>
             <span class="text-[10px] font-medium mt-1">Vocab</span>
         </a>
-        <a href="progress.html" class="flex flex-col items-center text-on-surface-variant" data-nav="progress">
+        <a th:href="@{/progress}" class="flex flex-col items-center text-on-surface-variant" data-nav="progress">
             <span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
             <span class="text-[10px] font-medium mt-1">Stats</span>
         </a>
     </nav>
-    <script src="js/library.js"></script>
+    <script th:src="@{/js/library.js}"></script>
     <script>
+        // ── Avatar dropdown ──────────────────────────────────────────
         var avatarBtn = document.getElementById('avatarMenuBtn');
         var avatarDropdown = document.getElementById('avatarDropdown');
         avatarBtn.addEventListener('click', function(e) {

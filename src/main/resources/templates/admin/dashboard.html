@@ -65,6 +65,68 @@
                 </div>
             </div>
 
+            <!-- ===== Charts Row ===== -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;">
+
+                <!-- Chart 1: Active Learners (7 days) -->
+                <div class="admin-table-card" style="overflow:visible;">
+                    <div class="admin-table-card__header">
+                        <span class="admin-table-card__title">
+                            <span class="material-symbols-outlined" style="vertical-align:middle;font-size:18px;margin-right:4px;color:#1d4ed8;">trending_up</span>
+                            Active Learners — Last 7 Days
+                        </span>
+                    </div>
+                    <div style="padding:1.25rem 1.5rem;">
+                        <canvas id="chartLearners" height="200"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Word Status Doughnut -->
+                <div class="admin-table-card" style="overflow:visible;">
+                    <div class="admin-table-card__header">
+                        <span class="admin-table-card__title">
+                            <span class="material-symbols-outlined" style="vertical-align:middle;font-size:18px;margin-right:4px;color:#15803d;">donut_large</span>
+                            Word Learning Status
+                        </span>
+                    </div>
+                    <div style="padding:1.25rem 1.5rem;display:flex;align-items:center;gap:2rem;">
+                        <div style="flex:0 0 180px;height:180px;">
+                            <canvas id="chartStatus"></canvas>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:0.75rem;font-size:0.85rem;">
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <span style="width:12px;height:12px;border-radius:3px;background:#94a3b8;flex-shrink:0;"></span>
+                                <span style="color:var(--admin-text-muted);">New</span>
+                                <strong style="margin-left:auto;" th:text="${statusNew}">0</strong>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <span style="width:12px;height:12px;border-radius:3px;background:#3b82f6;flex-shrink:0;"></span>
+                                <span style="color:var(--admin-text-muted);">Learning</span>
+                                <strong style="margin-left:auto;" th:text="${statusLearning}">0</strong>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <span style="width:12px;height:12px;border-radius:3px;background:#16a34a;flex-shrink:0;"></span>
+                                <span style="color:var(--admin-text-muted);">Mastered</span>
+                                <strong style="margin-left:auto;" th:text="${statusMastered}">0</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart 3: Top 5 Categories (full width) -->
+            <div class="admin-table-card" style="overflow:visible;margin-bottom:1.5rem;">
+                <div class="admin-table-card__header">
+                    <span class="admin-table-card__title">
+                        <span class="material-symbols-outlined" style="vertical-align:middle;font-size:18px;margin-right:4px;color:#b45309;">bar_chart</span>
+                        Top 5 Categories by Word Count
+                    </span>
+                </div>
+                <div style="padding:1.25rem 1.5rem;">
+                    <canvas id="chartCategories" height="110"></canvas>
+                </div>
+            </div>
+
             <!-- Recent Users Table -->
             <div class="admin-table-card">
                 <div class="admin-table-card__header">
@@ -118,5 +180,121 @@
         </div>
     </div>
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Data từ server
+        const dayLabels   = /*[[${chartDayLabels}]]*/ [];
+        const dayCounts   = /*[[${chartDayCounts}]]*/ [];
+        const statusNew      = /*[[${statusNew}]]*/ 0;
+        const statusLearning = /*[[${statusLearning}]]*/ 0;
+        const statusMastered = /*[[${statusMastered}]]*/ 0;
+        const catLabels   = /*[[${chartCatLabels}]]*/ [];
+        const catCounts   = /*[[${chartCatCounts}]]*/ [];
+
+        // Shared defaults
+        Chart.defaults.font.family = "'Be Vietnam Pro', 'Inter', sans-serif";
+        Chart.defaults.color = '#64748b';
+
+        // ---- Chart 1: Line — Active Learners ----
+        new Chart(document.getElementById('chartLearners'), {
+            type: 'line',
+            data: {
+                labels: dayLabels,
+                datasets: [{
+                    label: 'Active Learners',
+                    data: dayCounts,
+                    borderColor: '#1d4ed8',
+                    backgroundColor: 'rgba(29,78,216,0.08)',
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#1d4ed8',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0 },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // ---- Chart 2: Doughnut — Word Status ----
+        new Chart(document.getElementById('chartStatus'), {
+            type: 'doughnut',
+            data: {
+                labels: ['New', 'Learning', 'Mastered'],
+                datasets: [{
+                    data: [statusNew, statusLearning, statusMastered],
+                    backgroundColor: ['#94a3b8', '#3b82f6', '#16a34a'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '68%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ' ' + ctx.label + ': ' + ctx.parsed
+                        }
+                    }
+                }
+            }
+        });
+
+        // ---- Chart 3: Bar — Top Categories ----
+        new Chart(document.getElementById('chartCategories'), {
+            type: 'bar',
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    label: 'Words',
+                    data: catCounts,
+                    backgroundColor: [
+                        'rgba(29,78,216,0.75)',
+                        'rgba(21,128,61,0.75)',
+                        'rgba(180,83,9,0.75)',
+                        'rgba(185,28,28,0.75)',
+                        'rgba(109,40,217,0.75)'
+                    ],
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0 },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+        /*]]>*/
+    </script>
 </body>
 </html>

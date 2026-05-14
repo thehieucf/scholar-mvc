@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserWordProgressRepository extends JpaRepository<UserWordProgress, Long> {
@@ -17,6 +18,8 @@ public interface UserWordProgressRepository extends JpaRepository<UserWordProgre
 
     List<UserWordProgress> findByUserIdAndLastStudiedAtGreaterThanEqual(Long userId, LocalDateTime startOfDay);
 
+    Optional<UserWordProgress> findByUserIdAndVocabularyId(Long userId, Long vocabularyId);
+
     /**
      * Đếm số từ vựng mà người dùng đã học ít nhất 1 lần trong một category cụ thể.
      * Từ "đã học" là các từ có lastStudiedAt != null (đã từng được học).
@@ -25,4 +28,20 @@ public interface UserWordProgressRepository extends JpaRepository<UserWordProgre
            "WHERE u.user.id = :userId AND u.vocabulary.category.id = :categoryId " +
            "AND u.lastStudiedAt IS NOT NULL")
     long countStudiedWordsByCategoryId(@Param("userId") Long userId, @Param("categoryId") Long categoryId);
+
+    /**
+     * Đếm số người dùng phân biệt đã học ít nhất 1 từ trong một ngày cụ thể.
+     * Dùng để vẽ biểu đồ "Active Learners per Day" trên dashboard.
+     */
+    @Query("SELECT COUNT(DISTINCT u.user.id) FROM UserWordProgress u " +
+           "WHERE u.lastStudiedAt >= :dayStart AND u.lastStudiedAt < :dayEnd")
+    long countDistinctUsersByDay(@Param("dayStart") LocalDateTime dayStart,
+                                  @Param("dayEnd") LocalDateTime dayEnd);
+
+    /**
+     * Đếm số từ theo từng trạng thái học (NEW, LEARNING, MASTERED) trên toàn hệ thống.
+     * Trả về mảng Object[]{learningStatus, count}.
+     */
+    @Query("SELECT u.learningStatus, COUNT(u) FROM UserWordProgress u GROUP BY u.learningStatus")
+    List<Object[]> countByLearningStatus();
 }

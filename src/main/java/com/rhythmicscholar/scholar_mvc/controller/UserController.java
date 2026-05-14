@@ -4,6 +4,8 @@ import com.rhythmicscholar.scholar_mvc.dto.CategoryProgressDto;
 import com.rhythmicscholar.scholar_mvc.model.Category;
 import com.rhythmicscholar.scholar_mvc.model.User;
 import com.rhythmicscholar.scholar_mvc.model.UserProgress;
+import com.rhythmicscholar.scholar_mvc.model.UserWordProgress;
+import com.rhythmicscholar.scholar_mvc.model.Vocabulary;
 import com.rhythmicscholar.scholar_mvc.repository.CategoryRepository;
 import com.rhythmicscholar.scholar_mvc.repository.UserProgressRepository;
 import com.rhythmicscholar.scholar_mvc.repository.UserRepository;
@@ -11,15 +13,21 @@ import com.rhythmicscholar.scholar_mvc.repository.UserWordProgressRepository;
 import com.rhythmicscholar.scholar_mvc.repository.VocabularyRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Controller xử lý các chức năng liên quan đến người dùng (Hồ sơ, Tiến độ học tập).
@@ -41,6 +49,70 @@ public class UserController {
 
     @Autowired
     private VocabularyRepository vocabularyRepository;
+
+    /**
+     * API ghi nhận tiến độ học một từ vựng.
+     * Được gọi từ study.js mỗi khi user lật thẻ flashcard.
+     * - Tạo hoặc cập nhật UserWordProgress
+     * - Cộng XP cho user (+5 XP/từ mới, +2 XP/từ ôn lại)
+     * - Cập nhật streak nếu hôm nay chưa học
+     */
+    @PostMapping("/api/study/progress")
+    @ResponseBody
+    public ResponseEntity<?> recordStudyProgress(
+            @RequestParam Long vocabId,
+            HttpSession session) {
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) userId = 1L;
+
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) return ResponseEntity.badRequest().body(Map.of("error", "User not found"));
+
+        Vocabulary vocab = vocabularyRepository.findById(vocabId).orElse(null);
+        if (vocab == null) return ResponseEntity.badRequest().body(Map.of("error", "Vocabulary not found"));
+
+        // Tìm hoặc tạo mới bản ghi tiến độ
+        Optional<UserWordProgress> existing = userWordProgressRepository.findByUserIdAndVocabularyId(userId, vocabId);
+        boolean isNew = existing.isEmpty();
+
+        // Kiểm tra hôm nay đã học từ nào chưa — TRƯỚC khi save để tránh đếm nhầm
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        long studiedTodayBefore = userWordProgressRepository.countStudiedToday(userId, startOfDay);
+        boolean firstWordToday = (studiedTodayBefore == 0);
+
+        UserWordProgress progress = existing.orElseGet(UserWordProgress::new);
+        if (isNew) {
+            progress.setUser(user);
+            progress.setVocabulary(vocab);
+            progress.setLearningStatus("LEARNING");
+        } else {
+            // Tăng consecutive_correct và cập nhật status
+            int consec = progress.getConsecutiveCorrect() != null ? progress.getConsecutiveCorrect() : 0;
+            progress.setConsecutiveCorrect(consec + 1);
+            if (consec + 1 >= 5) progress.setLearningStatus("MASTERED");
+        }
+        progress.setIsFlashcardDone(true);
+        progress.setNextReviewDate(LocalDate.now().plusDays(1));
+        userWordProgressRepository.save(progress);
+
+        // Cộng XP: +5 từ mới, +2 từ ôn lại
+        int xpGain = isNew ? 5 : 2;
+        user.setTotalXp((user.getTotalXp() != null ? user.getTotalXp() : 0) + xpGain);
+
+        // Tăng streak chỉ 1 lần mỗi ngày (từ đầu tiên học trong ngày)
+        if (firstWordToday) {
+            user.setCurrentStreak((user.getCurrentStreak() != null ? user.getCurrentStreak() : 0) + 1);
+        }
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of(
+            "xpGained", xpGain,
+            "totalXp", user.getTotalXp(),
+            "streak", user.getCurrentStreak(),
+            "status", progress.getLearningStatus()
+        ));
+    }
 
     /**
      * Hiển thị trang hồ sơ cá nhân.

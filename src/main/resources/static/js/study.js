@@ -74,10 +74,25 @@ function updateCard() {
 }
 
 /**
+ * Ghi nhận tiến độ học từ hiện tại lên server.
+ * Được gọi khi user lật thẻ (xem nghĩa) — tức là đã "học" từ đó.
+ */
+function recordProgress(vocabId) {
+    if (!vocabId) return;
+    fetch('/api/study/progress?vocabId=' + vocabId, { method: 'POST' })
+        .catch(function() { /* silent fail — không block UX */ });
+}
+
+/**
  * Sự kiện lật thẻ khi nhấn vào container
  */
 container.addEventListener('click', () => {
+    const wasFlipped = container.classList.contains('is-flipped');
     container.classList.toggle('is-flipped');
+    // Ghi nhận tiến độ khi user lật thẻ lần đầu (xem mặt sau)
+    if (!wasFlipped && vocabList.length > 0) {
+        recordProgress(vocabList[currentIndex].id);
+    }
 });
 
 /**
@@ -100,7 +115,7 @@ nextBtn.addEventListener('click', () => {
     } else {
         // Chuyển hướng sang trang Game với danh sách ID các từ vừa học
         const ids = vocabList.map(v => v.id).join(',');
-        window.location.href = `game.html?vocabIds=${ids}`;
+        window.location.href = `/game?vocabIds=${ids}`;
     }
 });
 

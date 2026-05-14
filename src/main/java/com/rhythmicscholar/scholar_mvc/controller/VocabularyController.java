@@ -107,15 +107,38 @@ public class VocabularyController {
     public String library(HttpSession session, Model model) {
         // Lấy tất cả danh mục (Food, Travel, Work, v.v.)
         List<Category> categories = categoryRepository.findAll();
-        
+
         // Lấy thông tin user
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) userId = 1L;
         User user = userRepository.findById(userId).orElse(null);
-        
+
+        // Map color_theme → màu hex để dùng trong template (tránh biểu thức ternary lồng nhau)
+        Map<String, String> iconColorMap = new HashMap<>();
+        iconColorMap.put("red",    "#dc2626");
+        iconColorMap.put("blue",   "#2563eb");
+        iconColorMap.put("violet", "#7c3aed");
+        iconColorMap.put("green",  "#16a34a");
+        iconColorMap.put("pink",   "#db2777");
+        iconColorMap.put("yellow", "#ca8a04");
+        iconColorMap.put("purple", "#9333ea");
+        iconColorMap.put("indigo", "#4338ca");
+
+        Map<String, String> iconBgMap = new HashMap<>();
+        iconBgMap.put("red",    "#fee2e2");
+        iconBgMap.put("blue",   "#dbeafe");
+        iconBgMap.put("violet", "#ede9fe");
+        iconBgMap.put("green",  "#dcfce7");
+        iconBgMap.put("pink",   "#fce7f3");
+        iconBgMap.put("yellow", "#fef9c3");
+        iconBgMap.put("purple", "#f3e8ff");
+        iconBgMap.put("indigo", "#e0e7ff");
+
         model.addAttribute("categories", categories);
         model.addAttribute("user", user);
-        
+        model.addAttribute("iconColorMap", iconColorMap);
+        model.addAttribute("iconBgMap", iconBgMap);
+
         return "library";
     }
 
