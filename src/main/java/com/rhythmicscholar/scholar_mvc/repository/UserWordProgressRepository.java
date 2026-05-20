@@ -44,4 +44,14 @@ public interface UserWordProgressRepository extends JpaRepository<UserWordProgre
      */
     @Query("SELECT u.learningStatus, COUNT(u) FROM UserWordProgress u GROUP BY u.learningStatus")
     List<Object[]> countByLearningStatus();
+
+    /**
+     * Lấy top N từ vựng được nhiều người dùng học nhất (có bản ghi progress).
+     * Trả về mảng Object[]{koreanWord, englishMeaning, userCount}.
+     */
+    @Query("SELECT u.vocabulary.koreanWord, u.vocabulary.englishMeaning, COUNT(DISTINCT u.user.id) " +
+           "FROM UserWordProgress u " +
+           "GROUP BY u.vocabulary.id, u.vocabulary.koreanWord, u.vocabulary.englishMeaning " +
+           "ORDER BY COUNT(DISTINCT u.user.id) DESC")
+    List<Object[]> findTopStudiedWords(org.springframework.data.domain.Pageable pageable);
 }

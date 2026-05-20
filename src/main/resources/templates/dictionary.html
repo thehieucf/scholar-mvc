@@ -28,12 +28,16 @@
         <div class="flex items-center gap-4">
             <form th:action="@{/dictionary}" method="GET" class="hidden sm:block relative">
                 <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-outline">
-                    <span class="material-symbols-outlined text-[20px]">search</span>
+                    <span class="material-symbols-outlined text-[20px]">manage_search</span>
                 </div>
                 <input name="q"
                     th:value="${query}"
-                    class="bg-surface-container-highest border-none rounded-full py-1.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 w-64 md:w-80 transition-all"
-                    placeholder="Search topic, vocabulary..." type="text" />
+                    class="bg-surface-container-highest border-none rounded-full py-1.5 pl-10 pr-16 text-sm focus:ring-2 focus:ring-primary/20 w-64 md:w-80 transition-all"
+                    placeholder="Search Korean vocabulary…" type="text" />
+                <button type="submit"
+                    class="absolute inset-y-0 right-0 px-4 text-xs font-bold text-primary hover:text-primary/80 transition-colors rounded-r-full">
+                    Search
+                </button>
             </form>
             <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
                 <span class="material-symbols-outlined">notifications</span>
@@ -41,7 +45,7 @@
             <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
                 <span class="material-symbols-outlined">settings</span>
             </button>
-            <!-- Fix: tách điều kiện null check ra khỏi string concat để tránh NPE -->
+            <!-- Fix: separate null check from string concat to avoid NPE -->
             <a th:href="@{/profile}"
                 class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer">
                 <img class="w-full h-full object-cover"
@@ -150,7 +154,7 @@
                                 </div>
 
                                 <!-- Romaji + audio button -->
-                                <!-- Fix: dùng data-word thay vì th:onclick để tránh lỗi khi từ có ký tự đặc biệt -->
+                                <!-- Fix: use data-word instead of th:onclick to avoid errors with special characters -->
                                 <div class="flex items-center gap-3 mt-4">
                                     <p class="text-base text-on-surface-variant font-medium tracking-wide"
                                        th:text="'[' + ${vocab.romaji} + ']'">[sa-gwa]</p>
@@ -191,7 +195,7 @@
                                             <p class="text-on-surface-variant text-sm"
                                                th:text="${vocab.exampleEn}">I eat an apple in the morning.</p>
                                         </div>
-                                        <!-- Fix: dùng data-text thay vì th:onclick -->
+                                        <!-- Fix: use data-text instead of th:onclick -->
                                         <button type="button"
                                                 class="speak-btn text-teal-500 p-2 rounded-full hover:bg-teal-50 transition-colors shrink-0"
                                                 th:attr="data-text=${vocab.exampleKr}">
@@ -282,7 +286,7 @@
         </a>
     </nav>
 
-    <!-- TTS: dùng event delegation thay vì inline onclick -->
+    <!-- TTS: use event delegation instead of inline onclick -->
     <script>
         document.addEventListener('click', function (e) {
             var btn = e.target.closest('.speak-btn');

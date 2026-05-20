@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -73,8 +74,8 @@ public class AdminController {
         model.addAttribute("adminCount", adminCount);
         model.addAttribute("userCount", userCount);
 
-        // 5 most recently registered users
-        List<User> recentUsers = userRepository.findTop5ByOrderByIdDesc();
+        // 6 most recently registered users
+        List<User> recentUsers = userRepository.findTop6ByOrderByIdDesc();
         model.addAttribute("recentUsers", recentUsers);
 
         // Check which recent users studied today
@@ -113,17 +114,16 @@ public class AdminController {
         model.addAttribute("statusLearning", statusMap.get("LEARNING"));
         model.addAttribute("statusMastered", statusMap.get("MASTERED"));
 
-        // ---- Chart 3: Top 5 categories by word count ----
-        List<Object[]> catRows = vocabularyRepository.countGroupByCategory();
-        List<String> chartCatLabels = new ArrayList<>();
-        List<Long>   chartCatCounts = new ArrayList<>();
-        int limit = Math.min(5, catRows.size());
-        for (int i = 0; i < limit; i++) {
-            chartCatLabels.add((String) catRows.get(i)[0]);
-            chartCatCounts.add((Long)   catRows.get(i)[1]);
+        // ---- Chart 3: Doughnut — User level distribution ----
+        List<Object[]> levelRows = userRepository.countByLevel();
+        List<String> chartLevelLabels = new ArrayList<>();
+        List<Long>   chartLevelCounts = new ArrayList<>();
+        for (Object[] row : levelRows) {
+            chartLevelLabels.add((String) row[0]);
+            chartLevelCounts.add((Long) row[1]);
         }
-        model.addAttribute("chartCatLabels", chartCatLabels);
-        model.addAttribute("chartCatCounts", chartCatCounts);
+        model.addAttribute("chartLevelLabels", chartLevelLabels);
+        model.addAttribute("chartLevelCounts", chartLevelCounts);
 
         return "admin/dashboard";
     }
@@ -132,35 +132,57 @@ public class AdminController {
     // Manage Users
     // ----------------------------------------------------------------
     @GetMapping("/users")
-    public String listUsers(HttpSession session, Model model) {
+    public String listUsers(@RequestParam(defaultValue = "0") int page,
+                            @RequestParam(defaultValue = "10") int size,
+                            @RequestParam(defaultValue = "") String search,
+                            HttpSession session,
+                            Model model) {
         User admin = getCurrentAdmin(session);
         model.addAttribute("admin", admin);
-        model.addAttribute("users", userRepository.findAll());
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Page<User> userPage;
+        if (search != null && !search.isBlank()) {
+            userPage = userRepository.searchByNameOrEmail(search.trim(), pageable);
+        } else {
+            userPage = userRepository.findAll(pageable);
+        }
+
+        model.addAttribute("userPage", userPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("totalPages", userPage.getTotalPages());
+        model.addAttribute("totalElements", userPage.getTotalElements());
+        model.addAttribute("search", search);
         return "admin/users";
     }
 
     @PostMapping("/users/{id}/delete")
     public String deleteUser(@PathVariable Long id,
+                             @RequestParam(defaultValue = "0") int page,
+                             @RequestParam(defaultValue = "10") int size,
                              HttpSession session,
                              RedirectAttributes redirectAttributes) {
         Long currentAdminId = (Long) session.getAttribute("userId");
         if (id.equals(currentAdminId)) {
             redirectAttributes.addFlashAttribute("error", "You cannot delete your own account.");
-            return "redirect:/admin/users";
+            return "redirect:/admin/users?page=" + page + "&size=" + size;
         }
         userRepository.deleteById(id);
         redirectAttributes.addFlashAttribute("success", "User deleted successfully.");
-        return "redirect:/admin/users";
+        return "redirect:/admin/users?page=" + page + "&size=" + size;
     }
 
     @PostMapping("/users/{id}/reset-password")
     public String resetPassword(@PathVariable Long id,
+                                @RequestParam(defaultValue = "0") int page,
+                                @RequestParam(defaultValue = "10") int size,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
         Long currentAdminId = (Long) session.getAttribute("userId");
         if (id.equals(currentAdminId)) {
             redirectAttributes.addFlashAttribute("error", "You cannot reset your own password from here.");
-            return "redirect:/admin/users";
+            return "redirect:/admin/users?page=" + page + "&size=" + size;
         }
         User user = userRepository.findById(id).orElse(null);
         if (user != null) {
@@ -169,7 +191,7 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("success",
                 "Password for " + user.getFullName() + " has been reset to \"123456789\".");
         }
-        return "redirect:/admin/users";
+        return "redirect:/admin/users?page=" + page + "&size=" + size;
     }
 
     // ----------------------------------------------------------------
@@ -177,20 +199,27 @@ public class AdminController {
     // ----------------------------------------------------------------
     @GetMapping("/vocabulary")
     public String listVocabulary(@RequestParam(defaultValue = "0") int page,
-                                 @RequestParam(defaultValue = "15") int size,
+                                 @RequestParam(defaultValue = "10") int size,
+                                 @RequestParam(defaultValue = "") String search,
                                  HttpSession session,
                                  Model model) {
         User admin = getCurrentAdmin(session);
         model.addAttribute("admin", admin);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        Page<Vocabulary> vocabPage = vocabularyRepository.findAll(pageable);
+        Page<Vocabulary> vocabPage;
+        if (search != null && !search.isBlank()) {
+            vocabPage = vocabularyRepository.searchPaged(search.trim(), pageable);
+        } else {
+            vocabPage = vocabularyRepository.findAll(pageable);
+        }
 
         model.addAttribute("vocabPage", vocabPage);
         model.addAttribute("currentPage", page);
         model.addAttribute("pageSize", size);
         model.addAttribute("totalPages", vocabPage.getTotalPages());
         model.addAttribute("totalElements", vocabPage.getTotalElements());
+        model.addAttribute("search", search);
         model.addAttribute("categories", categoryRepository.findAll(Sort.by("nameEn").ascending()));
         return "admin/vocabulary";
     }
@@ -205,7 +234,7 @@ public class AdminController {
                                 @RequestParam(required = false) String exampleEn,
                                 @RequestParam(required = false) String mnemonic,
                                 @RequestParam(defaultValue = "0") int page,
-                                @RequestParam(defaultValue = "15") int size,
+                                @RequestParam(defaultValue = "10") int size,
                                 RedirectAttributes redirectAttributes) {
         Category category = categoryRepository.findById(categoryId).orElse(null);
         if (category == null) {
@@ -229,7 +258,7 @@ public class AdminController {
     @PostMapping("/vocabulary/{id}/delete")
     public String deleteVocabulary(@PathVariable Long id,
                                    @RequestParam(defaultValue = "0") int page,
-                                   @RequestParam(defaultValue = "15") int size,
+                                   @RequestParam(defaultValue = "10") int size,
                                    RedirectAttributes redirectAttributes) {
         vocabularyRepository.deleteById(id);
         redirectAttributes.addFlashAttribute("success", "Word deleted successfully.");
@@ -241,20 +270,27 @@ public class AdminController {
     // ----------------------------------------------------------------
     @GetMapping("/questions")
     public String listQuestions(@RequestParam(defaultValue = "0") int page,
-                                @RequestParam(defaultValue = "15") int size,
+                                @RequestParam(defaultValue = "10") int size,
+                                @RequestParam(defaultValue = "") String search,
                                 HttpSession session,
                                 Model model) {
         User admin = getCurrentAdmin(session);
         model.addAttribute("admin", admin);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        Page<QuizQuestion> questionPage = quizQuestionRepository.findAll(pageable);
+        Page<QuizQuestion> questionPage;
+        if (search != null && !search.isBlank()) {
+            questionPage = quizQuestionRepository.searchPaged(search.trim(), pageable);
+        } else {
+            questionPage = quizQuestionRepository.findAll(pageable);
+        }
 
         model.addAttribute("questionPage", questionPage);
         model.addAttribute("currentPage", page);
         model.addAttribute("pageSize", size);
         model.addAttribute("totalPages", questionPage.getTotalPages());
         model.addAttribute("totalElements", questionPage.getTotalElements());
+        model.addAttribute("search", search);
         return "admin/questions";
     }
 
@@ -270,10 +306,17 @@ public class AdminController {
     // Manage Categories
     // ----------------------------------------------------------------
     @GetMapping("/categories")
-    public String listCategories(HttpSession session, Model model) {
+    public String listCategories(@RequestParam(defaultValue = "") String search,
+                                 HttpSession session,
+                                 Model model) {
         User admin = getCurrentAdmin(session);
         model.addAttribute("admin", admin);
-        List<Category> categories = categoryRepository.findAll(Sort.by("id").ascending());
+        List<Category> categories;
+        if (search != null && !search.isBlank()) {
+            categories = categoryRepository.searchByName(search.trim());
+        } else {
+            categories = categoryRepository.findAll(Sort.by("id").ascending());
+        }
         // Word count per category
         Map<Long, Long> wordCountMap = new HashMap<>();
         for (Category c : categories) {
@@ -281,6 +324,7 @@ public class AdminController {
         }
         model.addAttribute("categories", categories);
         model.addAttribute("wordCountMap", wordCountMap);
+        model.addAttribute("search", search);
         return "admin/categories";
     }
 

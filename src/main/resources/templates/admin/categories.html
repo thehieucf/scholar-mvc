@@ -77,6 +77,29 @@
                 </button>
             </div>
 
+            <!-- Search bar -->
+            <form method="get" th:action="@{/admin/categories}" style="margin-bottom:1rem;">
+                <div style="display:flex;gap:0.5rem;max-width:480px;">
+                    <div style="position:relative;flex:1;">
+                        <span class="material-symbols-outlined"
+                              style="position:absolute;left:0.6rem;top:50%;transform:translateY(-50%);font-size:18px;color:var(--admin-text-muted);pointer-events:none;">search</span>
+                        <input type="text" name="search" th:value="${search}"
+                               placeholder="Search by English or Korean name…"
+                               style="width:100%;padding:0.5rem 0.75rem 0.5rem 2.2rem;border:1px solid var(--admin-border);border-radius:8px;font-size:0.875rem;font-family:inherit;color:var(--admin-text);background:var(--admin-surface);box-sizing:border-box;" />
+                    </div>
+                    <button type="submit" class="admin-btn admin-btn--primary" style="white-space:nowrap;">
+                        <span class="material-symbols-outlined" style="font-size:16px;">search</span>
+                        Search
+                    </button>
+                    <a th:if="${search != null and !#strings.isEmpty(search)}"
+                       th:href="@{/admin/categories}"
+                       class="admin-btn admin-btn--ghost" style="white-space:nowrap;">
+                        <span class="material-symbols-outlined" style="font-size:16px;">close</span>
+                        Clear
+                    </a>
+                </div>
+            </form>
+
             <!-- Flash messages -->
             <div th:if="${success}"
                  style="background:#dcfce7;color:#15803d;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.875rem;"
@@ -136,7 +159,7 @@
                                 th:text="${cat.description != null ? cat.description : '—'}">—</td>
                             <td>
                                 <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
-                                    <!-- Edit: dùng data-* để tránh lỗi Thymeleaf inline JS -->
+                                    <!-- Edit: use data-* attributes to avoid Thymeleaf inline JS issues -->
                                     <button type="button"
                                             class="admin-btn admin-btn--ghost admin-btn--sm btn-edit-cat"
                                             style="font-size:0.75rem;padding:0.25rem 0.6rem;"

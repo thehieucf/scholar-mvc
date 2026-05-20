@@ -52,8 +52,8 @@ public class AuthController {
             return "redirect:/";
         }
         
-        // Trả về lỗi nếu đăng nhập thất bại
-        model.addAttribute("error", "Email hoặc mật khẩu không chính xác.");
+        // Return error if login failed
+        model.addAttribute("error", "Incorrect email or password.");
         return "login";
     }
 
@@ -75,9 +75,9 @@ public class AuthController {
                                  @RequestParam(defaultValue = "Beginner") String currentLevel,
                                  HttpSession session,
                                  Model model) {
-        // Kiểm tra xem email đã được sử dụng chưa
+        // Check if email is already in use
         if (userRepository.findByEmail(email).isPresent()) {
-            model.addAttribute("error", "Email này đã được sử dụng cho một tài khoản khác.");
+            model.addAttribute("error", "This email is already associated with another account.");
             return "register";
         }
         

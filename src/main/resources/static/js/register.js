@@ -1,11 +1,11 @@
 /**
- * register.js — Xử lý các tương tác trong trang Đăng ký
+ * register.js — Handles interactions on the Register page
  */
 
 /**
- * Ẩn/Hiện mật khẩu cho ô nhập liệu cụ thể
- * @param {string} inputId ID của ô input mật khẩu
- * @param {HTMLElement} btn Nút nhấn kích hoạt việc ẩn/hiện
+ * Toggle password visibility for a specific input field
+ * @param {string} inputId ID of the password input element
+ * @param {HTMLElement} btn Button that triggered the toggle
  */
 function togglePassword(inputId, btn) {
     const input = document.getElementById(inputId);
@@ -22,18 +22,18 @@ function togglePassword(inputId, btn) {
 }
 
 /**
- * Lựa chọn trình độ học tập (Beginner, Intermediate, Advanced)
- * @param {HTMLElement} btn Nút trình độ được chọn
+ * Select a proficiency level (Beginner, Intermediate, Advanced)
+ * @param {HTMLElement} btn The level button that was clicked
  */
 function selectLevel(btn) {
-    // Xóa trạng thái hoạt động của các nút khác
+    // Remove active state from all buttons
     const btns = document.querySelectorAll('#level-selector .level-btn');
     btns.forEach(b => b.classList.remove('active'));
-    
-    // Thêm trạng thái hoạt động cho nút vừa nhấn
+
+    // Set active state on the clicked button
     btn.classList.add('active');
 
-    // Cập nhật giá trị vào ô input ẩn để gửi lên server
+    // Update the hidden input value to send to the server
     const hidden = document.getElementById('currentLevel');
     if (hidden) {
         hidden.value = btn.textContent.trim();

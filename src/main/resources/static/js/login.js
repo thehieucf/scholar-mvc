@@ -1,20 +1,20 @@
 /**
- * login.js — Xử lý các tương tác trong trang Đăng nhập
+ * login.js — Handles interactions on the Login page
  */
 
 /**
- * Ẩn/Hiện mật khẩu khi người dùng nhấn vào biểu tượng con mắt
+ * Toggle password visibility when the user clicks the eye icon
  */
 function togglePassword() {
     const input = document.getElementById('password');
     const icon = document.getElementById('toggle-icon');
     if (input) {
         if (input.type === 'password') {
-            // Chuyển sang hiển thị văn bản thuần
+            // Switch to plain text
             input.type = 'text';
             if (icon) icon.textContent = 'visibility_off';
         } else {
-            // Chuyển về dạng mật khẩu (dấu chấm)
+            // Switch back to password (dots)
             input.type = 'password';
             if (icon) icon.textContent = 'visibility';
         }

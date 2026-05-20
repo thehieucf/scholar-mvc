@@ -1,8 +1,8 @@
 /**
- * library.js — Xử lý tương tác cho Modal thư viện từ vựng
+ * library.js — Handles interactions for the vocabulary library modal
  */
 
-// Lấy các phần tử DOM cần thiết
+// Get required DOM elements
 const modal = document.getElementById('word-modal');
 const modalTitle = document.getElementById('modal-title');
 const modalIcon = document.getElementById('modal-icon');
@@ -11,49 +11,47 @@ const wordListContainer = document.getElementById('modal-word-list');
 const practiceBtn = document.getElementById('modal-practice-btn');
 
 /**
- * Mở modal hiển thị danh sách từ vựng của một danh mục.
- * @param {string} categoryId ID của danh mục
- * @param {string} title Tên danh mục (tiếng Anh)
- * @param {string} icon Tên icon Material Symbols
- * @param {string} colorTheme Tên màu chủ đề (VD: emerald, blue)
+ * Open the modal showing vocabulary words for a category.
+ * @param {string} categoryId Category ID
+ * @param {string} title Category name (English)
+ * @param {string} icon Material Symbols icon name
+ * @param {string} colorTheme Color theme name (e.g. emerald, blue)
  */
 function openModal(categoryId, title, icon, colorTheme) {
-    console.log('Đang mở modal cho danh mục:', categoryId, title);
-    
-    // Cập nhật thông tin Header của Modal
+    // Update modal header
     modalTitle.textContent = title;
     modalIcon.textContent = icon;
     modalIconContainer.className = `w-10 h-10 rounded-lg flex items-center justify-center bg-${colorTheme}-container text-on-${colorTheme}-container`;
 
-    // Cập nhật đường dẫn cho nút "Practice" (Luyện tập)
+    // Update the Practice button link
     if (practiceBtn) {
         practiceBtn.href = `/study?id=${categoryId}`;
     }
 
-    // Hiển thị trạng thái đang tải (Loading)
+    // Show loading state
     wordListContainer.innerHTML = `
         <div class="flex flex-col items-center justify-center p-12 text-on-surface-variant">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <p class="text-xs font-medium uppercase tracking-widest">Đang tải từ vựng...</p>
+            <p class="text-xs font-medium uppercase tracking-widest">Loading vocabulary...</p>
         </div>`;
-    
-    // Gọi API để lấy danh sách từ vựng thuộc danh mục này
+
+    // Fetch vocabulary words for this category
     fetch(`/api/categories/${categoryId}/vocabularies`)
         .then(response => response.json())
         .then(words => {
             wordListContainer.innerHTML = '';
-            
-            // Kiểm tra nếu danh mục trống
+
+            // Handle empty category
             if (!words || words.length === 0) {
                 wordListContainer.innerHTML = `
                     <div class="text-center p-12 bg-surface-container-low rounded-2xl border border-dashed border-outline-variant/30">
                         <span class="material-symbols-outlined text-4xl text-outline mb-3">sentiment_dissatisfied</span>
-                        <p class="text-on-surface-variant font-medium">Chưa có từ vựng nào trong danh mục này.</p>
+                        <p class="text-on-surface-variant font-medium">No vocabulary words in this category yet.</p>
                     </div>`;
                 return;
             }
 
-            // Tạo các thẻ từ vựng (Word Cards) và thêm vào danh sách
+            // Build word cards and append to list
             words.forEach(word => {
                 const wordCard = document.createElement('div');
                 wordCard.className = 'bg-surface-container-lowest rounded-xl p-4 flex items-center justify-between border border-outline-variant/15 hover:border-primary/30 transition-colors group shadow-sm';
@@ -73,42 +71,42 @@ function openModal(categoryId, title, icon, colorTheme) {
             });
         })
         .catch(error => {
-            console.error('Lỗi khi lấy từ vựng:', error);
-            wordListContainer.innerHTML = '<div class="text-center p-8 text-error">Không thể tải danh sách từ vựng.</div>';
+            console.error('Error fetching vocabulary:', error);
+            wordListContainer.innerHTML = '<div class="text-center p-8 text-error">Could not load vocabulary list.</div>';
         });
 
-    // Hiển thị Modal với hiệu ứng chuyển động
+    // Show modal with animation
     modal.classList.remove('hidden');
     setTimeout(() => {
         modal.classList.add('show');
     }, 10);
 
-    // Ngăn cuộn trang web khi modal đang mở
+    // Prevent page scroll while modal is open
     document.body.style.overflow = 'hidden';
 }
 
 /**
- * Phát âm từ tiếng Hàn sử dụng Web Speech API.
- * @param {string} text Từ cần phát âm
+ * Play pronunciation of a Korean word using the Web Speech API.
+ * @param {string} text Word to pronounce
  */
 function playWord(text) {
     if ('speechSynthesis' in window) {
         const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = 'ko-KR'; // Đặt ngôn ngữ là tiếng Hàn
+        utter.lang = 'ko-KR';
         speechSynthesis.speak(utter);
     }
 }
 
 /**
- * Đóng modal.
+ * Close the modal.
  */
 function closeModal() {
     modal.classList.remove('show');
-    // Đợi hiệu ứng chuyển động kết thúc rồi mới ẩn hoàn toàn
+    // Wait for transition to finish before hiding completely
     setTimeout(() => {
         modal.classList.add('hidden');
-    }, 300); // Khớp với thời gian transition 0.3s trong CSS
+    }, 300); // Matches the 0.3s CSS transition
 
-    // Cho phép cuộn trang web lại bình thường
+    // Re-enable page scroll
     document.body.style.overflow = '';
 }

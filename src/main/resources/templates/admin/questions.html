@@ -52,6 +52,30 @@
                 All quiz questions in the system
             </p>
 
+            <!-- Search bar -->
+            <form method="get" th:action="@{/admin/questions}" style="margin-bottom:1rem;">
+                <div style="display:flex;gap:0.5rem;max-width:480px;">
+                    <div style="position:relative;flex:1;">
+                        <span class="material-symbols-outlined"
+                              style="position:absolute;left:0.6rem;top:50%;transform:translateY(-50%);font-size:18px;color:var(--admin-text-muted);pointer-events:none;">search</span>
+                        <input type="text" name="search" th:value="${search}"
+                               placeholder="Search by topic, Korean text or answer…"
+                               style="width:100%;padding:0.5rem 0.75rem 0.5rem 2.2rem;border:1px solid var(--admin-border);border-radius:8px;font-size:0.875rem;font-family:inherit;color:var(--admin-text);background:var(--admin-surface);box-sizing:border-box;" />
+                    </div>
+                    <input type="hidden" name="size" th:value="${pageSize}" />
+                    <button type="submit" class="admin-btn admin-btn--primary" style="white-space:nowrap;">
+                        <span class="material-symbols-outlined" style="font-size:16px;">search</span>
+                        Search
+                    </button>
+                    <a th:if="${search != null and !#strings.isEmpty(search)}"
+                       th:href="@{/admin/questions(size=${pageSize})}"
+                       class="admin-btn admin-btn--ghost" style="white-space:nowrap;">
+                        <span class="material-symbols-outlined" style="font-size:16px;">close</span>
+                        Clear
+                    </a>
+                </div>
+            </form>
+
             <!-- Flash messages -->
             <div th:if="${success}" style="background:#dcfce7;color:#15803d;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.875rem;"
                  th:text="${success}"></div>
@@ -68,8 +92,8 @@
                         <select onchange="changePageSize(this.value)">
                             <option th:value="10"  th:selected="${pageSize == 10}">10</option>
                             <option th:value="15"  th:selected="${pageSize == 15}">15</option>
+                            <option th:value="20"  th:selected="${pageSize == 20}">20</option>
                             <option th:value="25"  th:selected="${pageSize == 25}">25</option>
-                            <option th:value="50"  th:selected="${pageSize == 50}">50</option>
                         </select>
                     </div>
                 </div>
@@ -132,12 +156,12 @@
                         Page 1 of 1
                     </span>
                     <div class="admin-pagination__pages">
-                        <a th:href="@{/admin/questions(page=0, size=${pageSize})}"
+                        <a th:href="@{/admin/questions(page=0, size=${pageSize}, search=${search})}"
                            th:classappend="${currentPage == 0} ? ' disabled' : ''"
                            class="admin-page-btn" title="First page">
                             <span class="material-symbols-outlined">first_page</span>
                         </a>
-                        <a th:href="@{/admin/questions(page=${currentPage - 1}, size=${pageSize})}"
+                        <a th:href="@{/admin/questions(page=${currentPage - 1}, size=${pageSize}, search=${search})}"
                            th:classappend="${currentPage == 0} ? ' disabled' : ''"
                            class="admin-page-btn" title="Previous page">
                             <span class="material-symbols-outlined">chevron_left</span>
@@ -146,17 +170,17 @@
                             startPage=${T(java.lang.Math).max(0, currentPage - 2)},
                             endPage=${T(java.lang.Math).min(totalPages - 1, currentPage + 2)}">
                             <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
-                               th:href="@{/admin/questions(page=${i}, size=${pageSize})}"
+                               th:href="@{/admin/questions(page=${i}, size=${pageSize}, search=${search})}"
                                th:text="${i + 1}"
                                th:classappend="${i == currentPage} ? ' active' : ''"
                                class="admin-page-btn">1</a>
                         </th:block>
-                        <a th:href="@{/admin/questions(page=${currentPage + 1}, size=${pageSize})}"
+                        <a th:href="@{/admin/questions(page=${currentPage + 1}, size=${pageSize}, search=${search})}"
                            th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
                            class="admin-page-btn" title="Next page">
                             <span class="material-symbols-outlined">chevron_right</span>
                         </a>
-                        <a th:href="@{/admin/questions(page=${totalPages - 1}, size=${pageSize})}"
+                        <a th:href="@{/admin/questions(page=${totalPages - 1}, size=${pageSize}, search=${search})}"
                            th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
                            class="admin-page-btn" title="Last page">
                             <span class="material-symbols-outlined">last_page</span>
@@ -170,9 +194,14 @@
     </div>
 
     <script th:inline="javascript">
+        /*<![CDATA[*/
+        var currentSearch = /*[[${search}]]*/ '';
         function changePageSize(size) {
-            window.location.href = '/admin/questions?page=0&size=' + size;
+            var url = '/admin/questions?page=0&size=' + size;
+            if (currentSearch) url += '&search=' + encodeURIComponent(currentSearch);
+            window.location.href = url;
         }
+        /*]]>*/
     </script>
 
 </body>

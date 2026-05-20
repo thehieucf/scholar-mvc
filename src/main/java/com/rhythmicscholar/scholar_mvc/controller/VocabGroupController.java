@@ -76,7 +76,7 @@ public class VocabGroupController {
     public ResponseEntity<?> createGroup(@RequestBody Map<String, String> body, HttpSession session) {
         String name = body.get("name");
         if (name == null || name.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Tên nhóm không được để trống"));
+            return ResponseEntity.badRequest().body(Map.of("error", "Group name cannot be empty"));
         }
 
         Long userId = getUserId(session);
@@ -118,14 +118,14 @@ public class VocabGroupController {
         }
         if (!groupOpt.get().getUserId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Bạn không có quyền xóa nhóm này"));
+                    .body(Map.of("error", "You do not have permission to delete this group"));
         }
 
-        // Xóa tất cả từ trong nhóm trước, rồi xóa nhóm
+        // Delete all words in the group first, then delete the group
         vocabGroupItemRepository.deleteByGroupId(id);
         vocabGroupRepository.deleteById(id);
 
-        return ResponseEntity.ok(Map.of("message", "Đã xóa nhóm thành công"));
+        return ResponseEntity.ok(Map.of("message", "Group deleted successfully"));
     }
 
     // ============================================================
@@ -169,14 +169,14 @@ public class VocabGroupController {
         }
         if (!groupOpt.get().getUserId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Bạn không có quyền chỉnh sửa nhóm này"));
+                    .body(Map.of("error", "You do not have permission to edit this group"));
         }
 
         String koreanWord = body.get("koreanWord");
         String englishMeaning = body.get("englishMeaning");
         if (koreanWord == null || koreanWord.isBlank() || englishMeaning == null || englishMeaning.isBlank()) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Từ tiếng Hàn và nghĩa tiếng Anh không được để trống"));
+                    .body(Map.of("error", "Korean word and English meaning cannot be empty"));
         }
 
         VocabGroupItem item = new VocabGroupItem();
@@ -216,6 +216,6 @@ public class VocabGroupController {
         }
 
         vocabGroupItemRepository.deleteById(itemId);
-        return ResponseEntity.ok(Map.of("message", "Đã xóa từ thành công"));
+        return ResponseEntity.ok(Map.of("message", "Word removed successfully"));
     }
 }

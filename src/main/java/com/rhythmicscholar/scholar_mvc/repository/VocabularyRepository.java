@@ -1,6 +1,8 @@
 package com.rhythmicscholar.scholar_mvc.repository;
 
 import com.rhythmicscholar.scholar_mvc.model.Vocabulary;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,4 +33,15 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Long> {
     @Query("SELECT v FROM Vocabulary v JOIN FETCH v.category " +
            "WHERE v.koreanWord LIKE %:korean% OR v.englishMeaning LIKE %:english%")
     List<Vocabulary> searchWithCategory(@Param("korean") String korean, @Param("english") String english);
+
+    /** Tìm kiếm từ vựng có phân trang (JOIN FETCH để load category). */
+    @Query(value = "SELECT v FROM Vocabulary v JOIN FETCH v.category " +
+                   "WHERE LOWER(v.koreanWord) LIKE LOWER(CONCAT('%', :q, '%')) " +
+                   "OR LOWER(v.englishMeaning) LIKE LOWER(CONCAT('%', :q, '%')) " +
+                   "OR LOWER(v.romaji) LIKE LOWER(CONCAT('%', :q, '%'))",
+           countQuery = "SELECT COUNT(v) FROM Vocabulary v " +
+                        "WHERE LOWER(v.koreanWord) LIKE LOWER(CONCAT('%', :q, '%')) " +
+                        "OR LOWER(v.englishMeaning) LIKE LOWER(CONCAT('%', :q, '%')) " +
+                        "OR LOWER(v.romaji) LIKE LOWER(CONCAT('%', :q, '%'))")
+    Page<Vocabulary> searchPaged(@Param("q") String q, Pageable pageable);
 }

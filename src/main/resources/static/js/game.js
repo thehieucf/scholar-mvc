@@ -1,5 +1,5 @@
 /**
- * game.js — Xử lý logic cho trò chơi trắc nghiệm tiếng Hàn (Quiz)
+ * game.js — Handles logic for the Korean vocabulary quiz game
  */
 
 let questions = [];
@@ -34,15 +34,15 @@ if (typeof serverQuestions !== 'undefined' && serverQuestions.length > 0) {
     ];
 }
 
-// Biến quản lý trạng thái trò chơi
-let current = 0,         // Câu hỏi hiện tại
-    correctCount = 0,    // Số câu đúng
-    wrongCount = 0,      // Số câu sai
-    xpEarned = 0,        // XP kiếm được
-    answered = false;    // Đã trả lời hay chưa
+// Game state variables
+let current = 0,         // Current question index
+    correctCount = 0,    // Number of correct answers
+    wrongCount = 0,      // Number of wrong answers
+    xpEarned = 0,        // XP earned
+    answered = false;    // Whether current question has been answered
 
 /**
- * Hiển thị câu hỏi hiện tại lên giao diện
+ * Render the current question on screen
  */
 function renderQuestion() {
     const q = questions[current];
@@ -75,7 +75,7 @@ function renderQuestion() {
 }
 
 /**
- * Xử lý khi người dùng chọn một đáp án
+ * Handle answer selection
  */
 function selectAnswer(idx, correctIdx, clickedBtn) {
     if (answered) return;
@@ -114,7 +114,7 @@ function selectAnswer(idx, correctIdx, clickedBtn) {
 }
 
 /**
- * Hiển thị màn hình kết quả cuối cùng
+ * Show the final results screen
  */
 function showResult() {
     const main = document.querySelector('main');
@@ -158,7 +158,7 @@ function restartQuiz() {
 }
 
 /**
- * Phát âm nội dung câu hỏi
+ * Play audio for the current question
  */
 function playAudio() {
     const q = questions[current];

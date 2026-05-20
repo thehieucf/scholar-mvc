@@ -6,39 +6,57 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+/**
+ * Interceptor kiểm tra xác thực và phân quyền người dùng.
+ * Được gọi trước mỗi request để đảm bảo:
+ *   - Người dùng đã đăng nhập trước khi truy cập các trang bảo vệ.
+ *   - Chỉ ADMIN mới được truy cập khu vực /admin/*.
+ */
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
 
+    /**
+     * Xử lý trước khi request được chuyển đến controller.
+     * Trả về true để tiếp tục xử lý, false để dừng và redirect.
+     *
+     * @param request  HTTP request hiện tại
+     * @param response HTTP response để ghi redirect nếu cần
+     * @param handler  Handler (controller) sẽ xử lý request
+     * @return true nếu cho phép tiếp tục, false nếu chặn lại
+     */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // Lấy URI của request và loại bỏ context path nếu có
         String uri = request.getRequestURI();
         String contextPath = request.getContextPath();
         if (contextPath != null && !contextPath.isEmpty() && uri.startsWith(contextPath)) {
             uri = uri.substring(contextPath.length());
         }
+        // Loại bỏ dấu "/" đầu tiên để dễ so sánh
         if (uri.startsWith("/")) {
             uri = uri.substring(1);
         }
 
-        // Các path không cần xác thực
+        // Các path không cần xác thực: trang login, register và tài nguyên tĩnh
         if (uri.equals("login") || uri.equals("login.html") ||
             uri.equals("register") || uri.equals("register.html") ||
             uri.startsWith("css/") || uri.startsWith("js/") ||
             uri.startsWith("images/") || uri.equals("favicon.ico") ||
             uri.startsWith("webjars/")) {
-            return true;
+            return true; // Cho phép truy cập tự do
         }
 
+        // Lấy userId từ session để kiểm tra trạng thái đăng nhập
         HttpSession session = request.getSession();
         Long userId = (Long) session.getAttribute("userId");
 
-        // Chưa đăng nhập → redirect về login
+        // Chưa đăng nhập → redirect về trang login
         if (userId == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return false;
         }
 
-        // Kiểm tra quyền truy cập khu vực admin
+        // Kiểm tra quyền truy cập khu vực admin (/admin/*)
         if (uri.startsWith("admin/")) {
             String role = (String) session.getAttribute("userRole");
             if (!"ADMIN".equals(role)) {
@@ -48,6 +66,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
         }
 
+        // Đã xác thực và có đủ quyền → cho phép tiếp tục
         return true;
     }
 }

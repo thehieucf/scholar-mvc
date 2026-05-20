@@ -1,12 +1,12 @@
 /**
- * tailwind-config.js — Cấu hình Tailwind CSS cho Rhythmic Scholar
- * Tệp này định nghĩa bảng màu, font chữ và các tùy chỉnh giao diện khác.
- * Dùng chung cho tất cả các trang. Load SAU khi đã import Tailwind CDN.
+ * tailwind-config.js — Tailwind CSS configuration for Rhythmic Scholar
+ * Defines the color palette, fonts, and other UI customizations.
+ * Shared across all pages. Load AFTER importing the Tailwind CDN.
  */
 tailwind.config = {
     theme: {
         extend: {
-            // Định nghĩa các màu sắc tùy chỉnh theo Material Design 3
+            // Custom colors following Material Design 3
             colors: {
                 'surface-container-low':          '#f1f4f3',
                 'on-tertiary':                    '#ffffff',
@@ -56,18 +56,18 @@ tailwind.config = {
                 'on-primary':                     '#ffffff',
                 'tertiary':                       '#735c00',
             },
-            // Tùy chỉnh bo góc cho các thành phần (nút, thẻ, container)
+            // Border radius customization for buttons, cards, containers
             borderRadius: {
                 DEFAULT: '1rem',
                 lg:      '2rem',
                 xl:      '3rem',
                 full:    '9999px',
             },
-            // Cấu hình font chữ cho từng mục đích sử dụng
+            // Font family configuration
             fontFamily: {
-                headline: ['Plus Jakarta Sans'], // Cho tiêu đề lớn
-                body:     ['Be Vietnam Pro'],    // Cho nội dung chính
-                label:    ['Be Vietnam Pro'],    // Cho các nhãn và mô tả nhỏ
+                headline: ['Plus Jakarta Sans'], // For large headings
+                body:     ['Be Vietnam Pro'],    // For main content
+                label:    ['Be Vietnam Pro'],    // For labels and small descriptions
             },
         },
     },

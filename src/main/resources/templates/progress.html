@@ -24,13 +24,17 @@
             <span class="text-2xl font-bold tracking-tight text-emerald-800 font-headline">Rhythmic Scholar</span>
         </div>
         <div class="flex items-center gap-4">
-            <form action="dictionary.html" method="GET" class="hidden sm:block relative">
+            <form th:action="@{/dictionary}" method="GET" class="hidden sm:block relative">
                 <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-outline">
-                    <span class="material-symbols-outlined" data-icon="search">search</span>
+                    <span class="material-symbols-outlined text-[18px]" data-icon="search">manage_search</span>
                 </div>
                 <input name="q"
-                    class="bg-surface-container-highest border-none rounded-full py-1.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 w-64 md:w-80 transition-all"
-                    placeholder="Search topic, vocabulary..." type="text" />
+                    class="bg-surface-container-highest border-none rounded-full py-1.5 pl-10 pr-16 text-sm focus:ring-2 focus:ring-primary/20 w-64 md:w-80 transition-all"
+                    placeholder="Search Korean vocabulary…" type="text" />
+                <button type="submit"
+                    class="absolute inset-y-0 right-0 px-4 text-xs font-bold text-primary hover:text-primary/80 transition-colors rounded-r-full">
+                    Search
+                </button>
             </form>
             <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
                 <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
@@ -189,7 +193,7 @@
             <div th:if="${categoryProgressList == null or categoryProgressList.isEmpty()}"
                  class="text-center py-20 text-on-surface-variant">
                 <span class="material-symbols-outlined text-6xl mb-4 block">library_books</span>
-                <p class="text-lg">Chưa có dữ liệu tiến trình. Hãy bắt đầu học!</p>
+                <p class="text-lg">No progress data yet. Start studying!</p>
                 <a href="study.html" class="mt-4 inline-block bg-primary text-on-primary font-bold px-6 py-3 rounded-full">Start Study</a>
             </div>
 

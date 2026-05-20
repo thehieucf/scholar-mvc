@@ -114,16 +114,19 @@
                 </div>
             </div>
 
-            <!-- Chart 3: Top 5 Categories (full width) -->
+            <!-- Chart 3: User Level Distribution (full width) -->
             <div class="admin-table-card" style="overflow:visible;margin-bottom:1.5rem;">
                 <div class="admin-table-card__header">
                     <span class="admin-table-card__title">
-                        <span class="material-symbols-outlined" style="vertical-align:middle;font-size:18px;margin-right:4px;color:#b45309;">bar_chart</span>
-                        Top 5 Categories by Word Count
+                        <span class="material-symbols-outlined" style="vertical-align:middle;font-size:18px;margin-right:4px;color:#7c3aed;">pie_chart</span>
+                        User Level Distribution
                     </span>
                 </div>
-                <div style="padding:1.25rem 1.5rem;">
-                    <canvas id="chartCategories" height="110"></canvas>
+                <div style="padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:center;gap:3rem;">
+                    <div style="width:260px;height:260px;">
+                        <canvas id="chartLevels"></canvas>
+                    </div>
+                    <div id="levelLegend" style="display:flex;flex-direction:column;gap:0.75rem;font-size:0.875rem;min-width:160px;"></div>
                 </div>
             </div>
 
@@ -184,14 +187,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
-        // Data từ server
+        // Data from server
         const dayLabels   = /*[[${chartDayLabels}]]*/ [];
         const dayCounts   = /*[[${chartDayCounts}]]*/ [];
         const statusNew      = /*[[${statusNew}]]*/ 0;
         const statusLearning = /*[[${statusLearning}]]*/ 0;
         const statusMastered = /*[[${statusMastered}]]*/ 0;
-        const catLabels   = /*[[${chartCatLabels}]]*/ [];
-        const catCounts   = /*[[${chartCatCounts}]]*/ [];
+        const levelLabels = /*[[${chartLevelLabels}]]*/ [];
+        const levelCounts = /*[[${chartLevelCounts}]]*/ [];
 
         // Shared defaults
         Chart.defaults.font.family = "'Be Vietnam Pro', 'Inter', sans-serif";
@@ -259,41 +262,56 @@
             }
         });
 
-        // ---- Chart 3: Bar — Top Categories ----
-        new Chart(document.getElementById('chartCategories'), {
-            type: 'bar',
+        // ---- Chart 3: Doughnut — User Level Distribution ----
+        const levelPalette = ['#6d28d9','#1d4ed8','#0891b2','#16a34a','#b45309','#be123c'];
+        const levelColors  = levelLabels.map((_, i) => levelPalette[i % levelPalette.length]);
+
+        new Chart(document.getElementById('chartLevels'), {
+            type: 'doughnut',
             data: {
-                labels: catLabels,
+                labels: levelLabels,
                 datasets: [{
-                    label: 'Words',
-                    data: catCounts,
-                    backgroundColor: [
-                        'rgba(29,78,216,0.75)',
-                        'rgba(21,128,61,0.75)',
-                        'rgba(180,83,9,0.75)',
-                        'rgba(185,28,28,0.75)',
-                        'rgba(109,40,217,0.75)'
-                    ],
-                    borderRadius: 6,
-                    borderSkipped: false
+                    data: levelCounts,
+                    backgroundColor: levelColors,
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 8
                 }]
             },
             options: {
                 responsive: true,
+                cutout: '60%',
                 plugins: {
                     legend: { display: false },
-                    tooltip: { mode: 'index', intersect: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { stepSize: 1, precision: 0 },
-                        grid: { color: '#f1f5f9' }
-                    },
-                    x: { grid: { display: false } }
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => {
+                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                const pct   = total > 0 ? Math.round(ctx.parsed / total * 100) : 0;
+                                return '  ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+                            }
+                        }
+                    }
                 }
             }
         });
+
+        // Build legend manually
+        const legendEl = document.getElementById('levelLegend');
+        const totalUsers = levelCounts.reduce((a, b) => a + b, 0);
+        levelLabels.forEach((label, i) => {
+            const pct = totalUsers > 0 ? Math.round(levelCounts[i] / totalUsers * 100) : 0;
+            legendEl.innerHTML += `
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <span style="width:12px;height:12px;border-radius:3px;background:${levelColors[i]};flex-shrink:0;"></span>
+                    <span style="color:var(--admin-text-muted);">${label}</span>
+                    <strong style="margin-left:auto;">${levelCounts[i]}</strong>
+                    <span style="color:#94a3b8;font-size:0.8rem;">${pct}%</span>
+                </div>`;
+        });
+        if (levelLabels.length === 0) {
+            legendEl.innerHTML = '<span style="color:#94a3b8;font-size:0.85rem;">No data yet.</span>';
+        }
         /*]]>*/
     </script>
 </body>

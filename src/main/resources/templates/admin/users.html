@@ -7,6 +7,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <style>
+        .admin-pagination {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 1.5rem; border-top: 1px solid var(--admin-border);
+            flex-wrap: wrap; gap: 0.75rem;
+        }
+        .admin-pagination__info { font-size: 0.8rem; color: var(--admin-text-muted); }
+        .admin-pagination__pages { display: flex; align-items: center; gap: 0.25rem; }
+        .admin-page-btn {
+            min-width: 34px; height: 34px; padding: 0 0.5rem;
+            border-radius: 6px; border: 1px solid var(--admin-border);
+            background: var(--admin-surface); color: var(--admin-text);
+            font-size: 0.8rem; font-weight: 500; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+            text-decoration: none; transition: background 0.15s, border-color 0.15s;
+        }
+        .admin-page-btn:hover:not(.disabled):not(.active) { background: #f1f5f9; border-color: #cbd5e1; }
+        .admin-page-btn.active { background: var(--admin-primary); border-color: var(--admin-primary); color: #fff; font-weight: 700; cursor: default; }
+        .admin-page-btn.disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+        .admin-page-btn .material-symbols-outlined { font-size: 16px; }
+        .admin-page-size { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--admin-text-muted); }
+        .admin-page-size select { border: 1px solid var(--admin-border); border-radius: 6px; padding: 0.25rem 0.5rem; font-size: 0.8rem; color: var(--admin-text); background: var(--admin-surface); cursor: pointer; }
+    </style>
 </head>
 <body class="admin-body">
 
@@ -16,8 +39,37 @@
     <div class="admin-main">
         <div class="admin-content">
 
-            <h1 class="admin-page-title">Manage Users</h1>
-            <p class="admin-page-subtitle">All registered accounts in the system</p>
+            <div style="margin-bottom:0.25rem;">
+                <h1 class="admin-page-title" style="margin-bottom:0.1rem;">Manage Users</h1>
+                <p class="admin-page-subtitle"
+                   th:text="'Showing ' + ${userPage.numberOfElements} + ' of ' + ${totalElements} + ' users'">
+                    All registered accounts in the system
+                </p>
+            </div>
+
+            <!-- Search bar -->
+            <form method="get" th:action="@{/admin/users}" style="margin-bottom:1rem;">
+                <div style="display:flex;gap:0.5rem;max-width:480px;">
+                    <div style="position:relative;flex:1;">
+                        <span class="material-symbols-outlined"
+                              style="position:absolute;left:0.6rem;top:50%;transform:translateY(-50%);font-size:18px;color:var(--admin-text-muted);pointer-events:none;">search</span>
+                        <input type="text" name="search" th:value="${search}"
+                               placeholder="Search by name or email…"
+                               style="width:100%;padding:0.5rem 0.75rem 0.5rem 2.2rem;border:1px solid var(--admin-border);border-radius:8px;font-size:0.875rem;font-family:inherit;color:var(--admin-text);background:var(--admin-surface);box-sizing:border-box;" />
+                    </div>
+                    <input type="hidden" name="size" th:value="${pageSize}" />
+                    <button type="submit" class="admin-btn admin-btn--primary" style="white-space:nowrap;">
+                        <span class="material-symbols-outlined" style="font-size:16px;">search</span>
+                        Search
+                    </button>
+                    <a th:if="${search != null and !#strings.isEmpty(search)}"
+                       th:href="@{/admin/users(size=${pageSize})}"
+                       class="admin-btn admin-btn--ghost" style="white-space:nowrap;">
+                        <span class="material-symbols-outlined" style="font-size:16px;">close</span>
+                        Clear
+                    </a>
+                </div>
+            </form>
 
             <!-- Flash messages -->
             <div th:if="${success}" style="background:#dcfce7;color:#15803d;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.875rem;"
@@ -27,8 +79,19 @@
 
             <div class="admin-table-card">
                 <div class="admin-table-card__header">
-                    <span class="admin-table-card__title" th:text="${#lists.size(users)} + ' users'">0 users</span>
+                    <span class="admin-table-card__title"
+                          th:text="${totalElements} + ' users total'">0 users</span>
+                    <div class="admin-page-size">
+                        <span>Rows per page:</span>
+                        <select onchange="changePageSize(this.value)">
+                            <option th:value="10"  th:selected="${pageSize == 10}">10</option>
+                            <option th:value="15"  th:selected="${pageSize == 15}">15</option>
+                            <option th:value="20"  th:selected="${pageSize == 20}">20</option>
+                            <option th:value="25"  th:selected="${pageSize == 25}">25</option>
+                        </select>
+                    </div>
                 </div>
+
                 <table class="admin-table">
                     <thead>
                         <tr>
@@ -43,7 +106,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="u : ${users}">
+                        <tr th:each="u : ${userPage.content}">
                             <td th:text="${u.id}">1</td>
                             <td>
                                 <div style="display:flex;align-items:center;gap:0.5rem;">
@@ -69,6 +132,8 @@
                                     <!-- Reset Password -->
                                     <form th:action="@{/admin/users/{id}/reset-password(id=${u.id})}" method="post"
                                           onsubmit="return confirm('Reset this user\'s password to the default?')">
+                                        <input type="hidden" name="page" th:value="${currentPage}" />
+                                        <input type="hidden" name="size" th:value="${pageSize}" />
                                         <button type="submit" class="admin-btn admin-btn--ghost admin-btn--sm">
                                             <span class="material-symbols-outlined" style="font-size:14px;">lock_reset</span>
                                             Reset Password
@@ -77,6 +142,8 @@
                                     <!-- Delete -->
                                     <form th:action="@{/admin/users/{id}/delete(id=${u.id})}" method="post"
                                           onsubmit="return confirm('Are you sure you want to delete this user?')">
+                                        <input type="hidden" name="page" th:value="${currentPage}" />
+                                        <input type="hidden" name="size" th:value="${pageSize}" />
                                         <button type="submit" class="admin-btn admin-btn--danger admin-btn--sm">
                                             <span class="material-symbols-outlined" style="font-size:14px;">delete</span>
                                             Delete
@@ -85,15 +152,66 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr th:if="${#lists.isEmpty(users)}">
+                        <tr th:if="${userPage.numberOfElements == 0}">
                             <td colspan="8" style="text-align:center;color:#94a3b8;padding:2rem;">No users found.</td>
                         </tr>
                     </tbody>
                 </table>
-            </div>
+
+                <!-- Pagination controls -->
+                <div class="admin-pagination" th:if="${totalPages > 1}">
+                    <span class="admin-pagination__info"
+                          th:text="'Page ' + (${currentPage} + 1) + ' of ' + ${totalPages}">
+                        Page 1 of 1
+                    </span>
+                    <div class="admin-pagination__pages">
+                        <a th:href="@{/admin/users(page=0, size=${pageSize}, search=${search})}"
+                           th:classappend="${currentPage == 0} ? ' disabled' : ''"
+                           class="admin-page-btn" title="First page">
+                            <span class="material-symbols-outlined">first_page</span>
+                        </a>
+                        <a th:href="@{/admin/users(page=${currentPage - 1}, size=${pageSize}, search=${search})}"
+                           th:classappend="${currentPage == 0} ? ' disabled' : ''"
+                           class="admin-page-btn" title="Previous page">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </a>
+                        <th:block th:with="
+                            startPage=${T(java.lang.Math).max(0, currentPage - 2)},
+                            endPage=${T(java.lang.Math).min(totalPages - 1, currentPage + 2)}">
+                            <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
+                               th:href="@{/admin/users(page=${i}, size=${pageSize}, search=${search})}"
+                               th:text="${i + 1}"
+                               th:classappend="${i == currentPage} ? ' active' : ''"
+                               class="admin-page-btn">1</a>
+                        </th:block>
+                        <a th:href="@{/admin/users(page=${currentPage + 1}, size=${pageSize}, search=${search})}"
+                           th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
+                           class="admin-page-btn" title="Next page">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </a>
+                        <a th:href="@{/admin/users(page=${totalPages - 1}, size=${pageSize}, search=${search})}"
+                           th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
+                           class="admin-page-btn" title="Last page">
+                            <span class="material-symbols-outlined">last_page</span>
+                        </a>
+                    </div>
+                </div>
+
+            </div><!-- /.admin-table-card -->
 
         </div>
     </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var currentSearch = /*[[${search}]]*/ '';
+        function changePageSize(size) {
+            var url = '/admin/users?page=0&size=' + size;
+            if (currentSearch) url += '&search=' + encodeURIComponent(currentSearch);
+            window.location.href = url;
+        }
+        /*]]>*/
+    </script>
 
 </body>
 </html>
