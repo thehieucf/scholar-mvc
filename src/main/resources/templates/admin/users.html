@@ -29,6 +29,8 @@
         .admin-page-btn .material-symbols-outlined { font-size: 16px; }
         .admin-page-size { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--admin-text-muted); }
         .admin-page-size select { border: 1px solid var(--admin-border); border-radius: 6px; padding: 0.25rem 0.5rem; font-size: 0.8rem; color: var(--admin-text); background: var(--admin-surface); cursor: pointer; }
+        .admin-table tbody tr[onclick]:hover td { background: #eff6ff; }
+        .admin-table tbody tr[onclick] td { transition: background 0.12s; }
     </style>
 </head>
 <body class="admin-body">
@@ -106,7 +108,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="u : ${userPage.content}">
+                        <tr th:each="u : ${userPage.content}"
+                            th:onclick="|window.location.href='@{/admin/users/{id}(id=${u.id})}'|"
+                            style="cursor:pointer;">
                             <td th:text="${u.id}">1</td>
                             <td>
                                 <div style="display:flex;align-items:center;gap:0.5rem;">
@@ -127,7 +131,7 @@
                             </td>
                             <td th:text="${u.totalXp}">0</td>
                             <td th:text="${u.currentStreak}">0</td>
-                            <td>
+                            <td onclick="event.stopPropagation()">
                                 <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
                                     <!-- Reset Password -->
                                     <form th:action="@{/admin/users/{id}/reset-password(id=${u.id})}" method="post"

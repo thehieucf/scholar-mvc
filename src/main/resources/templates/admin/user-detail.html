@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="'User Detail — ' + ${target.fullName} + ' | Admin'">User Detail | Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <style>
+        .detail-grid       { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:1.5rem; }
+        .detail-grid-3     { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1.25rem; margin-bottom:1.5rem; }
+        @media(max-width:900px){ .detail-grid,.detail-grid-3{ grid-template-columns:1fr; } }
+
+        .card              { background:var(--admin-surface); border:1px solid var(--admin-border); border-radius:12px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+        .card__title       { font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--admin-text-muted); margin-bottom:1rem; display:flex; align-items:center; gap:.4rem; }
+        .card__title .material-symbols-outlined { font-size:16px; }
+
+        /* Profile header */
+        .profile-header    { display:flex; align-items:center; gap:1.25rem; margin-bottom:1.5rem; background:var(--admin-surface); border:1px solid var(--admin-border); border-radius:12px; padding:1.5rem; }
+        .profile-avatar    { width:72px; height:72px; border-radius:50%; object-fit:cover; border:3px solid var(--admin-primary-light); flex-shrink:0; }
+        .profile-name      { font-size:1.25rem; font-weight:700; color:var(--admin-text); }
+        .profile-email     { font-size:.875rem; color:var(--admin-text-muted); margin-top:2px; }
+        .profile-meta      { display:flex; gap:.5rem; margin-top:.5rem; flex-wrap:wrap; }
+
+        /* Stat mini cards */
+        .mini-stat         { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1rem; background:#f8fafc; border-radius:10px; text-align:center; }
+        .mini-stat__value  { font-size:1.6rem; font-weight:800; color:var(--admin-text); line-height:1; }
+        .mini-stat__label  { font-size:.7rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--admin-text-muted); margin-top:4px; }
+        .mini-stats-row    { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; margin-bottom:1.25rem; }
+        @media(max-width:600px){ .mini-stats-row{ grid-template-columns:repeat(2,1fr); } }
+
+        /* Progress bar */
+        .prog-bar-wrap     { margin-bottom:.75rem; }
+        .prog-bar-header   { display:flex; justify-content:space-between; align-items:center; margin-bottom:.3rem; font-size:.8rem; }
+        .prog-bar-label    { font-weight:600; color:var(--admin-text); }
+        .prog-bar-pct      { font-weight:700; color:var(--admin-primary); }
+        .prog-bar-track    { height:8px; background:#e2e8f0; border-radius:99px; overflow:hidden; }
+        .prog-bar-fill     { height:100%; border-radius:99px; background:var(--admin-primary); transition:width .6s ease; }
+        .prog-bar-fill--green  { background:#16a34a; }
+        .prog-bar-fill--amber  { background:#d97706; }
+        .prog-bar-fill--red    { background:#dc2626; }
+
+        /* Status distribution */
+        .status-row        { display:flex; gap:.75rem; margin-bottom:1.25rem; }
+        .status-chip       { flex:1; padding:.75rem; border-radius:10px; text-align:center; }
+        .status-chip__val  { font-size:1.4rem; font-weight:800; }
+        .status-chip__lbl  { font-size:.7rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
+        .chip--learning    { background:#dbeafe; color:#1d4ed8; }
+        .chip--mastered    { background:#dcfce7; color:#15803d; }
+        .chip--today       { background:#fef3c7; color:#b45309; }
+
+        /* Recent words table */
+        .word-table        { width:100%; border-collapse:collapse; font-size:.85rem; }
+        .word-table th     { background:#f8fafc; padding:.6rem 1rem; text-align:left; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--admin-text-muted); border-bottom:1px solid var(--admin-border); }
+        .word-table td     { padding:.7rem 1rem; border-bottom:1px solid var(--admin-border); color:var(--admin-text); vertical-align:middle; }
+        .word-table tr:last-child td { border-bottom:none; }
+        .word-table tr:hover td { background:#f8fafc; }
+        .status-pill       { display:inline-flex; align-items:center; padding:.15rem .55rem; border-radius:99px; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+        .pill--learning    { background:#dbeafe; color:#1d4ed8; }
+        .pill--mastered    { background:#dcfce7; color:#15803d; }
+        .pill--new         { background:#f1f5f9; color:#64748b; }
+
+        /* Badge chips */
+        .badge-grid        { display:flex; flex-wrap:wrap; gap:.5rem; }
+        .badge-chip        { display:flex; align-items:center; gap:.4rem; padding:.35rem .75rem; background:#f8fafc; border:1px solid var(--admin-border); border-radius:99px; font-size:.78rem; font-weight:600; color:var(--admin-text); }
+        .badge-chip__emoji { font-size:1rem; }
+
+        /* Empty state */
+        .empty-state       { text-align:center; padding:2.5rem 1rem; color:var(--admin-text-muted); }
+        .empty-state .material-symbols-outlined { font-size:2.5rem; display:block; margin-bottom:.5rem; opacity:.4; }
+    </style>
+</head>
+<body class="admin-body">
+
+    <div th:replace="~{admin/layout-fragment :: sidebar('users')}"></div>
+    <div th:replace="~{admin/layout-fragment :: header('User Detail')}"></div>
+
+    <div class="admin-main">
+        <div class="admin-content">
+
+            <!-- Back link -->
+            <a th:href="@{/admin/users}" style="display:inline-flex;align-items:center;gap:.35rem;font-size:.875rem;font-weight:600;color:var(--admin-text-muted);text-decoration:none;margin-bottom:1.25rem;">
+                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
+                Back to Users
+            </a>
+
+            <!-- ── Profile Header ─────────────────────────────────────── -->
+            <div class="profile-header">
+                <img class="profile-avatar"
+                     th:src="${target.avatarUrl != null and !target.avatarUrl.isEmpty()}
+                             ? ${target.avatarUrl}
+                             : ${'https://ui-avatars.com/api/?name=' + target.fullName + '&background=1e40af&color=fff&size=72'}"
+                     th:alt="${target.fullName}" />
+                <div style="flex:1;min-width:0;">
+                    <div class="profile-name" th:text="${target.fullName}">Full Name</div>
+                    <div class="profile-email" th:text="${target.email}">email@example.com</div>
+                    <div class="profile-meta">
+                        <span th:classappend="${target.role == 'ADMIN'} ? 'admin-badge--admin' : 'admin-badge--user'"
+                              class="admin-badge" th:text="${target.role}">USER</span>
+                        <span class="admin-badge admin-badge--active" th:text="${target.currentLevel}">Beginner</span>
+                        <span style="font-size:.8rem;color:var(--admin-text-muted);">
+                            ID: <strong th:text="${target.id}">1</strong>
+                        </span>
+                        <span th:if="${target.createdAt != null}"
+                              style="font-size:.8rem;color:var(--admin-text-muted);">
+                            Joined: <strong th:text="${joinedDate}">—</strong>
+                        </span>
+                    </div>
+                </div>
+                <!-- XP + Streak summary -->
+                <div style="display:flex;gap:1rem;flex-shrink:0;">
+                    <div class="mini-stat" style="min-width:80px;">
+                        <div class="mini-stat__value" style="color:#1d4ed8;" th:text="${target.totalXp ?: 0}">0</div>
+                        <div class="mini-stat__label">Total XP</div>
+                    </div>
+                    <div class="mini-stat" style="min-width:80px;">
+                        <div class="mini-stat__value" style="color:#d97706;" th:text="${target.currentStreak ?: 0}">0</div>
+                        <div class="mini-stat__label">Streak</div>
+                    </div>
+                    <div class="mini-stat" style="min-width:80px;">
+                        <div class="mini-stat__value" style="color:#15803d;" th:text="${target.longestStreak ?: 0}">0</div>
+                        <div class="mini-stat__label">Best Streak</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Overview Stats ─────────────────────────────────────── -->
+            <div class="mini-stats-row">
+                <div class="mini-stat">
+                    <div class="mini-stat__value" th:text="${totalStudied}">0</div>
+                    <div class="mini-stat__label">Words Studied</div>
+                </div>
+                <div class="mini-stat">
+                    <div class="mini-stat__value" style="color:#15803d;" th:text="${totalMastered}">0</div>
+                    <div class="mini-stat__label">Mastered</div>
+                </div>
+                <div class="mini-stat">
+                    <div class="mini-stat__value" style="color:#1d4ed8;" th:text="${totalDays}">0</div>
+                    <div class="mini-stat__label">Study Days</div>
+                </div>
+                <div class="mini-stat">
+                    <div class="mini-stat__value" style="color:#d97706;" th:text="${studiedToday}">0</div>
+                    <div class="mini-stat__label">Today</div>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+
+                <!-- ── Left column ──────────────────────────────────── -->
+                <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+                    <!-- Word Status Distribution -->
+                    <div class="card">
+                        <div class="card__title">
+                            <span class="material-symbols-outlined">bar_chart</span>
+                            Learning Status
+                        </div>
+                        <div class="status-row">
+                            <div class="status-chip chip--today">
+                                <div class="status-chip__val" th:text="${studiedToday}">0</div>
+                                <div class="status-chip__lbl">Today</div>
+                            </div>
+                            <div class="status-chip chip--learning">
+                                <div class="status-chip__val" th:text="${statusLearning}">0</div>
+                                <div class="status-chip__lbl">Learning</div>
+                            </div>
+                            <div class="status-chip chip--mastered">
+                                <div class="status-chip__val" th:text="${statusMastered}">0</div>
+                                <div class="status-chip__lbl">Mastered</div>
+                            </div>
+                        </div>
+
+                        <!-- Mastery progress bar -->
+                        <div class="prog-bar-wrap" th:if="${totalStudied > 0}">
+                            <div class="prog-bar-header">
+                                <span class="prog-bar-label">Mastery rate</span>
+                                <span class="prog-bar-pct"
+                                      th:text="${#numbers.formatInteger(totalStudied > 0 ? (totalMastered * 100 / totalStudied) : 0, 1)} + '%'">0%</span>
+                            </div>
+                            <div class="prog-bar-track">
+                                <div class="prog-bar-fill prog-bar-fill--green"
+                                     th:style="'width:' + (totalStudied > 0 ? (totalMastered * 100 / totalStudied) : 0) + '%'"></div>
+                            </div>
+                        </div>
+                        <div th:if="${totalStudied == 0}" class="empty-state" style="padding:1rem;">
+                            <span class="material-symbols-outlined">school</span>
+                            <p style="font-size:.8rem;">No study activity yet</p>
+                        </div>
+                    </div>
+
+                    <!-- Badges -->
+                    <div class="card">
+                        <div class="card__title">
+                            <span class="material-symbols-outlined">emoji_events</span>
+                            Badges Earned
+                            <span style="margin-left:auto;font-size:.75rem;font-weight:700;color:var(--admin-primary);"
+                                  th:text="${userBadges.size()} + ' badges'">0 badges</span>
+                        </div>
+                        <div class="badge-grid" th:if="${!userBadges.isEmpty()}">
+                            <div class="badge-chip" th:each="ub : ${userBadges}">
+                                <span class="badge-chip__emoji" th:text="${ub.badge.iconEmoji}">🏅</span>
+                                <span th:text="${ub.badge.name}">Badge</span>
+                            </div>
+                        </div>
+                        <div th:if="${userBadges.isEmpty()}" class="empty-state" style="padding:1rem;">
+                            <span class="material-symbols-outlined">lock</span>
+                            <p style="font-size:.8rem;">No badges earned yet</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ── Right column: Category Progress ──────────────── -->
+                <div class="card">
+                    <div class="card__title">
+                        <span class="material-symbols-outlined">category</span>
+                        Progress by Category
+                    </div>
+                    <div th:if="${!categoryProgress.isEmpty()}">
+                        <div class="prog-bar-wrap" th:each="cp : ${categoryProgress}">
+                            <div class="prog-bar-header">
+                                <span class="prog-bar-label" th:text="${cp.nameEn}">Category</span>
+                                <span style="font-size:.75rem;color:var(--admin-text-muted);"
+                                      th:text="${cp.studied} + ' / ' + ${cp.total} + ' words'">0/0</span>
+                                <span class="prog-bar-pct" th:text="${cp.pct} + '%'">0%</span>
+                            </div>
+                            <div class="prog-bar-track">
+                                <div class="prog-bar-fill"
+                                     th:classappend="${cp.pct >= 80} ? ' prog-bar-fill--green' : (${cp.pct >= 40} ? ' prog-bar-fill--amber' : '')"
+                                     th:style="'width:' + ${cp.pct} + '%'"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${categoryProgress.isEmpty()}" class="empty-state">
+                        <span class="material-symbols-outlined">menu_book</span>
+                        <p style="font-size:.8rem;">No category progress yet</p>
+                    </div>
+                </div>
+
+            </div><!-- /.detail-grid -->
+
+            <!-- ── Recent Words ───────────────────────────────────────── -->
+            <div class="card">
+                <div class="card__title">
+                    <span class="material-symbols-outlined">history</span>
+                    Recently Studied Words
+                    <span style="margin-left:auto;font-size:.75rem;color:var(--admin-text-muted);">Last 20 words</span>
+                </div>
+                <div th:if="${!recentWords.isEmpty()}" style="overflow-x:auto;">
+                    <table class="word-table">
+                        <thead>
+                            <tr>
+                                <th>Korean</th>
+                                <th>Romaji</th>
+                                <th>Meaning</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Correct streak</th>
+                                <th>Last studied</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="wp : ${recentWords}">
+                                <td style="font-weight:700;font-size:1rem;" th:text="${wp.koreanWord}">—</td>
+                                <td style="color:var(--admin-text-muted);" th:text="${wp.romaji}">—</td>
+                                <td th:text="${wp.englishMeaning}">—</td>
+                                <td>
+                                    <span style="font-size:.78rem;color:var(--admin-text-muted);"
+                                          th:text="${wp.categoryName}">—</span>
+                                </td>
+                                <td>
+                                    <span class="status-pill"
+                                          th:classappend="${wp.learningStatus == 'MASTERED'} ? ' pill--mastered' : (${wp.learningStatus == 'LEARNING'} ? ' pill--learning' : ' pill--new')"
+                                          th:text="${wp.learningStatus}">—</span>
+                                </td>
+                                <td style="text-align:center;" th:text="${wp.consecutiveCorrect}">0</td>
+                                <td style="font-size:.78rem;color:var(--admin-text-muted);"
+                                    th:text="${wp.lastStudiedAt}">—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:if="${recentWords.isEmpty()}" class="empty-state">
+                    <span class="material-symbols-outlined">school</span>
+                    <p style="font-size:.8rem;">This user hasn't studied any words yet</p>
+                </div>
+            </div>
+
+        </div><!-- /.admin-content -->
+    </div><!-- /.admin-main -->
+
+</body>
+</html>

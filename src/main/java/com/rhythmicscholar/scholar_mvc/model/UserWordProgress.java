@@ -64,7 +64,8 @@ public class UserWordProgress {
 
     /**
      * Thời điểm cuối cùng người dùng học từ này.
+     * Được cập nhật mỗi khi user học từ này (set bởi application).
      */
-    @Column(name = "last_studied_at", insertable = false, updatable = false)
+    @Column(name = "last_studied_at")
     private LocalDateTime lastStudiedAt;
 }

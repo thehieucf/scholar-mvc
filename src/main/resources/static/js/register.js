@@ -34,8 +34,9 @@ function selectLevel(btn) {
     btn.classList.add('active');
 
     // Update the hidden input value to send to the server
+    // Use data-level attribute (English value) to avoid i18n issues
     const hidden = document.getElementById('currentLevel');
     if (hidden) {
-        hidden.value = btn.textContent.trim();
+        hidden.value = btn.dataset.level || btn.textContent.trim();
     }
 }

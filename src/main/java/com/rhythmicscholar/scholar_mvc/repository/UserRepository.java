@@ -31,4 +31,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /** Đếm kết quả tìm kiếm. */
     @Query("SELECT COUNT(u) FROM User u WHERE LOWER(u.fullName) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%'))")
     long countByNameOrEmail(@Param("q") String q);
+
+    /** Lấy top N user có XP cao nhất (chỉ role USER) cho bảng xếp hạng. */
+    @Query("SELECT u FROM User u WHERE u.role = 'USER' ORDER BY u.totalXp DESC")
+    List<User> findTopUsersByXp(Pageable pageable);
+
+    /** Đếm số user có XP cao hơn một giá trị nhất định (để tính rank). */
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role = 'USER' AND u.totalXp > :xp")
+    long countUsersWithMoreXp(@Param("xp") int xp);
 }

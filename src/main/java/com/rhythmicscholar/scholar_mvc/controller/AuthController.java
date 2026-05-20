@@ -2,13 +2,18 @@ package com.rhythmicscholar.scholar_mvc.controller;
 
 import com.rhythmicscholar.scholar_mvc.model.User;
 import com.rhythmicscholar.scholar_mvc.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.LocaleResolver;
+
+import java.util.Locale;
 
 /**
  * Controller xử lý các chức năng xác thực người dùng (Đăng nhập, Đăng ký, Đăng xuất).
@@ -18,6 +23,12 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private MessageSource messageSource;
+
+    @Autowired
+    private LocaleResolver localeResolver;
 
     /**
      * Hiển thị trang đăng nhập.
@@ -35,7 +46,8 @@ public class AuthController {
     @PostMapping({"/login", "/login.html"})
     public String handleLogin(@RequestParam String email, 
                               @RequestParam String password, 
-                              HttpSession session, 
+                              HttpSession session,
+                              HttpServletRequest request,
                               Model model) {
         // Tìm người dùng theo email trong database
         User user = userRepository.findByEmail(email).orElse(null);
@@ -52,8 +64,9 @@ public class AuthController {
             return "redirect:/";
         }
         
-        // Return error if login failed
-        model.addAttribute("error", "Incorrect email or password.");
+        // Lấy locale hiện tại để hiển thị thông báo lỗi đúng ngôn ngữ
+        Locale locale = localeResolver.resolveLocale(request);
+        model.addAttribute("error", messageSource.getMessage("login.error.invalid", null, locale));
         return "login";
     }
 
@@ -74,10 +87,12 @@ public class AuthController {
                                  @RequestParam String password,
                                  @RequestParam(defaultValue = "Beginner") String currentLevel,
                                  HttpSession session,
+                                 HttpServletRequest request,
                                  Model model) {
         // Check if email is already in use
         if (userRepository.findByEmail(email).isPresent()) {
-            model.addAttribute("error", "This email is already associated with another account.");
+            Locale locale = localeResolver.resolveLocale(request);
+            model.addAttribute("error", messageSource.getMessage("register.error.email.taken", null, locale));
             return "register";
         }
         

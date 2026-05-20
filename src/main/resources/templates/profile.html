@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>My Profile | Rhythmic Scholar</title>
+    <title th:text="#{profile.page.title}">My Profile | Rhythmic Scholar</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
@@ -19,6 +19,11 @@
         .avatar-dropdown-item.danger { color: #dc2626; }
         .avatar-dropdown-item.danger:hover { background: #fef2f2; }
         .avatar-dropdown-divider { height: 1px; background: #f1f5f9; margin: 4px 0; }
+        .lang-switcher { display:flex; align-items:center; gap:3px; background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); border:1px solid rgba(0,0,0,0.08); border-radius:999px; padding:3px 5px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+        .lang-btn { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:999px; font-size:0.72rem; font-weight:700; letter-spacing:0.04em; cursor:pointer; transition:all 0.18s; text-decoration:none; color:#94a3b8; border:none; background:transparent; }
+        .lang-btn:hover { background:#f1f5f9; color:#475569; }
+        .lang-btn.active { background:#059669; color:#fff; box-shadow:0 2px 8px rgba(5,150,105,0.25); }
+        .lang-divider { width:1px; height:14px; background:#e2e8f0; margin:0 1px; }
     </style>
 </head>
 
@@ -43,9 +48,16 @@
             <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
                 <span class="material-symbols-outlined">notifications</span>
             </button>
-            <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
-                <span class="material-symbols-outlined">settings</span>
-            </button>
+            <!-- Language Switcher -->
+            <div class="lang-switcher" aria-label="Language switcher">
+                <a th:href="@{/profile(lang=en)}"
+                   th:classappend="${#locale.language == 'en'} ? ' active' : ''"
+                   class="lang-btn">🇺🇸 EN</a>
+                <div class="lang-divider"></div>
+                <a th:href="@{/profile(lang=vi)}"
+                   th:classappend="${#locale.language == 'vi'} ? ' active' : ''"
+                   class="lang-btn">🇻🇳 VI</a>
+            </div>
 
             <!-- Avatar with dropdown -->
             <div class="relative" id="avatarMenuWrapper">
@@ -68,6 +80,28 @@
                         <span class="material-symbols-outlined" style="font-size:18px;">lock</span>
                         Change Password
                     </a>
+                    <div class="avatar-dropdown-divider"></div>
+                    <div class="avatar-dropdown-divider"></div>
+                    <!-- Language Switcher -->
+                    <div style="padding:10px 14px 12px;">
+                        <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;">
+                            <span class="material-symbols-outlined" style="font-size:13px;color:#94a3b8;">language</span>
+                            <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;">Language / Ngôn ngữ</span>
+                        </div>
+                        <div style="display:flex;align-items:center;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:999px;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                            <a th:href="@{/profile(lang=en)}"
+                               th:style="${#locale.language == 'en'} ? 'background:#059669;color:#fff;box-shadow:0 2px 8px rgba(5,150,105,0.25);' : 'background:transparent;color:#94a3b8;'"
+                               style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 10px;border-radius:999px;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;text-decoration:none;transition:all 0.18s;">
+                                <span>🇺🇸</span><span>EN</span>
+                            </a>
+                            <div style="width:1px;height:14px;background:#e2e8f0;flex-shrink:0;"></div>
+                            <a th:href="@{/profile(lang=vi)}"
+                               th:style="${#locale.language == 'vi'} ? 'background:#059669;color:#fff;box-shadow:0 2px 8px rgba(5,150,105,0.25);' : 'background:transparent;color:#94a3b8;'"
+                               style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 10px;border-radius:999px;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;text-decoration:none;transition:all 0.18s;">
+                                <span>🇻🇳</span><span>VI</span>
+                            </a>
+                        </div>
+                    </div>
                     <div class="avatar-dropdown-divider"></div>
                     <a th:href="@{/logout}" class="avatar-dropdown-item danger">
                         <span class="material-symbols-outlined" style="font-size:18px;">logout</span>
@@ -143,12 +177,10 @@
                         </div>
                         <div class="flex flex-wrap justify-center md:justify-start gap-3">
                             <button type="button" id="edit-btn" onclick="toggleEditMode(true)"
-                                class="px-6 py-2.5 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 transition-all active:scale-95 text-sm">
-                                Edit Profile
-                            </button>
-                            <button class="px-6 py-2.5 bg-white/60 backdrop-blur rounded-full font-bold text-on-surface hover:bg-white transition-all active:scale-95 text-sm">
-                                Share Progress
-                            </button>
+                                class="px-6 py-2.5 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 transition-all active:scale-95 text-sm"
+                                th:text="#{profile.edit.btn}">Edit Profile</button>
+                            <button class="px-6 py-2.5 bg-white/60 backdrop-blur rounded-full font-bold text-on-surface hover:bg-white transition-all active:scale-95 text-sm"
+                                    th:text="#{profile.share.btn}">Share Progress</button>
                         </div>
                     </div>
                 </div>
@@ -159,21 +191,21 @@
                         <span class="material-symbols-outlined text-secondary text-3xl mb-4">auto_stories</span>
                         <div>
                             <div class="text-3xl font-bold font-headline text-on-surface" th:text="${user != null ? user.totalXp : 0}">0</div>
-                            <div class="text-xs text-on-surface-variant font-medium mt-1">Total XP</div>
+                            <div class="text-xs text-on-surface-variant font-medium mt-1" th:text="#{profile.total.xp}">Total XP</div>
                         </div>
                     </div>
                     <div class="bg-surface-container-low rounded-2xl p-6 flex flex-col justify-between hover:bg-surface-container transition-colors shadow-sm">
                         <span class="material-symbols-outlined text-primary text-3xl mb-4">local_fire_department</span>
                         <div>
                             <div class="text-3xl font-bold font-headline text-on-surface" th:text="${user != null ? user.currentStreak : 0}">0</div>
-                            <div class="text-xs text-on-surface-variant font-medium mt-1">Day Streak</div>
+                            <div class="text-xs text-on-surface-variant font-medium mt-1" th:text="#{profile.day.streak}">Day Streak</div>
                         </div>
                     </div>
                     <div class="bg-tertiary-container text-on-tertiary-container rounded-2xl p-6 col-span-2 flex items-center justify-between shadow-sm relative overflow-hidden group">
                         <div class="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors"></div>
                         <div class="relative z-10">
                             <div class="text-3xl font-black font-headline" th:text="${user != null ? user.currentLevel : 'Beginner'}">Beginner</div>
-                            <div class="text-xs font-bold uppercase tracking-widest mt-1 opacity-80">Current Level</div>
+                            <div class="text-xs font-bold uppercase tracking-widest mt-1 opacity-80" th:text="#{profile.current.level}">Current Level</div>
                         </div>
                         <div class="w-16 h-16 bg-white/30 rounded-full flex items-center justify-center relative z-10">
                             <span class="material-symbols-outlined text-4xl text-tertiary" style="font-variation-settings: 'FILL' 1;">school</span>
@@ -188,7 +220,7 @@
                 <section id="edit-form">
                     <form th:action="@{/profile/update}" method="POST" enctype="multipart/form-data">
                         <div class="flex items-center gap-4 mb-6">
-                            <h3 class="text-xl font-bold font-headline">Account Settings</h3>
+                            <h3 class="text-xl font-bold font-headline" th:text="#{profile.account.settings}">Account Settings</h3>
                             <div class="h-px flex-1 bg-outline-variant/30"></div>
                             <div id="edit-actions" class="hidden flex items-center gap-2">
                                 <button type="button" onclick="toggleEditMode(false)" class="px-4 py-2 text-on-surface-variant font-bold hover:bg-surface-container transition-all rounded-full text-xs">
@@ -202,7 +234,7 @@
                         <div class="space-y-4">
                             <!-- Full Name -->
                             <div class="group">
-                                <label class="block text-[11px] font-bold text-on-surface-variant mb-1.5 ml-2 uppercase tracking-wider">Full Name</label>
+                                <label class="block text-[11px] font-bold text-on-surface-variant mb-1.5 ml-2 uppercase tracking-wider" th:text="#{profile.label.fullname}">Full Name</label>
                                 <div class="profile-input-container bg-surface-container-lowest rounded-xl p-4 flex items-center gap-3 border border-outline-variant/20 transition-all">
                                     <span class="material-symbols-outlined text-outline">person</span>
                                     <input name="fullName" th:value="${user != null ? user.fullName : ''}"
@@ -212,7 +244,7 @@
                             </div>
                             <!-- Email -->
                             <div class="group">
-                                <label class="block text-[11px] font-bold text-on-surface-variant mb-1.5 ml-2 uppercase tracking-wider">Email Address</label>
+                                <label class="block text-[11px] font-bold text-on-surface-variant mb-1.5 ml-2 uppercase tracking-wider" th:text="#{profile.label.email}">Email Address</label>
                                 <div class="profile-input-container bg-surface-container-lowest rounded-xl p-4 flex items-center gap-3 border border-outline-variant/20 transition-all">
                                     <span class="material-symbols-outlined text-outline">mail</span>
                                     <input name="email" th:value="${user != null ? user.email : ''}"
@@ -242,7 +274,7 @@
                 <!-- Preferences & Notifications -->
                 <section>
                     <div class="flex items-center gap-4 mb-6">
-                        <h3 class="text-xl font-bold font-headline">Preferences</h3>
+                        <h3 class="text-xl font-bold font-headline" th:text="#{profile.preferences}">Preferences</h3>
                         <div class="h-px flex-1 bg-outline-variant/30"></div>
                     </div>
                     <div class="space-y-4">

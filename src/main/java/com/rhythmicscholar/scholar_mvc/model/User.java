@@ -2,6 +2,7 @@ package com.rhythmicscholar.scholar_mvc.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -35,8 +36,8 @@ public class User {
 
     /**
      * Trình độ hiện tại của người dùng.
-     * Các giá trị: "Beginner", "Intermediate", "Advanced".
-     * Mặc định là "Beginner" khi đăng ký mới.
+     * Các giá trị: "Beginner", "Intermediate", "Advanced", "Master".
+     * Tự động cập nhật dựa trên totalXp.
      */
     @Column(name = "current_level")
     private String currentLevel = "Beginner";
@@ -51,9 +52,22 @@ public class User {
     /**
      * Số ngày học liên tiếp (streak) hiện tại.
      * Tăng 1 mỗi ngày nếu người dùng học ít nhất 1 từ.
+     * Reset về 1 nếu bỏ lỡ một ngày.
      */
     @Column(name = "current_streak")
     private Integer currentStreak = 0;
+
+    /**
+     * Chuỗi streak dài nhất từ trước đến nay của người dùng.
+     */
+    @Column(name = "longest_streak")
+    private Integer longestStreak = 0;
+
+    /**
+     * Ngày cuối cùng người dùng học (dùng để tính streak reset).
+     */
+    @Column(name = "last_studied_date")
+    private LocalDate lastStudiedDate;
 
     /** URL ảnh đại diện của người dùng (tùy chọn). */
     @Column(name = "avatar_url")

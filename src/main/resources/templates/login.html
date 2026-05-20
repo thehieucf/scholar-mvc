@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Sign In | Rhythmic Scholar</title>
+    <title th:text="#{login.page.title}">Sign In | Rhythmic Scholar</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@300;400;500;600&amp;display=swap"
@@ -15,13 +15,58 @@
         rel="stylesheet" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <link rel="stylesheet" th:href="@{/css/login.css}" />
-    <script src="js/tailwind-config.js"></script>
+    <script th:src="@{/js/tailwind-config.js}"></script>
+    <style>
+        .lang-switcher {
+            position: fixed;
+            top: 16px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 999px;
+            padding: 3px 5px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+        }
+        .lang-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: all 0.18s;
+            text-decoration: none;
+            color: #94a3b8;
+            border: none;
+            background: transparent;
+        }
+        .lang-btn:hover { background: #f1f5f9; color: #475569; }
+        .lang-btn.active { background: #059669; color: #fff; box-shadow: 0 2px 8px rgba(5,150,105,0.25); }
+        .lang-divider { width: 1px; height: 14px; background: #e2e8f0; margin: 0 1px; }
+    </style>
 </head>
 
 <body
     class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container min-h-screen">
 
-
+    <!-- Language Switcher -->
+    <div class="lang-switcher" aria-label="Language switcher">
+        <a th:href="@{/login(lang=en)}"
+           th:classappend="${#locale.language == 'en'} ? ' active' : ''"
+           class="lang-btn">🇺🇸 EN</a>
+        <div class="lang-divider"></div>
+        <a th:href="@{/login(lang=vi)}"
+           th:classappend="${#locale.language == 'vi'} ? ' active' : ''"
+           class="lang-btn">🇻🇳 VI</a>
+    </div>
 
     <!-- Main Content -->
     <main class="min-h-screen flex items-center justify-center pt-16 px-4 pb-8">
@@ -95,11 +140,11 @@
                 <div class="hangul-bg text-[8rem] -top-4 -right-4" style="color: rgba(0,106,98,0.04);">로그인</div>
 
                 <div class="mb-8">
-                    <h1 class="text-3xl font-extrabold font-headline text-on-surface mb-2">Sign In</h1>
-                    <p class="text-on-surface-variant text-sm">Enter your credentials to continue learning.</p>
+                    <h1 class="text-3xl font-extrabold font-headline text-on-surface mb-2" th:text="#{login.heading}">Sign In</h1>
+                    <p class="text-on-surface-variant text-sm" th:text="#{login.subheading}">Enter your credentials to continue learning.</p>
                 </div>
 
-                <form class="space-y-5" id="login-form" action="/login" method="POST">
+                <form class="space-y-5" id="login-form" th:action="@{/login}" method="POST">
                     <!-- Error Message -->
                     <div th:if="${error}" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm" role="alert">
                         <span th:text="${error}">Error message here</span>
@@ -108,11 +153,13 @@
                     <!-- Email -->
                     <div>
                         <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2"
-                            for="email">Email Address</label>
+                            for="email" th:text="#{login.label.email}">Email Address</label>
                         <div class="relative">
                             <span
                                 class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-xl">mail</span>
-                            <input class="input-field" id="email" name="email" placeholder="you@example.com" type="email" required />
+                            <input class="input-field" id="email" name="email"
+                                th:placeholder="#{login.placeholder.email}"
+                                placeholder="you@example.com" type="email" required />
                         </div>
                     </div>
 
@@ -120,27 +167,28 @@
                     <div>
                         <div class="flex justify-between items-center mb-2">
                             <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider"
-                                for="password">Password</label>
+                                for="password" th:text="#{login.label.password}">Password</label>
                         </div>
                         <div class="relative">
                             <span
                                 class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-xl">lock</span>
-                            <input class="input-field" id="password" name="password" placeholder="Your password" type="password" required />
+                            <input class="input-field" id="password" name="password"
+                                th:placeholder="#{login.placeholder.password}"
+                                placeholder="Your password" type="password" required />
                             <button type="button" onclick="togglePassword()"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors">
                                 <span class="material-symbols-outlined text-xl" id="toggle-icon">visibility</span>
                             </button>
                         </div>
                         <div class="flex justify-end mt-2">
-                            <a href="#" class="text-xs text-primary font-semibold hover:underline">Forgot password?</a>
+                            <a href="#" class="text-xs text-primary font-semibold hover:underline" th:text="#{login.forgot.password}">Forgot password?</a>
                         </div>
                     </div>
 
                     <!-- Remember Me -->
                     <div class="flex items-center gap-3">
                         <input id="remember" type="checkbox" class="w-4 h-4 rounded accent-primary cursor-pointer" />
-                        <label for="remember" class="text-sm text-on-surface-variant cursor-pointer">Keep me signed
-                            in</label>
+                        <label for="remember" class="text-sm text-on-surface-variant cursor-pointer" th:text="#{login.remember.me}">Keep me signed in</label>
                     </div>
 
                     <!-- Submit -->
@@ -148,13 +196,13 @@
                         class="w-full bg-primary text-on-primary font-bold py-3.5 rounded-full text-sm transition-all hover:opacity-90 active:scale-95 flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined text-base"
                             style="font-variation-settings: 'FILL' 1;">login</span>
-                        Sign In
+                        <span th:text="#{login.btn.submit}">Sign In</span>
                     </button>
 
                     <!-- Divider -->
                     <div class="flex items-center gap-3">
                         <div class="flex-1 h-px bg-outline-variant"></div>
-                        <span class="text-xs text-outline">or</span>
+                        <span class="text-xs text-outline" th:text="#{login.or}">or</span>
                         <div class="flex-1 h-px bg-outline-variant"></div>
                     </div>
 
@@ -175,30 +223,30 @@
                                 d="M24 9.5C27.4 9.5 30.4 10.7 32.8 13L40.2 5.6C36.1 1.8 30.6 0 24 0C14.3 0 5.9 4.8 2 12.5L10.3 18.7C12.2 12.9 17.6 9.5 24 9.5Z"
                                 fill="#EA4335" />
                         </svg>
-                        Continue with Google
+                        <span th:text="#{login.btn.google}">Continue with Google</span>
                     </button>
 
                 </form>
 
                 <!-- Register Link -->
                 <p class="text-center text-sm text-on-surface-variant mt-6">
-                    Don't have an account?
-                    <a href="register.html" class="text-primary font-bold hover:underline">Create one free</a>
+                    <span th:text="#{login.no.account}">Don't have an account?</span>
+                    <a th:href="@{/register}" class="text-primary font-bold hover:underline" th:text="#{login.create.account}">Create one free</a>
                 </p>
 
                 <!-- Back to Dashboard -->
                 <div class="text-center mt-4">
-                    <a href="index.html"
+                    <a th:href="@{/}"
                         class="text-xs text-outline hover:text-primary transition-colors flex items-center justify-center gap-1">
                         <span class="material-symbols-outlined text-sm">arrow_back</span>
-                        Back to Dashboard
+                        <span th:text="#{login.back.dashboard}">Back to Dashboard</span>
                     </a>
                 </div>
             </div>
         </div>
     </main>
 
-    <script src="js/login.js"></script>
+    <script th:src="@{/js/login.js}"></script>
 </body>
 
 </html>

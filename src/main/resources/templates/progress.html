@@ -14,10 +14,26 @@
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
-    <script src="js/tailwind-config.js"></script>
+    <script th:src="@{/js/tailwind-config.js}"></script>
+    <style>
+        .avatar-dropdown { display:none; position:absolute; right:0; top:calc(100% + 10px); min-width:200px; background:#fff; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,0.13); border:1px solid rgba(0,0,0,0.07); z-index:200; overflow:hidden; }
+        .avatar-dropdown.open { display:block; }
+        .avatar-dropdown-item { display:flex; align-items:center; gap:10px; padding:11px 16px; font-size:0.875rem; font-weight:500; color:#1e293b; cursor:pointer; transition:background 0.15s; text-decoration:none; }
+        .avatar-dropdown-item:hover { background:#f1f5f9; }
+        .avatar-dropdown-item.danger { color:#dc2626; }
+        .avatar-dropdown-item.danger:hover { background:#fef2f2; }
+        .avatar-dropdown-divider { height:1px; background:#f1f5f9; margin:4px 0; }
+        .fill-icon { font-variation-settings: 'FILL' 1; }
+        .lang-switcher { display:flex; align-items:center; gap:3px; background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); border:1px solid rgba(0,0,0,0.08); border-radius:999px; padding:3px 5px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+        .lang-btn { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:999px; font-size:0.72rem; font-weight:700; letter-spacing:0.04em; cursor:pointer; transition:all 0.18s; text-decoration:none; color:#94a3b8; border:none; background:transparent; }
+        .lang-btn:hover { background:#f1f5f9; color:#475569; }
+        .lang-btn.active { background:#059669; color:#fff; box-shadow:0 2px 8px rgba(5,150,105,0.25); }
+        .lang-divider { width:1px; height:14px; background:#e2e8f0; margin:0 1px; }
+    </style>
 </head>
 
 <body class="bg-background text-on-background font-body min-h-screen">
+
     <!-- Static Header -->
     <header class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-8 h-16 border-b border-outline-variant/10">
         <div class="flex items-center gap-2">
@@ -39,14 +55,43 @@
             <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
                 <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
             </button>
-            <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
-                <span class="material-symbols-outlined" data-icon="settings">settings</span>
-            </button>
-            <a href="profile.html"
-                class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer">
-                <img class="w-full h-full object-cover" data-alt="User Avatar"
-                    th:src="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty() ? user.avatarUrl : 'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&background=059669&color=fff'}" />
-            </a>
+            <!-- Language Switcher -->
+            <div class="lang-switcher" aria-label="Language switcher">
+                <a th:href="@{/progress(lang=en)}"
+                   th:classappend="${#locale.language == 'en'} ? ' active' : ''"
+                   class="lang-btn">🇺🇸 EN</a>
+                <div class="lang-divider"></div>
+                <a th:href="@{/progress(lang=vi)}"
+                   th:classappend="${#locale.language == 'vi'} ? ' active' : ''"
+                   class="lang-btn">🇻🇳 VI</a>
+            </div>
+            <!-- Avatar dropdown -->
+            <div class="relative" id="avatarMenuWrapper">
+                <button id="avatarMenuBtn" class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer focus:outline-none">
+                    <img class="w-full h-full object-cover" alt="Avatar"
+                        th:src="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty()} ? ${user.avatarUrl} : ${'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&amp;background=059669&amp;color=fff'}" />
+                </button>
+                <div class="avatar-dropdown" id="avatarDropdown">
+                    <div style="padding:12px 16px 8px;">
+                        <div class="text-xs text-slate-400 font-medium" th:text="#{common.signed.in.as}">Signed in as</div>
+                        <div class="text-sm font-bold text-slate-800 truncate" th:text="${user != null ? user.fullName : 'Scholar'}">Scholar</div>
+                    </div>
+                    <div class="avatar-dropdown-divider"></div>
+                    <a th:href="@{/profile}" class="avatar-dropdown-item">
+                        <span class="material-symbols-outlined" style="font-size:18px;">person</span>
+                        <span th:text="#{common.my.profile}">My Profile</span>
+                    </a>
+                    <a th:href="@{/change-password}" class="avatar-dropdown-item">
+                        <span class="material-symbols-outlined" style="font-size:18px;">lock</span>
+                        <span th:text="#{common.change.password}">Change Password</span>
+                    </a>
+                    <div class="avatar-dropdown-divider"></div>
+                    <a th:href="@{/logout}" class="avatar-dropdown-item danger">
+                        <span class="material-symbols-outlined" style="font-size:18px;">logout</span>
+                        <span th:text="#{common.log.out}">Log Out</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -58,28 +103,28 @@
         </div>
         <nav class="flex flex-col gap-1">
             <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
-                data-nav="index" href="index.html">
+                data-nav="index" th:href="@{/}">
                 <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
                 <span class="font-label">Dashboard</span>
             </a>
             <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
-                data-nav="library" href="library.html">
+                data-nav="library" th:href="@{/library}">
                 <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
                 <span class="font-label">Library</span>
             </a>
             <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
-                data-nav="vocabulary" href="vocabulary.html">
+                data-nav="vocabulary" th:href="@{/vocabulary}">
                 <span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
                 <span class="font-label">My Vocabulary</span>
             </a>
             <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out bg-emerald-50 text-emerald-700 font-bold"
-                data-nav="progress" href="progress.html">
+                data-nav="progress" th:href="@{/progress}">
                 <span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
                 <span class="font-label">Progress</span>
             </a>
         </nav>
         <div class="mt-auto p-4">
-            <a href="study.html"
+            <a th:href="@{/study}"
                 class="block text-center w-full bg-primary text-on-primary font-bold py-4 rounded-full transition-transform active:scale-95">
                 Start Study
             </a>
@@ -302,6 +347,20 @@
             <span class="text-[10px] font-medium mt-1">Stats</span>
         </a>
     </nav>
+
+    <script>
+        var avatarBtn      = document.getElementById('avatarMenuBtn');
+        var avatarDropdown = document.getElementById('avatarDropdown');
+        if (avatarBtn && avatarDropdown) {
+            avatarBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                avatarDropdown.classList.toggle('open');
+            });
+            document.addEventListener('click', function() {
+                avatarDropdown.classList.remove('open');
+            });
+        }
+    </script>
 </body>
 
 </html>

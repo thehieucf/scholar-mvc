@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface UserWordProgressRepository extends JpaRepository<UserWordProgress, Long> {
     
-    @Query("SELECT COUNT(u) FROM UserWordProgress u WHERE u.user.id = :userId AND u.lastStudiedAt >= :startOfDay")
+    @Query("SELECT COUNT(DISTINCT u.vocabulary.id) FROM UserWordProgress u WHERE u.user.id = :userId AND u.lastStudiedAt >= :startOfDay")
     long countStudiedToday(@Param("userId") Long userId, @Param("startOfDay") LocalDateTime startOfDay);
 
     List<UserWordProgress> findByUserIdAndLastStudiedAtGreaterThanEqual(Long userId, LocalDateTime startOfDay);
@@ -54,4 +54,40 @@ public interface UserWordProgressRepository extends JpaRepository<UserWordProgre
            "GROUP BY u.vocabulary.id, u.vocabulary.koreanWord, u.vocabulary.englishMeaning " +
            "ORDER BY COUNT(DISTINCT u.user.id) DESC")
     List<Object[]> findTopStudiedWords(org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * Đếm số từ có trạng thái MASTERED của một user.
+     */
+    @Query("SELECT COUNT(u) FROM UserWordProgress u WHERE u.user.id = :userId AND u.learningStatus = 'MASTERED'")
+    long countMasteredByUserId(@Param("userId") Long userId);
+
+    /**
+     * Đếm tổng số từ đã học (bất kỳ trạng thái) của một user.
+     */
+    @Query("SELECT COUNT(u) FROM UserWordProgress u WHERE u.user.id = :userId AND u.lastStudiedAt IS NOT NULL")
+    long countStudiedByUserId(@Param("userId") Long userId);
+
+    /**
+     * Lấy danh sách tiến độ học gần đây nhất của một user (có kèm vocabulary).
+     */
+    @Query("SELECT u FROM UserWordProgress u JOIN FETCH u.vocabulary v JOIN FETCH v.category " +
+           "WHERE u.user.id = :userId AND u.lastStudiedAt IS NOT NULL " +
+           "ORDER BY u.lastStudiedAt DESC")
+    List<UserWordProgress> findRecentByUserId(@Param("userId") Long userId,
+                                              org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * Đếm số từ theo từng trạng thái học của một user cụ thể.
+     */
+    @Query("SELECT u.learningStatus, COUNT(u) FROM UserWordProgress u " +
+           "WHERE u.user.id = :userId GROUP BY u.learningStatus")
+    List<Object[]> countByLearningStatusForUser(@Param("userId") Long userId);
+
+    /**
+     * Đếm số ngày học phân biệt của một user (dùng để hiển thị tổng ngày đã học).
+     */
+    @Query(value = "SELECT COUNT(DISTINCT DATE(last_studied_at)) FROM user_word_progress " +
+                   "WHERE user_id = :userId AND last_studied_at IS NOT NULL",
+           nativeQuery = true)
+    long countDistinctStudyDaysByUserId(@Param("userId") Long userId);
 }

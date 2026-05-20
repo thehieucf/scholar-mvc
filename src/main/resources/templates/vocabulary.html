@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>My Vocabulary | Rhythmic Scholar</title>
+<title th:text="#{vocabulary.page.title}">My Vocabulary | Rhythmic Scholar</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@300;400;500;600&amp;display=swap"
@@ -21,6 +21,11 @@
 .avatar-dropdown-item.danger { color:#dc2626; }
 .avatar-dropdown-item.danger:hover { background:#fef2f2; }
 .avatar-dropdown-divider { height:1px; background:#f1f5f9; margin:4px 0; }
+.lang-switcher { display:flex; align-items:center; gap:3px; background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); border:1px solid rgba(0,0,0,0.08); border-radius:999px; padding:3px 5px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+.lang-btn { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:999px; font-size:0.72rem; font-weight:700; letter-spacing:0.04em; cursor:pointer; transition:all 0.18s; text-decoration:none; color:#94a3b8; border:none; background:transparent; }
+.lang-btn:hover { background:#f1f5f9; color:#475569; }
+.lang-btn.active { background:#059669; color:#fff; box-shadow:0 2px 8px rgba(5,150,105,0.25); }
+.lang-divider { width:1px; height:14px; background:#e2e8f0; margin:0 1px; }
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:200;display:none;align-items:center;justify-content:center;}
 .modal-overlay.open{display:flex;}
 .modal-box{background:#fff;border-radius:1.5rem;padding:2rem;width:92%;max-width:540px;max-height:88vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,.25);}
@@ -64,9 +69,16 @@ input[type=text]:focus,input[type=search]:focus,select:focus{border-color:#05966
         <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
             <span class="material-symbols-outlined">notifications</span>
         </button>
-        <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
-            <span class="material-symbols-outlined">settings</span>
-        </button>
+        <!-- Language Switcher -->
+        <div class="lang-switcher" aria-label="Language switcher">
+            <a th:href="@{/vocabulary(lang=en)}"
+               th:classappend="${#locale.language == 'en'} ? ' active' : ''"
+               class="lang-btn">🇺🇸 EN</a>
+            <div class="lang-divider"></div>
+            <a th:href="@{/vocabulary(lang=vi)}"
+               th:classappend="${#locale.language == 'vi'} ? ' active' : ''"
+               class="lang-btn">🇻🇳 VI</a>
+        </div>
         <!-- Avatar dropdown -->
         <div class="relative" id="avatarMenuWrapper">
             <button id="avatarMenuBtn" class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer focus:outline-none">
@@ -139,17 +151,18 @@ input[type=text]:focus,input[type=search]:focus,select:focus{border-color:#05966
         <div class="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div class="relative">
                 <div class="absolute -top-8 -left-4 text-[100px] font-bold text-primary/5 select-none pointer-events-none leading-none">단어장</div>
-                <h1 class="text-4xl md:text-5xl font-extrabold font-headline text-on-surface tracking-tight">My <span class="text-primary">Vocabulary</span></h1>
-                <p class="text-on-surface-variant mt-2 text-base">Create groups, add words, and study your personal collection.</p>
+                <h1 class="text-4xl md:text-5xl font-extrabold font-headline text-on-surface tracking-tight">
+                    <span th:text="#{vocabulary.heading}">My</span> <span class="text-primary" th:text="#{vocabulary.heading.highlight}">Vocabulary</span></h1>
+                <p class="text-on-surface-variant mt-2 text-base" th:text="#{vocabulary.subheading}">Create groups, add words, and study your personal collection.</p>
             </div>
             <button id="btn-new-group" onclick="openCreateModal()" class="flex items-center gap-2 bg-primary text-on-primary font-bold px-5 py-3 rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all shrink-0">
-                <span class="material-symbols-outlined text-xl">add</span> New Group
+                <span class="material-symbols-outlined text-xl">add</span> <span th:text="#{vocabulary.new.group}">New Group</span>
             </button>
         </div>
 
         <!-- Groups Section -->
         <div class="mb-4 flex justify-between items-center">
-            <h2 class="text-xl font-bold font-headline">My Groups</h2>
+            <h2 class="text-xl font-bold font-headline" th:text="#{vocabulary.my.groups}">My Groups</h2>
             <span id="groups-count" class="text-sm text-on-surface-variant font-medium bg-surface-container-low px-3 py-1 rounded-full">0 groups</span>
         </div>
 
@@ -518,8 +531,9 @@ function searchWords(query) {
         return v.koreanWord.includes(q) || v.englishMeaning.toLowerCase().includes(q) || (v.romaji && v.romaji.toLowerCase().includes(q));
     }).slice(0, 10);
     if (filtered.length === 0) { results.innerHTML = '<p class="text-center text-on-surface-variant text-sm py-4">No results found</p>'; return; }
-    results.innerHTML = filtered.map(function(v) {
-        return '<div class="search-result-item" onclick=\'addWordFromSearch(' + JSON.stringify(v) + ')\'>'
+    results.innerHTML = filtered.map(function(v, idx) {
+        window['_searchResult_' + idx] = v;
+        return '<div class="search-result-item" onclick="addWordFromSearch(window[\'_searchResult_' + idx + '\'])">'
             + '<span class="text-lg font-bold font-headline min-w-[80px]">'+escHtml(v.koreanWord)+'</span>'
             + '<div><div class="text-sm font-semibold">'+escHtml(v.romaji||'')+'</div>'
             + '<div class="text-xs text-on-surface-variant">'+escHtml(v.englishMeaning)+'</div></div>'

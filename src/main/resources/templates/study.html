@@ -1,118 +1,294 @@
 <!DOCTYPE html>
-
 <html class="light" lang="en" xmlns:th="http://www.thymeleaf.org">
-
 <head>
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-  <title>Flashcard Session | Rhythmic Scholar</title>
+  <title>Study Session | Rhythmic Scholar</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;family=Be+Vietnam+Pro:ital,wght@0,100..900;1,100..900&amp;display=swap"
-    rel="stylesheet" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Be+Vietnam+Pro:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
   <link rel="stylesheet" th:href="@{/css/style.css}" />
-  <link rel="stylesheet" th:href="@{/css/study.css}" />
+  <link rel="stylesheet" th:href="@{/css/study.css(v=5)}" />
   <script th:src="@{/js/tailwind-config.js}"></script>
 </head>
 
-<body
-  class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container min-h-screen">
-  <!-- TopAppBar -->
-  <header
-    class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-6 h-16">
+<body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container min-h-screen">
+
+  <!-- ═══ TOP APP BAR ═══════════════════════════════════════════════════════ -->
+  <header class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-6 h-16">
     <div class="flex items-center gap-3">
-      <a th:href="@{/}"
-        class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant hover:text-primary">
+      <a th:href="@{/}" class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant hover:text-primary">
         <span class="material-symbols-outlined">arrow_back</span>
       </a>
-      <span class="text-xl font-bold tracking-tight text-emerald-800 font-headline">Flashcard Session</span>
+      <span class="text-xl font-bold tracking-tight text-emerald-800 font-headline" id="session-title">Flashcard</span>
     </div>
-    <!-- Progress Bar -->
-    <div class="flex-1 max-w-2xl px-8 hidden sm:block">
-      <div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
-        <div id="progress-bar" class="h-full bg-primary rounded-full transition-all duration-500" style="width: 0%"></div>
+
+    <!-- Phase stepper (center) -->
+    <div class="flex items-center gap-2" id="phase-stepper">
+      <!-- Step 1: Flashcard -->
+      <div class="phase-step active" id="step-1">
+        <div class="step-dot">
+          <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">style</span>
+        </div>
+        <span class="step-label hidden sm:inline">Flashcard</span>
       </div>
-      <div class="flex justify-between mt-1.5">
-        <span id="progress-label" class="text-xs font-label text-on-surface-variant font-medium">0 of 0 words</span>
-        <span id="score-label" class="text-xs font-label text-primary font-bold">0% Done</span>
+      <div class="step-connector" id="connector-1"></div>
+      <!-- Step 2: Listening -->
+      <div class="phase-step" id="step-2">
+        <div class="step-dot">
+          <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">hearing</span>
+        </div>
+        <span class="step-label hidden sm:inline">Listening</span>
+      </div>
+      <div class="step-connector" id="connector-2"></div>
+      <!-- Step 3: Quiz -->
+      <div class="phase-step" id="step-3">
+        <div class="step-dot">
+          <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">quiz</span>
+        </div>
+        <span class="step-label hidden sm:inline">Quiz</span>
       </div>
     </div>
+
+    <!-- Right: streak + progress bar + avatar -->
     <div class="flex items-center gap-3">
       <div class="hidden md:flex items-center gap-2 px-3 py-1 bg-surface-container rounded-full">
-        <span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
-        <span class="text-xs font-bold font-headline" th:text="${user != null ? user.currentStreak + ' Days' : '0 Days'}">12 Days</span>
+        <span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings:'FILL' 1;">local_fire_department</span>
+        <span class="text-xs font-bold font-headline" th:text="${user != null ? user.currentStreak + ' Days' : '0 Days'}">0 Days</span>
       </div>
       <a th:href="@{/profile}" class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer">
-                <img class="w-full h-full object-cover" data-alt="User Avatar" th:src="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty() ? user.avatarUrl : 'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&background=059669&color=fff'}" />
-            </a>
+        <img class="w-full h-full object-cover" alt="Avatar"
+          th:src="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty() ? user.avatarUrl : 'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&background=059669&color=fff'}" />
+      </a>
     </div>
   </header>
 
-  <main class="pt-24 pb-12 min-h-screen signature-glow flex flex-col items-center justify-center px-4">
-    <!-- Topic Badge -->
-    <div class="mb-6 flex items-center gap-2">
-      <span class="px-4 py-1.5 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold uppercase tracking-wider" id="topic-badge">Study Session</span>
+  <!-- ═══ PROGRESS BAR (below header) ══════════════════════════════════════ -->
+  <div class="fixed top-16 left-0 w-full z-40 bg-emerald-50/60 backdrop-blur px-6 py-2 hidden sm:block border-b border-outline-variant/10">
+    <div class="max-w-2xl mx-auto">
+      <div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+        <div id="progress-bar" class="h-full bg-primary rounded-full transition-all duration-500" style="width:0%"></div>
+      </div>
+      <div class="flex justify-between mt-1">
+        <span id="progress-label" class="text-xs font-label text-on-surface-variant">0 of 0 words</span>
+        <span id="score-label" class="text-xs font-label text-primary font-bold">0%</span>
+      </div>
     </div>
+  </div>
 
-    <!-- Flashcard Canvas -->
-    <div class="flashcard-container" id="flashcard-container">
-      <div class="flashcard-inner">
-        <!-- Front Side -->
-        <div class="flashcard-front bg-surface-container-lowest">
-          <div class="absolute top-4 right-4 h-10 w-10 bg-primary/10 text-primary rounded-full flex items-center justify-center">
-             <span class="material-symbols-outlined">style</span>
+  <main class="pt-28 sm:pt-32 pb-12 min-h-screen signature-glow flex flex-col items-center justify-center px-4">
+
+    <!-- ═══ PHASE 1: FLASHCARD ════════════════════════════════════════════ -->
+    <div id="phase-flashcard" class="w-full flex flex-col items-center">
+
+      <div class="mb-6">
+        <span class="px-4 py-1.5 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold uppercase tracking-wider">
+          Phase 1 · Flashcard
+        </span>
+      </div>
+
+      <!-- Flashcard Canvas -->
+      <div class="flashcard-container" id="flashcard-container">
+        <div class="flashcard-inner">
+          <!-- Front -->
+          <div class="flashcard-front bg-surface-container-lowest">
+            <div class="absolute top-4 right-4 h-10 w-10 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+              <span class="material-symbols-outlined">style</span>
+            </div>
+            <button onclick="speakCurrentWord(event)"
+              class="absolute top-4 left-4 h-10 w-10 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center transition-all active:scale-90"
+              title="Listen to pronunciation">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">volume_up</span>
+            </button>
+            <h1 class="hangul-display font-headline text-on-surface" id="card-korean">...</h1>
+            <p class="romaji-display" id="card-romaji">...</p>
+            <div class="mt-8 text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Click to reveal meaning</div>
           </div>
-          <h1 class="hangul-display font-headline text-on-surface" id="card-korean">...</h1>
-          <p class="romaji-display" id="card-romaji">...</p>
-          <div class="mt-8 text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Click to reveal meaning</div>
-        </div>
-        <!-- Back Side -->
-        <div class="flashcard-back bg-emerald-50">
-          <span class="text-secondary font-label font-bold tracking-widest text-xs uppercase mb-4">Meaning</span>
-          <h2 class="meaning-display font-headline" id="card-english">...</h2>
-          
-          <!-- Mnemonic (Optional) -->
-          <div id="mnemonic-container" class="mt-6 bg-tertiary-container/30 rounded-lg px-4 py-3 flex items-start gap-3 border border-tertiary/10 w-full max-w-sm hidden">
-            <span class="material-symbols-outlined text-tertiary mt-0.5" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
-            <p class="text-sm text-on-tertiary-container font-medium text-left">
-              <strong class="font-bold">Mnemonic:</strong> <span id="card-mnemonic"></span>
-            </p>
+          <!-- Back -->
+          <div class="flashcard-back bg-emerald-50">
+            <button onclick="speakCurrentWord(event)"
+              class="absolute top-4 left-4 h-10 w-10 bg-white/60 hover:bg-white text-emerald-600 rounded-full flex items-center justify-center transition-all active:scale-90"
+              title="Listen again">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">volume_up</span>
+            </button>
+            <span class="text-secondary font-label font-bold tracking-widest text-xs uppercase mb-4">Meaning</span>
+            <h2 class="meaning-display font-headline" id="card-english">...</h2>
+            <div id="mnemonic-container" class="mt-6 bg-tertiary-container/30 rounded-lg px-4 py-3 flex items-start gap-3 border border-tertiary/10 w-full max-w-sm hidden">
+              <span class="material-symbols-outlined text-tertiary mt-0.5" style="font-variation-settings:'FILL' 1;">lightbulb</span>
+              <p class="text-sm text-on-tertiary-container font-medium text-left">
+                <strong class="font-bold">Mnemonic:</strong> <span id="card-mnemonic"></span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- Flashcard nav -->
+      <div class="interaction-area">
+        <button id="prev-btn" disabled
+          class="flex-1 flex items-center justify-center gap-2 p-5 bg-surface-container-low rounded-xl hover:bg-surface-container-high transition-all border border-outline-variant/15 disabled:opacity-30">
+          <span class="material-symbols-outlined">arrow_back</span>
+          <span class="font-bold text-sm">Previous</span>
+        </button>
+        <button id="next-btn"
+          class="flex-[2] relative flex items-center justify-between p-5 bg-primary text-on-primary rounded-xl hover:opacity-95 transition-all shadow-lg shadow-primary/20">
+          <div class="relative z-10 flex items-center gap-3 ml-4">
+            <p class="font-bold text-lg font-headline" id="next-btn-text">Next Word</p>
+          </div>
+          <div class="h-10 w-10 rounded-full bg-on-primary/20 flex items-center justify-center relative z-10 mr-2">
+            <span class="material-symbols-outlined text-2xl" id="next-btn-icon">arrow_forward</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Flashcard stats -->
+      <div class="mt-8 w-full max-w-xl grid grid-cols-2 gap-3 opacity-70">
+        <div class="flex flex-col items-center py-4 bg-surface-container/60 rounded-xl">
+          <span class="text-primary font-black text-2xl" id="current-count">1</span>
+          <span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant mt-1">Word</span>
+        </div>
+        <div class="flex flex-col items-center py-4 bg-surface-container/60 rounded-xl">
+          <span class="text-secondary font-black text-2xl" id="total-count">0</span>
+          <span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant mt-1">Total</span>
+        </div>
+      </div>
     </div>
 
-    <!-- Interaction Buttons -->
-    <div class="interaction-area">
-      <button id="prev-btn" class="flex-1 flex items-center justify-center gap-2 p-5 bg-surface-container-low rounded-xl hover:bg-surface-container-high transition-all border border-outline-variant/15 disabled:opacity-30" disabled>
-        <span class="material-symbols-outlined">arrow_back</span>
-        <span class="font-bold text-sm">Previous</span>
+    <!-- ═══ TRANSITION SCREEN (Flashcard → Listening) ════════════════════ -->
+    <div id="phase-transition" class="hidden w-full max-w-md flex flex-col items-center text-center gap-6">
+      <div style="width:6rem;height:6rem;background:#d1fae5;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:3rem;box-shadow:0 10px 25px rgba(0,0,0,.1);">🎉</div>
+      <div>
+        <h2 style="font-size:1.875rem;font-weight:800;color:#0f172a;margin-bottom:.5rem;">Flashcards Done!</h2>
+        <p style="color:#64748b;">You've reviewed all <strong id="transition-word-count">0</strong> words.<br/>Now let's test your listening!</p>
+      </div>
+      <!-- Mini summary -->
+      <div style="width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;">
+        <div style="background:#fff;border-radius:.75rem;padding:1rem;display:flex;flex-direction:column;align-items:center;border:1px solid #e2e8f0;">
+          <span style="font-size:1.5rem;font-weight:900;color:#059669;" id="transition-total">0</span>
+          <span style="font-size:.65rem;text-transform:uppercase;font-weight:700;letter-spacing:.05em;color:#94a3b8;margin-top:4px;">Words</span>
+        </div>
+        <div style="background:#fff;border-radius:.75rem;padding:1rem;display:flex;flex-direction:column;align-items:center;border:1px solid #e2e8f0;">
+          <span style="font-size:1.5rem;font-weight:900;color:#f59e0b;" id="transition-streak">0</span>
+          <span style="font-size:.65rem;text-transform:uppercase;font-weight:700;letter-spacing:.05em;color:#94a3b8;margin-top:4px;">Day Streak</span>
+        </div>
+        <div style="background:#fff;border-radius:.75rem;padding:1rem;display:flex;flex-direction:column;align-items:center;border:1px solid #e2e8f0;">
+          <span style="font-size:1.5rem;font-weight:900;color:#6366f1;" id="transition-xp">+0</span>
+          <span style="font-size:.65rem;text-transform:uppercase;font-weight:700;letter-spacing:.05em;color:#94a3b8;margin-top:4px;">XP Earned</span>
+        </div>
+      </div>
+      <button onclick="startListeningPhase()"
+        style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;background:#059669;color:#fff;border:none;border-radius:1rem;cursor:pointer;box-shadow:0 8px 20px rgba(5,150,105,.3);transition:opacity .15s,transform .1s;"
+        onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'"
+        onmousedown="this.style.transform='scale(.98)'" onmouseup="this.style.transform='scale(1)'">
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <span class="material-symbols-outlined" style="font-size:2rem;font-variation-settings:'FILL' 1;">hearing</span>
+          <div style="text-align:left;">
+            <p style="font-weight:700;font-size:1.1rem;margin:0;">Start Listening</p>
+            <p style="font-size:.85rem;opacity:.8;margin:0;">Phase 2 of 3</p>
+          </div>
+        </div>
+        <span class="material-symbols-outlined" style="font-size:1.5rem;">arrow_forward</span>
       </button>
-      
-      <button id="next-btn" class="flex-[2] relative flex items-center justify-between p-5 bg-primary text-on-primary rounded-xl hover:opacity-95 transition-all shadow-lg shadow-primary/20 overflow-hidden">
-        <div class="relative z-10 flex items-center gap-3 ml-4">
-          <p class="font-bold text-lg font-headline" id="next-btn-text">Next Word</p>
-        </div>
-        <div class="h-10 w-10 rounded-full bg-on-primary/20 flex items-center justify-center relative z-10 mr-2">
-          <span class="material-symbols-outlined text-2xl" id="next-btn-icon">arrow_forward</span>
-        </div>
+      <button onclick="skipToQuiz()" class="skip-button"
+        style="background:none;border:none;cursor:pointer;font-size:.875rem;color:#64748b;text-decoration:underline;padding:.5rem;"
+        onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#64748b'">
+        Skip listening → Go to Quiz
       </button>
     </div>
 
-    <!-- Session Stats -->
-    <div class="mt-10 w-full max-w-4xl grid grid-cols-2 md:grid-cols-4 gap-3 opacity-70">
-      <div class="flex flex-col items-center py-4 bg-surface-container/60 rounded-xl">
-        <span class="text-primary font-black text-2xl" id="current-count">1</span>
-        <span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant mt-1">Word</span>
+    <!-- ═══ PHASE 2: LISTENING ════════════════════════════════════════════ -->
+    <div id="phase-listening" class="hidden w-full max-w-xl flex flex-col items-center">
+
+      <div class="mb-6">
+        <span style="padding:.375rem 1rem;background:#d1fae5;color:#065f46;border-radius:999px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">
+          Phase 2 · Listening
+        </span>
       </div>
-      <div class="flex flex-col items-center py-4 bg-surface-container/60 rounded-xl">
-        <span class="text-secondary font-black text-2xl" id="total-count">0</span>
-        <span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant mt-1">Total Goal</span>
+
+      <!-- Listening Card -->
+      <div class="listening-card w-full rounded-3xl p-8 shadow-xl flex flex-col items-center gap-6"
+           style="background:#ffffff;border:1px solid #e2e8f0;">
+        <!-- Sound wave + play button -->
+        <div class="relative flex items-center justify-center" style="height:120px;width:220px;">
+          <div id="sound-rings" class="sound-rings">
+            <div class="ring ring-1"></div>
+            <div class="ring ring-2"></div>
+            <div class="ring ring-3"></div>
+          </div>
+          <button id="listen-play-btn" onclick="speakListenWord()"
+            style="position:relative;z-index:10;width:6rem;height:6rem;background:#059669;color:#fff;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(5,150,105,.3);cursor:pointer;transition:transform .15s;"
+            onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            <span class="material-symbols-outlined" style="font-size:3rem;font-variation-settings:'FILL' 1;" id="listen-icon">volume_up</span>
+          </button>
+        </div>
+
+        <div class="text-center">
+          <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:.25rem;">Listen &amp; Choose</p>
+          <p style="font-size:.875rem;color:#64748b;">Tap the speaker, then pick the correct meaning</p>
+        </div>
+
+        <!-- Romaji hint (after 2 plays) -->
+        <div id="romaji-hint" class="hidden" style="padding:.5rem 1rem;background:#f1f5f9;border-radius:999px;">
+          <p style="font-size:.875rem;color:#64748b;">
+            <span style="font-weight:700;color:#059669;">Hint:</span> <span id="listen-romaji">...</span>
+          </p>
+        </div>
+        <p style="font-size:.75rem;color:#94a3b8;">
+          Played <span id="play-count">0</span> time(s) · hint after 2
+        </p>
+      </div>
+
+      <!-- Answer choices -->
+      <div id="answer-choices"></div>
+
+      <!-- Result feedback -->
+      <div id="listen-result" class="hidden mt-4 w-full px-5 py-4 rounded-2xl flex items-center gap-3">
+        <span class="material-symbols-outlined text-2xl" id="listen-result-icon">check_circle</span>
+        <div>
+          <p class="font-bold" id="listen-result-text">Correct!</p>
+          <p class="text-sm" id="listen-result-detail"></p>
+        </div>
+      </div>
+
+      <!-- Listening nav -->
+      <div class="interaction-area mt-5">
+        <button id="listen-prev-btn" disabled
+          style="flex:1;display:flex;align-items:center;justify-content:center;gap:.5rem;padding:1.25rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:.75rem;cursor:pointer;font-weight:700;font-size:.875rem;color:#475569;transition:background .15s;"
+          onmouseover="if(!this.disabled)this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+          <span class="material-symbols-outlined">arrow_back</span>
+          <span>Previous</span>
+        </button>
+        <button id="listen-next-btn"
+          style="flex:2;display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.25rem 1.25rem 1.75rem;background:#059669;color:#fff;border:none;border-radius:.75rem;cursor:pointer;box-shadow:0 4px 14px rgba(5,150,105,.25);transition:opacity .15s;"
+          onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
+          <p style="font-weight:700;font-size:1.1rem;margin:0;" id="listen-next-text">Next Word</p>
+          <div style="width:2.5rem;height:2.5rem;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;">
+            <span class="material-symbols-outlined" style="font-size:1.5rem;" id="listen-next-icon">arrow_forward</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Listening stats -->
+      <div style="margin-top:2rem;width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;opacity:.7;">
+        <div style="display:flex;flex-direction:column;align-items:center;padding:1rem;background:rgba(255,255,255,.6);border-radius:.75rem;">
+          <span style="font-size:1.5rem;font-weight:900;color:#059669;" id="listen-current-count">1</span>
+          <span style="font-size:.6rem;text-transform:uppercase;font-weight:700;letter-spacing:.05em;color:#94a3b8;margin-top:4px;">Word</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;padding:1rem;background:rgba(255,255,255,.6);border-radius:.75rem;">
+          <span style="font-size:1.5rem;font-weight:900;color:#6366f1;" id="listen-total-count">0</span>
+          <span style="font-size:.6rem;text-transform:uppercase;font-weight:700;letter-spacing:.05em;color:#94a3b8;margin-top:4px;">Total</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;padding:1rem;background:rgba(255,255,255,.6);border-radius:.75rem;">
+          <span style="font-size:1.5rem;font-weight:900;color:#0d9488;" id="listen-correct-count">0</span>
+          <span style="font-size:.6rem;text-transform:uppercase;font-weight:700;letter-spacing:.05em;color:#94a3b8;margin-top:4px;">Correct</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;padding:1rem;background:rgba(255,255,255,.6);border-radius:.75rem;">
+          <span style="font-size:1.5rem;font-weight:900;color:#f43f5e;" id="listen-wrong-count">0</span>
+          <span style="font-size:.6rem;text-transform:uppercase;font-weight:700;letter-spacing:.05em;color:#94a3b8;margin-top:4px;">Wrong</span>
+        </div>
       </div>
     </div>
+
   </main>
 
   <script th:inline="javascript">
@@ -120,7 +296,7 @@
     const vocabList = /*[[${vocabList}]]*/ [];
     /*]]>*/
   </script>
-  <script th:src="@{/js/study.js(v=2)}"></script>
+  <script th:src="@{/js/study.js(v=4)}"></script>
 
   <!-- FAB -->
   <a th:href="@{/library}"
@@ -129,5 +305,4 @@
     <span class="absolute right-16 bg-on-surface text-surface px-3 py-1 rounded-full text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Library</span>
   </a>
 </body>
-
 </html>

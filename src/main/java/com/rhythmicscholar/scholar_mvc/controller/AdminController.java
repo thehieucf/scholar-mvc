@@ -11,7 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +45,9 @@ public class AdminController {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private UserBadgeRepository userBadgeRepository;
 
     // ----------------------------------------------------------------
     // Helper: get the currently logged-in admin from session
@@ -171,6 +173,96 @@ public class AdminController {
         userRepository.deleteById(id);
         redirectAttributes.addFlashAttribute("success", "User deleted successfully.");
         return "redirect:/admin/users?page=" + page + "&size=" + size;
+    }
+
+    // ----------------------------------------------------------------
+    // User Detail — learning status
+    // ----------------------------------------------------------------
+    @GetMapping("/users/{id}")
+    public String userDetail(@PathVariable Long id,
+                             HttpSession session,
+                             Model model) {
+        User admin = getCurrentAdmin(session);
+        model.addAttribute("admin", admin);
+
+        User target = userRepository.findById(id).orElse(null);
+        if (target == null) return "redirect:/admin/users";
+        model.addAttribute("target", target);
+
+        // Tổng số từ đã học
+        long totalStudied  = userWordProgressRepository.countStudiedByUserId(id);
+        long totalMastered = userWordProgressRepository.countMasteredByUserId(id);
+        long totalDays     = userWordProgressRepository.countDistinctStudyDaysByUserId(id);
+
+        // Phân bổ trạng thái học (NEW / LEARNING / MASTERED)
+        List<Object[]> statusRows = userWordProgressRepository.countByLearningStatusForUser(id);
+        Map<String, Long> statusMap = new HashMap<>();
+        statusMap.put("LEARNING", 0L);
+        statusMap.put("MASTERED", 0L);
+        for (Object[] row : statusRows) {
+            statusMap.put((String) row[0], (Long) row[1]);
+        }
+
+        // Tiến độ theo từng category
+        List<com.rhythmicscholar.scholar_mvc.model.Category> categories = categoryRepository.findAll();
+        List<Map<String, Object>> categoryProgress = new ArrayList<>();
+        for (com.rhythmicscholar.scholar_mvc.model.Category cat : categories) {
+            long total   = vocabularyRepository.countByCategoryId(cat.getId());
+            long studied = userWordProgressRepository.countStudiedWordsByCategoryId(id, cat.getId());
+            if (total == 0) continue;
+            Map<String, Object> row = new HashMap<>();
+            row.put("nameEn",     cat.getNameEn());
+            row.put("colorTheme", cat.getColorTheme());
+            row.put("iconName",   cat.getIconName());
+            row.put("total",      total);
+            row.put("studied",    studied);
+            row.put("pct",        (int) Math.min(100, studied * 100 / total));
+            categoryProgress.add(row);
+        }
+        // Sắp xếp: category có tiến độ cao nhất lên đầu
+        categoryProgress.sort((a, b) -> Integer.compare((int) b.get("pct"), (int) a.get("pct")));
+
+        // 20 từ học gần nhất — format lastStudiedAt thành String để tránh dùng #temporals
+        List<com.rhythmicscholar.scholar_mvc.model.UserWordProgress> recentWordsRaw =
+            userWordProgressRepository.findRecentByUserId(id, PageRequest.of(0, 20));
+
+        java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm");
+        List<Map<String, Object>> recentWords = recentWordsRaw.stream().map(wp -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("koreanWord",      wp.getVocabulary().getKoreanWord());
+            m.put("romaji",          wp.getVocabulary().getRomaji());
+            m.put("englishMeaning",  wp.getVocabulary().getEnglishMeaning());
+            m.put("categoryName",    wp.getVocabulary().getCategory().getNameEn());
+            m.put("learningStatus",  wp.getLearningStatus());
+            m.put("consecutiveCorrect", wp.getConsecutiveCorrect() != null ? wp.getConsecutiveCorrect() : 0);
+            m.put("lastStudiedAt",   wp.getLastStudiedAt() != null ? wp.getLastStudiedAt().format(dtf) : "—");
+            return m;
+        }).toList();
+
+        // Badge của user
+        List<com.rhythmicscholar.scholar_mvc.model.UserBadge> userBadges =
+            userBadgeRepository.findByUserIdWithBadge(id);
+
+        // Học hôm nay
+        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+        long studiedToday = userWordProgressRepository.countStudiedToday(id, startOfToday);
+
+        // Format joined date
+        String joinedDate = target.getCreatedAt() != null
+            ? target.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy"))
+            : "—";
+
+        model.addAttribute("totalStudied",    totalStudied);
+        model.addAttribute("totalMastered",   totalMastered);
+        model.addAttribute("totalDays",       totalDays);
+        model.addAttribute("studiedToday",    studiedToday);
+        model.addAttribute("statusLearning",  statusMap.get("LEARNING"));
+        model.addAttribute("statusMastered",  statusMap.get("MASTERED"));
+        model.addAttribute("categoryProgress", categoryProgress);
+        model.addAttribute("recentWords",     recentWords);
+        model.addAttribute("userBadges",      userBadges);
+        model.addAttribute("joinedDate",      joinedDate);
+        return "admin/user-detail";
     }
 
     @PostMapping("/users/{id}/reset-password")

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Rhythmic Scholar - Dashboard</title>
+    <title th:text="#{index.page.title}">Dashboard | Rhythmic Scholar</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@300;400;500;600&amp;display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
@@ -18,6 +18,11 @@
         .avatar-dropdown-item.danger:hover { background:#fef2f2; }
         .avatar-dropdown-divider { height:1px; background:#f1f5f9; margin:4px 0; }
         .fill-icon { font-variation-settings: 'FILL' 1; }
+        .lang-switcher { display:flex; align-items:center; gap:3px; background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); border:1px solid rgba(0,0,0,0.08); border-radius:999px; padding:3px 5px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+        .lang-btn { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:999px; font-size:0.72rem; font-weight:700; letter-spacing:0.04em; cursor:pointer; transition:all 0.18s; text-decoration:none; color:#94a3b8; border:none; background:transparent; }
+        .lang-btn:hover { background:#f1f5f9; color:#475569; }
+        .lang-btn.active { background:#059669; color:#fff; box-shadow:0 2px 8px rgba(5,150,105,0.25); }
+        .lang-divider { width:1px; height:14px; background:#e2e8f0; margin:0 1px; }
     </style>
 </head>
 <body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
@@ -32,18 +37,24 @@
                 <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-outline">
                     <span class="material-symbols-outlined text-[18px]">manage_search</span>
                 </div>
-                <input name="q" class="bg-surface-container-highest border-none rounded-full py-1.5 pl-10 pr-16 text-sm focus:ring-2 focus:ring-primary/20 w-64 md:w-80 transition-all" placeholder="Search Korean vocabulary…" type="text" />
-                <button type="submit"
-                    class="absolute inset-y-0 right-0 px-4 text-xs font-bold text-primary hover:text-primary/80 transition-colors rounded-r-full">
-                    Search
-                </button>
+                <input name="q" class="bg-surface-container-highest border-none rounded-full py-1.5 pl-10 pr-16 text-sm focus:ring-2 focus:ring-primary/20 w-64 md:w-80 transition-all"
+                    th:placeholder="#{common.search.placeholder}" placeholder="Search Korean vocabulary…" type="text" />
+                <button type="submit" class="absolute inset-y-0 right-0 px-4 text-xs font-bold text-primary hover:text-primary/80 transition-colors rounded-r-full"
+                    th:text="#{common.search.btn}">Search</button>
             </form>
             <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
                 <span class="material-symbols-outlined">notifications</span>
             </button>
-            <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
-                <span class="material-symbols-outlined">settings</span>
-            </button>
+            <!-- Language Switcher -->
+            <div class="lang-switcher" aria-label="Language switcher">
+                <a th:href="@{/(lang=en)}"
+                   th:classappend="${#locale.language == 'en'} ? ' active' : ''"
+                   class="lang-btn">🇺🇸 EN</a>
+                <div class="lang-divider"></div>
+                <a th:href="@{/(lang=vi)}"
+                   th:classappend="${#locale.language == 'vi'} ? ' active' : ''"
+                   class="lang-btn">🇻🇳 VI</a>
+            </div>
             <!-- Avatar dropdown -->
             <div class="relative" id="avatarMenuWrapper">
                 <button id="avatarMenuBtn" class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer focus:outline-none">
@@ -52,22 +63,22 @@
                 </button>
                 <div class="avatar-dropdown" id="avatarDropdown">
                     <div style="padding:12px 16px 8px;">
-                        <div class="text-xs text-slate-400 font-medium">Signed in as</div>
+                        <div class="text-xs text-slate-400 font-medium" th:text="#{common.signed.in.as}">Signed in as</div>
                         <div class="text-sm font-bold text-slate-800 truncate" th:text="${user != null ? user.fullName : 'Scholar'}">Scholar</div>
                     </div>
                     <div class="avatar-dropdown-divider"></div>
                     <a th:href="@{/profile}" class="avatar-dropdown-item">
                         <span class="material-symbols-outlined" style="font-size:18px;">person</span>
-                        My Profile
+                        <span th:text="#{common.my.profile}">My Profile</span>
                     </a>
                     <a th:href="@{/change-password}" class="avatar-dropdown-item">
                         <span class="material-symbols-outlined" style="font-size:18px;">lock</span>
-                        Change Password
+                        <span th:text="#{common.change.password}">Change Password</span>
                     </a>
                     <div class="avatar-dropdown-divider"></div>
                     <a th:href="@{/logout}" class="avatar-dropdown-item danger">
                         <span class="material-symbols-outlined" style="font-size:18px;">logout</span>
-                        Log Out
+                        <span th:text="#{common.log.out}">Log Out</span>
                     </a>
                 </div>
             </div>
@@ -77,32 +88,35 @@
     <!-- Sidebar -->
     <aside class="hidden md:flex flex-col h-screen fixed left-0 w-64 bg-slate-50 p-4 pt-20 gap-2 border-r border-outline-variant/10 z-30">
         <div class="px-4 py-6 mb-4 bg-surface-container-low rounded-xl">
-            <p class="text-sm font-label text-slate-500">Annyeong!</p>
+            <p class="text-sm font-label text-slate-500" th:text="#{common.annyeong}">Annyeong!</p>
             <h3 class="text-lg font-headline font-bold text-emerald-700"
                 th:text="${user != null ? user.currentLevel + ' Scholar' : 'Beginner Scholar'}">Scholar</h3>
         </div>
         <nav class="flex flex-col gap-1">
             <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out bg-emerald-50 text-emerald-700 font-bold" th:href="@{/}">
                 <span class="material-symbols-outlined">dashboard</span>
-                <span class="font-label">Dashboard</span>
+                <span class="font-label" th:text="#{common.dashboard}">Dashboard</span>
             </a>
             <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50" th:href="@{/library}">
                 <span class="material-symbols-outlined">menu_book</span>
-                <span class="font-label">Library</span>
+                <span class="font-label" th:text="#{common.library}">Library</span>
             </a>
             <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50" th:href="@{/vocabulary}">
                 <span class="material-symbols-outlined">bookmark</span>
-                <span class="font-label">My Vocabulary</span>
+                <span class="font-label" th:text="#{common.my.vocabulary}">My Vocabulary</span>
             </a>
             <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50" th:href="@{/progress}">
                 <span class="material-symbols-outlined">leaderboard</span>
-                <span class="font-label">Progress</span>
+                <span class="font-label" th:text="#{common.progress}">Progress</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50" th:href="@{/leaderboard}">
+                <span class="material-symbols-outlined">emoji_events</span>
+                <span class="font-label" th:text="#{common.leaderboard}">Leaderboard</span>
             </a>
         </nav>
         <div class="mt-auto p-4">
-            <a th:href="@{/study}" class="block text-center w-full bg-primary text-on-primary font-bold py-4 rounded-full transition-transform active:scale-95">
-                Start Study
-            </a>
+            <a th:href="@{/study}" class="block text-center w-full bg-primary text-on-primary font-bold py-4 rounded-full transition-transform active:scale-95"
+               th:text="#{common.start.study}">Start Study</a>
         </div>
     </aside>
 
@@ -114,13 +128,16 @@
             <div class="hangul-bg text-[12rem] -top-12 -right-4">&#xC548;&#xB155;&#xD558;&#xC138;&#xC694;</div>
             <div class="max-w-2xl">
                 <h1 class="text-4xl md:text-5xl font-headline font-extrabold tracking-tight mb-4 text-on-surface">
-                    Annyeong, <span th:text="${user != null ? user.fullName : 'Scholar'}">Scholar</span>! <br />
-                    <span class="text-primary">Ready to learn today?</span>
+                    <span th:text="#{common.annyeong}">Annyeong!</span>
+                    <span th:text="${user != null ? user.fullName : 'Scholar'}">Scholar</span>! <br />
+                    <span class="text-primary" th:text="#{index.greeting}">Ready to learn today?</span>
                 </h1>
                 <p class="text-lg text-on-surface-variant font-body leading-relaxed max-w-md">
-                    <span th:if="${studiedToday > 0}"
+                    <span th:if="${studiedToday >= dailyGoal}"
+                          th:text="'You completed your daily goal — ' + ${studiedToday} + ' words studied today!'"></span>
+                    <span th:if="${studiedToday > 0 and studiedToday < dailyGoal}"
                           th:text="'You have studied ' + ${studiedToday} + ' words today. Keep the rhythm going!'"></span>
-                    <span th:unless="${studiedToday > 0}">You haven't studied yet today. Let's get started!</span>
+                    <span th:if="${studiedToday == 0}" th:text="#{index.goal.remaining(0)}">You haven't studied yet today. Let's get started!</span>
                 </p>
             </div>
         </section>
@@ -132,13 +149,11 @@
             <div class="md:col-span-2 bg-surface-container-lowest rounded-xl p-8 flex flex-col justify-between shadow-sm border border-outline-variant/10">
                 <div class="flex justify-between items-start mb-6">
                     <div>
-                        <h3 class="text-xl font-headline font-bold text-on-surface">Daily Goal</h3>
-                        <p class="text-on-surface-variant text-sm">Vocabulary words studied today</p>
+                        <h3 class="text-xl font-headline font-bold text-on-surface" th:text="#{index.daily.goal}">Daily Goal</h3>
+                        <p class="text-on-surface-variant text-sm" th:text="#{index.daily.goal.sub}">Vocabulary words studied today</p>
                     </div>
                     <span class="text-2xl font-black text-primary" th:text="${percentage + '%'}">0%</span>
                 </div>
-
-                <!-- Circular progress -->
                 <div class="flex-grow flex items-center justify-center mb-6">
                     <div class="relative w-48 h-48 flex items-center justify-center">
                         <svg class="w-full h-full" viewBox="0 0 200 200">
@@ -157,16 +172,18 @@
                         <div class="absolute text-center pointer-events-none">
                             <span class="block text-4xl font-extrabold text-on-surface"
                                   th:text="${studiedToday + '/' + dailyGoal}">0/20</span>
-                            <span class="text-xs uppercase tracking-widest text-outline">Words</span>
+                            <span class="text-xs uppercase tracking-widest text-outline" th:text="#{index.words.unit}">Words</span>
                         </div>
                     </div>
                 </div>
-
-                <!-- Status message -->
                 <div th:if="${studiedToday >= dailyGoal}"
                      class="flex items-center gap-3 p-4 bg-emerald-50 rounded-lg border border-emerald-100">
                     <span class="material-symbols-outlined fill-icon text-emerald-600">celebration</span>
-                    <p class="text-sm font-semibold text-emerald-800">Goal reached! Amazing work today!</p>
+                    <div>
+                        <p class="text-sm font-bold text-emerald-800" th:text="#{index.goal.complete}">🎉 Daily goal complete!</p>
+                        <p class="text-xs text-emerald-700 mt-0.5"
+                           th:text="'You studied ' + ${studiedToday} + ' words today. Amazing work!'"></p>
+                    </div>
                 </div>
                 <div th:unless="${studiedToday >= dailyGoal}"
                      class="flex items-center gap-3 p-4 bg-tertiary-container/30 rounded-lg">
@@ -180,37 +197,33 @@
 
             <!-- Stats Column -->
             <div class="md:col-span-1 lg:col-span-1 flex flex-col gap-6">
-
-                <!-- Streak -->
                 <div class="bg-white rounded-xl p-6 shadow-sm border border-outline-variant/10 flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-label text-outline uppercase tracking-widest">Daily Streak</p>
+                        <p class="text-xs font-label text-outline uppercase tracking-widest" th:text="#{index.streak}">Daily Streak</p>
                         <h4 class="text-3xl font-black text-tertiary mt-1"
-                            th:text="${(user != null ? user.currentStreak : 0) + ' Days'}">0 Days</h4>
+                            th:text="${(user != null ? user.currentStreak : 0) + ' ' + #messages.msg('index.streak.unit')}">0 Days</h4>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-tertiary-container flex items-center justify-center">
                         <span class="material-symbols-outlined fill-icon text-tertiary text-2xl">local_fire_department</span>
                     </div>
                 </div>
-
-                <!-- Total XP -->
                 <div class="bg-white rounded-xl p-6 shadow-sm border border-outline-variant/10 flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-label text-outline uppercase tracking-widest">Total XP</p>
+                        <p class="text-xs font-label text-outline uppercase tracking-widest" th:text="#{index.total.xp}">Total XP</p>
                         <h4 class="text-3xl font-black text-secondary mt-1"
                             th:text="${user != null ? user.totalXp : 0}">0</h4>
+                        <p class="text-xs text-on-surface-variant mt-1"
+                           th:text="${user != null ? user.currentLevel : 'Beginner'}">Beginner</p>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center">
                         <span class="material-symbols-outlined fill-icon text-secondary text-2xl">bolt</span>
                     </div>
                 </div>
-
-                <!-- Quick Review -->
                 <a th:href="@{/study}" class="flex-grow bg-secondary text-on-secondary rounded-xl p-6 flex flex-col justify-between hover:opacity-90 transition-opacity group">
                     <span class="material-symbols-outlined fill-icon text-4xl">style</span>
                     <div class="text-left mt-4">
-                        <h4 class="text-xl font-headline font-bold">Quick Review</h4>
-                        <p class="text-sm opacity-80 mt-1">Start a study session</p>
+                        <h4 class="text-xl font-headline font-bold" th:text="#{index.quick.review}">Quick Review</h4>
+                        <p class="text-sm opacity-80 mt-1" th:text="#{index.quick.review.sub}">Start a study session</p>
                     </div>
                     <div class="mt-4 flex justify-end">
                         <div class="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center group-hover:bg-white/20 transition-colors">
@@ -227,14 +240,14 @@
                         <span class="material-symbols-outlined fill-icon text-primary">workspace_premium</span>
                     </div>
                     <div>
-                        <p class="text-xs text-outline uppercase tracking-widest font-label">Current Level</p>
+                        <p class="text-xs text-outline uppercase tracking-widest font-label" th:text="#{index.current.level}">Current Level</p>
                         <p class="font-bold text-on-surface" th:text="${user != null ? user.currentLevel : 'Beginner'}">Beginner</p>
                     </div>
                 </div>
                 <div class="mt-2">
                     <div class="flex justify-between text-xs text-on-surface-variant mb-1.5">
-                        <span>Today's progress</span>
-                        <span th:text="${studiedToday + ' / ' + dailyGoal + ' words'}">0 / 20 words</span>
+                        <span th:text="#{index.todays.progress}">Today's progress</span>
+                        <span th:text="${studiedToday + ' / ' + dailyGoal + ' ' + #messages.msg('index.words.unit')}">0 / 20 words</span>
                     </div>
                     <div class="h-2 bg-surface-container-highest rounded-full overflow-hidden">
                         <div class="h-full bg-primary rounded-full transition-all duration-700" id="progressBar" style="width:0%"></div>
@@ -242,50 +255,39 @@
                 </div>
                 <a th:href="@{/progress}" class="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-full border border-outline-variant/30 text-sm font-bold text-on-surface hover:bg-surface-container transition-colors">
                     <span class="material-symbols-outlined text-base">leaderboard</span>
-                    View Full Progress
+                    <span th:text="#{index.view.progress}">View Full Progress</span>
                 </a>
             </div>
 
             <!-- Milestones -->
             <div class="md:col-span-3 lg:col-span-4 bg-surface-container-low rounded-xl p-8">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-headline font-bold text-on-surface">Milestones</h3>
-                    <a th:href="@{/progress}" class="text-primary font-bold text-sm flex items-center gap-1 hover:underline">
-                        View All
+                    <div>
+                        <h3 class="text-2xl font-headline font-bold text-on-surface" th:text="#{index.badges.title}">Badges &amp; Milestones</h3>
+                        <p class="text-sm text-on-surface-variant mt-1"
+                           th:text="${earnedBadgeCount + ' / ' + allBadges.size() + ' ' + #messages.msg('index.badges.earned', earnedBadgeCount, allBadges.size())}">0 / 0 badges earned</p>
+                    </div>
+                    <a th:href="@{/leaderboard}" class="text-primary font-bold text-sm flex items-center gap-1 hover:underline">
+                        <span th:text="#{common.leaderboard}">Leaderboard</span>
                         <span class="material-symbols-outlined text-sm">chevron_right</span>
                     </a>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    <div class="bg-surface-container-lowest p-4 rounded-lg flex flex-col items-center text-center">
-                        <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-3">
-                            <span class="material-symbols-outlined text-emerald-600">school</span>
+                <div class="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3" th:if="${allBadges != null and !allBadges.isEmpty()}">
+                    <div th:each="badge : ${allBadges}"
+                         th:classappend="${earnedBadgeIds.contains(badge.id)} ? '' : 'opacity-40'"
+                         class="bg-surface-container-lowest p-4 rounded-xl flex flex-col items-center text-center gap-2 transition-all hover:scale-105 cursor-default"
+                         th:title="${badge.description}">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+                             th:classappend="${earnedBadgeIds.contains(badge.id)} ? 'bg-emerald-100' : 'bg-slate-100'">
+                            <span th:if="${earnedBadgeIds.contains(badge.id)}" th:text="${badge.iconEmoji}">🏅</span>
+                            <span th:unless="${earnedBadgeIds.contains(badge.id)}" class="material-symbols-outlined text-slate-400 text-xl">lock</span>
                         </div>
-                        <p class="text-xs font-bold text-on-surface">The Grammarian</p>
+                        <p class="text-[11px] font-bold text-on-surface leading-tight" th:text="${badge.name}">Badge</p>
                     </div>
-                    <div class="bg-surface-container-lowest p-4 rounded-lg flex flex-col items-center text-center">
-                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
-                            <span class="material-symbols-outlined text-blue-600">forum</span>
-                        </div>
-                        <p class="text-xs font-bold text-on-surface">Social Butterfly</p>
-                    </div>
-                    <div class="bg-surface-container-lowest p-4 rounded-lg flex flex-col items-center text-center opacity-40">
-                        <div class="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mb-3">
-                            <span class="material-symbols-outlined text-slate-500">lock</span>
-                        </div>
-                        <p class="text-xs font-bold text-on-surface">50-Day Hero</p>
-                    </div>
-                    <div class="bg-surface-container-lowest p-4 rounded-lg flex flex-col items-center text-center opacity-40">
-                        <div class="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mb-3">
-                            <span class="material-symbols-outlined text-slate-500">lock</span>
-                        </div>
-                        <p class="text-xs font-bold text-on-surface">Top 1% Club</p>
-                    </div>
-                    <div class="hidden lg:flex bg-surface-container-lowest p-4 rounded-lg flex-col items-center text-center opacity-40">
-                        <div class="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mb-3">
-                            <span class="material-symbols-outlined text-slate-500">lock</span>
-                        </div>
-                        <p class="text-xs font-bold text-on-surface">The Legend</p>
-                    </div>
+                </div>
+                <div th:if="${allBadges == null or allBadges.isEmpty()}" class="text-center py-8 text-on-surface-variant">
+                    <span class="material-symbols-outlined text-4xl mb-2">emoji_events</span>
+                    <p class="text-sm" th:text="#{index.badges.empty}">Start studying to earn badges!</p>
                 </div>
             </div>
 
@@ -296,22 +298,22 @@
     <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel h-16 flex items-center justify-around px-4 z-50 border-t border-outline-variant/10">
         <a th:href="@{/}" class="flex flex-col items-center text-primary">
             <span class="material-symbols-outlined">dashboard</span>
-            <span class="text-[10px] font-medium mt-1">Home</span>
+            <span class="text-[10px] font-medium mt-1" th:text="#{common.home}">Home</span>
         </a>
         <a th:href="@{/library}" class="flex flex-col items-center text-on-surface-variant">
             <span class="material-symbols-outlined">menu_book</span>
-            <span class="text-[10px] font-medium mt-1">Library</span>
+            <span class="text-[10px] font-medium mt-1" th:text="#{common.library}">Library</span>
         </a>
         <a th:href="@{/study}" class="-mt-8 w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all">
             <span class="material-symbols-outlined fill-icon text-3xl">play_arrow</span>
         </a>
         <a th:href="@{/vocabulary}" class="flex flex-col items-center text-on-surface-variant">
             <span class="material-symbols-outlined">bookmark</span>
-            <span class="text-[10px] font-medium mt-1">Vocab</span>
+            <span class="text-[10px] font-medium mt-1" th:text="#{common.vocab}">Vocab</span>
         </a>
         <a th:href="@{/progress}" class="flex flex-col items-center text-on-surface-variant">
             <span class="material-symbols-outlined">leaderboard</span>
-            <span class="text-[10px] font-medium mt-1">Stats</span>
+            <span class="text-[10px] font-medium mt-1" th:text="#{common.stats}">Stats</span>
         </a>
     </nav>
 
@@ -320,7 +322,6 @@
         var dailyGoal    = /*[[${dailyGoal}]]*/ 20;
         var percentage   = /*[[${percentage}]]*/ 0;
 
-        // Animate circular arc
         var arc = document.getElementById('goalArc');
         var circumference = 502;
         var offset = circumference - (circumference * percentage / 100);
@@ -329,13 +330,11 @@
             arc.style.strokeDashoffset = offset;
         }, 100);
 
-        // Animate progress bar
         var bar = document.getElementById('progressBar');
         setTimeout(function() {
             bar.style.width = Math.min(100, percentage) + '%';
         }, 150);
 
-        // Avatar dropdown
         var avatarBtn      = document.getElementById('avatarMenuBtn');
         var avatarDropdown = document.getElementById('avatarDropdown');
         avatarBtn.addEventListener('click', function(e) {

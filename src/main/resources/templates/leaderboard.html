@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html class="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title th:text="#{leaderboard.page.title}">Leaderboard | Rhythmic Scholar</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <script th:src="@{/js/tailwind-config.js}"></script>
+    <style>
+        .fill-icon { font-variation-settings: 'FILL' 1; }
+        .rank-1 { background: linear-gradient(135deg, #fef9c3, #fde68a); border-color: #f59e0b; }
+        .rank-2 { background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-color: #94a3b8; }
+        .rank-3 { background: linear-gradient(135deg, #fef3c7, #fde68a80); border-color: #d97706; }
+        .avatar-dropdown { display:none; position:absolute; right:0; top:calc(100% + 10px); min-width:200px; background:#fff; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,0.13); border:1px solid rgba(0,0,0,0.07); z-index:200; overflow:hidden; }
+        .avatar-dropdown.open { display:block; }
+        .avatar-dropdown-item { display:flex; align-items:center; gap:10px; padding:11px 16px; font-size:0.875rem; font-weight:500; color:#1e293b; cursor:pointer; transition:background 0.15s; text-decoration:none; }
+        .avatar-dropdown-item:hover { background:#f1f5f9; }
+        .avatar-dropdown-item.danger { color:#dc2626; }
+        .avatar-dropdown-item.danger:hover { background:#fef2f2; }
+        .avatar-dropdown-divider { height:1px; background:#f1f5f9; margin:4px 0; }
+        .lang-switcher { display:flex; align-items:center; gap:3px; background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); border:1px solid rgba(0,0,0,0.08); border-radius:999px; padding:3px 5px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+        .lang-btn { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:999px; font-size:0.72rem; font-weight:700; letter-spacing:0.04em; cursor:pointer; transition:all 0.18s; text-decoration:none; color:#94a3b8; border:none; background:transparent; }
+        .lang-btn:hover { background:#f1f5f9; color:#475569; }
+        .lang-btn.active { background:#059669; color:#fff; box-shadow:0 2px 8px rgba(5,150,105,0.25); }
+        .lang-divider { width:1px; height:14px; background:#e2e8f0; margin:0 1px; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
+
+    <!-- Header -->
+    <header class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-8 h-16 border-b border-outline-variant/10">
+        <div class="flex items-center gap-3">
+            <a th:href="@{/}" class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <span class="text-xl font-bold tracking-tight text-emerald-800 font-headline">Leaderboard</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <!-- Language Switcher -->
+            <div class="lang-switcher" aria-label="Language switcher">
+                <a th:href="@{/leaderboard(lang=en)}"
+                   th:classappend="${#locale.language == 'en'} ? ' active' : ''"
+                   class="lang-btn">🇺🇸 EN</a>
+                <div class="lang-divider"></div>
+                <a th:href="@{/leaderboard(lang=vi)}"
+                   th:classappend="${#locale.language == 'vi'} ? ' active' : ''"
+                   class="lang-btn">🇻🇳 VI</a>
+            </div>
+            <!-- Avatar dropdown -->
+            <div class="relative" id="avatarMenuWrapper">
+                <button id="avatarMenuBtn" class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer focus:outline-none">
+                    <img class="w-full h-full object-cover" alt="Avatar"
+                        th:src="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty()} ? ${user.avatarUrl} : ${'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&background=059669&color=fff'}" />
+                </button>
+                <div class="avatar-dropdown" id="avatarDropdown">
+                    <div style="padding:12px 16px 8px;">
+                        <div class="text-xs text-slate-400 font-medium">Signed in as</div>
+                        <div class="text-sm font-bold text-slate-800 truncate" th:text="${user != null ? user.fullName : 'Scholar'}">Scholar</div>
+                    </div>
+                    <div class="avatar-dropdown-divider"></div>
+                    <a th:href="@{/profile}" class="avatar-dropdown-item">
+                        <span class="material-symbols-outlined" style="font-size:18px;">person</span> My Profile
+                    </a>
+                    <a th:href="@{/progress}" class="avatar-dropdown-item">
+                        <span class="material-symbols-outlined" style="font-size:18px;">leaderboard</span> Progress
+                    </a>
+                    <div class="avatar-dropdown-divider"></div>
+                    <a th:href="@{/logout}" class="avatar-dropdown-item danger">
+                        <span class="material-symbols-outlined" style="font-size:18px;">logout</span> Log Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="hidden md:flex flex-col h-screen fixed left-0 w-64 bg-slate-50 p-4 pt-20 gap-2 border-r border-outline-variant/10 z-30">
+        <div class="px-4 py-6 mb-4 bg-surface-container-low rounded-xl">
+            <p class="text-sm font-label text-slate-500">Annyeong!</p>
+            <h3 class="text-lg font-headline font-bold text-emerald-700"
+                th:text="${user != null ? user.currentLevel + ' Scholar' : 'Beginner Scholar'}">Scholar</h3>
+        </div>
+        <nav class="flex flex-col gap-1">
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-slate-500 hover:bg-emerald-50" th:href="@{/}">
+                <span class="material-symbols-outlined">dashboard</span><span class="font-label">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-slate-500 hover:bg-emerald-50" th:href="@{/library}">
+                <span class="material-symbols-outlined">menu_book</span><span class="font-label">Library</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-slate-500 hover:bg-emerald-50" th:href="@{/vocabulary}">
+                <span class="material-symbols-outlined">bookmark</span><span class="font-label">My Vocabulary</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-slate-500 hover:bg-emerald-50" th:href="@{/progress}">
+                <span class="material-symbols-outlined">leaderboard</span><span class="font-label">Progress</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all bg-emerald-50 text-emerald-700 font-bold" th:href="@{/leaderboard}">
+                <span class="material-symbols-outlined fill-icon">emoji_events</span><span class="font-label">Leaderboard</span>
+            </a>
+        </nav>
+        <div class="mt-auto p-4">
+            <a th:href="@{/study}" class="block text-center w-full bg-primary text-on-primary font-bold py-4 rounded-full transition-transform active:scale-95">
+                Start Study
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="md:ml-64 pt-20 px-4 pb-24 md:px-10">
+
+        <!-- Hero Banner -->
+        <section class="relative py-10 mb-8 overflow-hidden rounded-2xl signature-glow px-8">
+            <div class="hangul-bg text-[10rem] -top-8 -right-4 opacity-20">순위</div>
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center text-3xl shadow-sm">🏆</div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-headline font-extrabold text-on-surface" th:text="#{leaderboard.heading}">Global Leaderboard</h1>
+                    <p class="text-on-surface-variant mt-1" th:text="#{leaderboard.subheading}">Top learners ranked by total XP earned</p>
+                </div>
+            </div>
+            <!-- Current user rank badge -->
+            <div class="mt-6 inline-flex items-center gap-3 bg-white/80 backdrop-blur px-5 py-3 rounded-full border border-outline-variant/20 shadow-sm">
+                <span class="material-symbols-outlined fill-icon text-amber-500">military_tech</span>
+                <span class="font-bold text-on-surface" th:text="#{leaderboard.your.rank}">Your Rank:</span>
+                <span class="text-2xl font-black text-primary" th:text="'#' + ${currentRank}">#1</span>
+                <span class="text-sm text-on-surface-variant" th:text="${user != null ? user.totalXp + ' XP' : '0 XP'}">0 XP</span>
+            </div>
+        </section>
+
+        <!-- Top 3 Podium -->
+        <div class="grid grid-cols-3 gap-4 mb-8 max-w-2xl mx-auto" th:if="${topUsers != null and topUsers.size() >= 3}">
+
+            <!-- 2nd Place -->
+            <div class="flex flex-col items-center pt-8">
+                <div class="relative mb-3">
+                    <img class="w-16 h-16 rounded-full object-cover border-4 border-slate-300 shadow-md"
+                         th:src="${topUsers[1].avatarUrl != null and !topUsers[1].avatarUrl.isEmpty()} ? ${topUsers[1].avatarUrl} : ${'https://ui-avatars.com/api/?name=' + topUsers[1].fullName + '&background=94a3b8&color=fff&size=64'}"
+                         th:alt="${topUsers[1].fullName}" />
+                    <div class="absolute -bottom-2 -right-2 w-7 h-7 bg-slate-400 text-white rounded-full flex items-center justify-center text-xs font-black shadow">2</div>
+                </div>
+                <div class="rank-2 border rounded-xl p-4 w-full text-center shadow-sm">
+                    <p class="font-bold text-sm text-slate-700 truncate" th:text="${topUsers[1].fullName}">User</p>
+                    <p class="text-lg font-black text-slate-600" th:text="${topUsers[1].totalXp + ' XP'}">0 XP</p>
+                    <p class="text-xs text-slate-500 mt-1" th:text="${topUsers[1].currentLevel}">Beginner</p>
+                    <p class="text-xs text-slate-400 mt-1" th:text="${(badgeCountMap.get(topUsers[1].id) ?: 0) + ' badges'}">0 badges</p>
+                </div>
+            </div>
+
+            <!-- 1st Place -->
+            <div class="flex flex-col items-center">
+                <div class="text-3xl mb-2">👑</div>
+                <div class="relative mb-3">
+                    <img class="w-20 h-20 rounded-full object-cover border-4 border-amber-400 shadow-lg"
+                         th:src="${topUsers[0].avatarUrl != null and !topUsers[0].avatarUrl.isEmpty()} ? ${topUsers[0].avatarUrl} : ${'https://ui-avatars.com/api/?name=' + topUsers[0].fullName + '&background=f59e0b&color=fff&size=80'}"
+                         th:alt="${topUsers[0].fullName}" />
+                    <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-amber-400 text-white rounded-full flex items-center justify-center text-sm font-black shadow">1</div>
+                </div>
+                <div class="rank-1 border rounded-xl p-4 w-full text-center shadow-md">
+                    <p class="font-bold text-sm text-amber-800 truncate" th:text="${topUsers[0].fullName}">User</p>
+                    <p class="text-xl font-black text-amber-700" th:text="${topUsers[0].totalXp + ' XP'}">0 XP</p>
+                    <p class="text-xs text-amber-600 mt-1" th:text="${topUsers[0].currentLevel}">Beginner</p>
+                    <p class="text-xs text-amber-500 mt-1" th:text="${(badgeCountMap.get(topUsers[0].id) ?: 0) + ' badges'}">0 badges</p>
+                </div>
+            </div>
+
+            <!-- 3rd Place -->
+            <div class="flex flex-col items-center pt-12">
+                <div class="relative mb-3">
+                    <img class="w-14 h-14 rounded-full object-cover border-4 border-amber-600 shadow-md"
+                         th:src="${topUsers[2].avatarUrl != null and !topUsers[2].avatarUrl.isEmpty()} ? ${topUsers[2].avatarUrl} : ${'https://ui-avatars.com/api/?name=' + topUsers[2].fullName + '&background=d97706&color=fff&size=56'}"
+                         th:alt="${topUsers[2].fullName}" />
+                    <div class="absolute -bottom-2 -right-2 w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center text-xs font-black shadow">3</div>
+                </div>
+                <div class="rank-3 border rounded-xl p-4 w-full text-center shadow-sm">
+                    <p class="font-bold text-xs text-amber-900 truncate" th:text="${topUsers[2].fullName}">User</p>
+                    <p class="text-base font-black text-amber-800" th:text="${topUsers[2].totalXp + ' XP'}">0 XP</p>
+                    <p class="text-xs text-amber-700 mt-1" th:text="${topUsers[2].currentLevel}">Beginner</p>
+                    <p class="text-xs text-amber-600 mt-1" th:text="${(badgeCountMap.get(topUsers[2].id) ?: 0) + ' badges'}">0 badges</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Rankings Table -->
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden">
+            <div class="px-6 py-4 border-b border-outline-variant/10 flex items-center justify-between">
+                <h2 class="font-headline font-bold text-lg text-on-surface" th:text="#{leaderboard.full.rankings}">Full Rankings</h2>
+                <span class="text-xs text-on-surface-variant" th:text="'Top ' + ${topUsers.size()} + ' learners'">Top 20 learners</span>
+            </div>
+
+            <div class="divide-y divide-outline-variant/10">
+                <div th:each="u, stat : ${topUsers}"
+                     th:classappend="${u.id == user?.id} ? 'bg-primary/5 border-l-4 border-l-primary' : ''"
+                     class="flex items-center gap-4 px-6 py-4 hover:bg-surface-container-low transition-colors">
+
+                    <!-- Rank number -->
+                    <div class="w-8 text-center flex-shrink-0">
+                        <span th:if="${stat.index == 0}" class="text-xl">🥇</span>
+                        <span th:if="${stat.index == 1}" class="text-xl">🥈</span>
+                        <span th:if="${stat.index == 2}" class="text-xl">🥉</span>
+                        <span th:if="${stat.index >= 3}" class="text-sm font-bold text-on-surface-variant"
+                              th:text="${stat.index + 1}">#4</span>
+                    </div>
+
+                    <!-- Avatar -->
+                    <img class="w-10 h-10 rounded-full object-cover border-2 border-outline-variant/20 flex-shrink-0"
+                         th:src="${u.avatarUrl != null and !u.avatarUrl.isEmpty()} ? ${u.avatarUrl} : ${'https://ui-avatars.com/api/?name=' + u.fullName + '&background=059669&color=fff&size=40'}"
+                         th:alt="${u.fullName}" />
+
+                    <!-- Name + Level -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <p class="font-bold text-on-surface truncate" th:text="${u.fullName}">User</p>
+                            <span th:if="${u.id == user?.id}"
+                                  class="text-[10px] font-bold bg-primary text-on-primary px-2 py-0.5 rounded-full" th:text="#{leaderboard.you}">YOU</span>
+                        </div>
+                        <p class="text-xs text-on-surface-variant" th:text="${u.currentLevel}">Beginner</p>
+                    </div>
+
+                    <!-- Streak -->
+                    <div class="hidden sm:flex items-center gap-1 text-sm text-on-surface-variant flex-shrink-0">
+                        <span class="material-symbols-outlined fill-icon text-orange-400 text-base">local_fire_department</span>
+                        <span th:text="${(u.currentStreak ?: 0) + 'd'}">0d</span>
+                    </div>
+
+                    <!-- Badges count -->
+                    <div class="hidden md:flex items-center gap-1 text-sm text-on-surface-variant flex-shrink-0">
+                        <span class="text-base">🏅</span>
+                        <span th:text="${badgeCountMap.get(u.id) ?: 0}">0</span>
+                    </div>
+
+                    <!-- XP -->
+                    <div class="flex-shrink-0 text-right">
+                        <p class="font-black text-secondary text-lg" th:text="${u.totalXp ?: 0}">0</p>
+                        <p class="text-[10px] text-on-surface-variant uppercase tracking-widest">XP</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty state -->
+            <div th:if="${topUsers == null or topUsers.isEmpty()}" class="text-center py-16 text-on-surface-variant">
+                <span class="material-symbols-outlined text-5xl mb-3">emoji_events</span>
+                <p class="font-medium">No learners yet. Be the first!</p>
+            </div>
+        </div>
+
+        <!-- XP Level Guide -->
+        <div class="mt-8 bg-surface-container-low rounded-2xl p-6 border border-outline-variant/10">
+            <h3 class="font-headline font-bold text-on-surface mb-4" th:text="#{leaderboard.xp.guide}">XP Level Guide</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl">
+                    <span class="text-2xl">🌱</span>
+                    <div>
+                        <p class="font-bold text-sm text-on-surface" th:text="#{leaderboard.beginner}">Beginner</p>
+                        <p class="text-xs text-on-surface-variant" th:text="#{leaderboard.beginner.xp}">0 – 249 XP</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl">
+                    <span class="text-2xl">📘</span>
+                    <div>
+                        <p class="font-bold text-sm text-on-surface" th:text="#{leaderboard.intermediate}">Intermediate</p>
+                        <p class="text-xs text-on-surface-variant" th:text="#{leaderboard.intermediate.xp}">250 – 799 XP</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl">
+                    <span class="text-2xl">🎓</span>
+                    <div>
+                        <p class="font-bold text-sm text-on-surface" th:text="#{leaderboard.advanced}">Advanced</p>
+                        <p class="text-xs text-on-surface-variant" th:text="#{leaderboard.advanced.xp}">800 – 1999 XP</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl">
+                    <span class="text-2xl">👑</span>
+                    <div>
+                        <p class="font-bold text-sm text-on-surface" th:text="#{leaderboard.master}">Master</p>
+                        <p class="text-xs text-on-surface-variant" th:text="#{leaderboard.master.xp}">2000+ XP</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Nav (Mobile) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel h-16 flex items-center justify-around px-4 z-50 border-t border-outline-variant/10">
+        <a th:href="@{/}" class="flex flex-col items-center text-on-surface-variant">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="text-[10px] font-medium mt-1">Home</span>
+        </a>
+        <a th:href="@{/library}" class="flex flex-col items-center text-on-surface-variant">
+            <span class="material-symbols-outlined">menu_book</span>
+            <span class="text-[10px] font-medium mt-1">Library</span>
+        </a>
+        <a th:href="@{/study}" class="-mt-8 w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all">
+            <span class="material-symbols-outlined fill-icon text-3xl">play_arrow</span>
+        </a>
+        <a th:href="@{/progress}" class="flex flex-col items-center text-on-surface-variant">
+            <span class="material-symbols-outlined">leaderboard</span>
+            <span class="text-[10px] font-medium mt-1">Stats</span>
+        </a>
+        <a th:href="@{/leaderboard}" class="flex flex-col items-center text-primary">
+            <span class="material-symbols-outlined fill-icon">emoji_events</span>
+            <span class="text-[10px] font-medium mt-1">Ranks</span>
+        </a>
+    </nav>
+
+    <script>
+        var avatarBtn      = document.getElementById('avatarMenuBtn');
+        var avatarDropdown = document.getElementById('avatarDropdown');
+        avatarBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            avatarDropdown.classList.toggle('open');
+        });
+        document.addEventListener('click', function() {
+            avatarDropdown.classList.remove('open');
+        });
+    </script>
+</body>
+</html>
