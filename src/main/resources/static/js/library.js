@@ -2,6 +2,18 @@
  * library.js — Handles interactions for the vocabulary library modal
  */
 
+/**
+ * Trả về nghĩa hiển thị theo ngôn ngữ hiện tại.
+ * currentLang được inject từ template trước khi script này chạy.
+ */
+function getMeaning(word) {
+    var lang = (typeof currentLang !== 'undefined') ? currentLang : 'en';
+    if (lang === 'vi' && word.vietnameseMeaning) {
+        return word.vietnameseMeaning;
+    }
+    return word.englishMeaning;
+}
+
 // Get required DOM elements
 const modal = document.getElementById('word-modal');
 const modalTitle = document.getElementById('modal-title');
@@ -59,7 +71,7 @@ function openModal(categoryId, title, icon, colorTheme) {
                     <div class="flex items-center gap-5">
                         <div class="text-2xl font-bold font-headline text-on-surface min-w-[100px] group-hover:text-primary transition-colors">${word.koreanWord}</div>
                         <div>
-                            <div class="text-sm font-bold text-on-surface">${word.englishMeaning}</div>
+                            <div class="text-sm font-bold text-on-surface">${getMeaning(word)}</div>
                             <div class="text-xs text-on-surface-variant font-medium">${word.romaji}</div>
                         </div>
                     </div>

@@ -144,16 +144,27 @@ public class VocabularyController {
 
     /**
      * API trả về danh sách từ vựng thuộc một danh mục cụ thể.
-     * Được gọi bởi JavaScript (AJAX) khi người dùng nhấn vào một danh mục trong Library.
-     * Endpoint: /api/categories/{id}/vocabularies
+     * Trả về Map thay vì entity trực tiếp để kiểm soát chính xác các field được serialize.
      */
     @GetMapping("/api/categories/{id}/vocabularies")
     @ResponseBody
-    public List<Vocabulary> getVocabulariesByCategoryId(@PathVariable("id") Long id) {
+    public List<Map<String, Object>> getVocabulariesByCategoryId(@PathVariable("id") Long id) {
         logger.info("Fetching vocabularies for category ID: {}", id);
         List<Vocabulary> vocabularies = vocabularyRepository.findByCategoryId(id);
         logger.info("Found {} vocabularies", vocabularies.size());
-        return vocabularies;
+        return vocabularies.stream().map(v -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", v.getId());
+            map.put("koreanWord", v.getKoreanWord());
+            map.put("romaji", v.getRomaji());
+            map.put("englishMeaning", v.getEnglishMeaning());
+            map.put("vietnameseMeaning", v.getVietnameseMeaning());
+            map.put("wordType", v.getWordType());
+            map.put("exampleKr", v.getExampleKr());
+            map.put("exampleEn", v.getExampleEn());
+            map.put("mnemonic", v.getMnemonic());
+            return map;
+        }).toList();
     }
 
     /**
@@ -169,6 +180,7 @@ public class VocabularyController {
             map.put("koreanWord", v.getKoreanWord());
             map.put("romaji", v.getRomaji());
             map.put("englishMeaning", v.getEnglishMeaning());
+            map.put("vietnameseMeaning", v.getVietnameseMeaning());
             map.put("wordType", v.getWordType());
             return map;
         }).toList();

@@ -139,6 +139,7 @@
     <script th:inline="javascript">
         /*<![CDATA[*/
         const serverQuestions = /*[[${questions}]]*/ [];
+        const currentLang = /*[[${#locale.language}]]*/ 'en';
         /*]]>*/
     </script>
     <script th:src="@{/js/game.js(v=2)}"></script>

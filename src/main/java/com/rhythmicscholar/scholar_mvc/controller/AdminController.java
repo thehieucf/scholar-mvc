@@ -332,6 +332,7 @@ public class AdminController {
                                 @RequestParam(required = false) String exampleKr,
                                 @RequestParam(required = false) String exampleEn,
                                 @RequestParam(required = false) String mnemonic,
+                                @RequestParam(required = false) String vietnameseMeaning,
                                 @RequestParam(defaultValue = "0") int page,
                                 @RequestParam(defaultValue = "10") int size,
                                 RedirectAttributes redirectAttributes) {
@@ -349,6 +350,7 @@ public class AdminController {
         vocab.setExampleKr(exampleKr != null && !exampleKr.isBlank() ? exampleKr.trim() : null);
         vocab.setExampleEn(exampleEn != null && !exampleEn.isBlank() ? exampleEn.trim() : null);
         vocab.setMnemonic(mnemonic != null && !mnemonic.isBlank() ? mnemonic.trim() : null);
+        vocab.setVietnameseMeaning(vietnameseMeaning != null && !vietnameseMeaning.isBlank() ? vietnameseMeaning.trim() : null);
         vocabularyRepository.save(vocab);
         redirectAttributes.addFlashAttribute("success", "Word \"" + vocab.getKoreanWord() + "\" added successfully.");
         return "redirect:/admin/vocabulary?page=" + page + "&size=" + size;
@@ -499,6 +501,7 @@ public class AdminController {
                                  @RequestParam(required = false) String exampleKr,
                                  @RequestParam(required = false) String exampleEn,
                                  @RequestParam(required = false) String mnemonic,
+                                 @RequestParam(required = false) String vietnameseMeaning,
                                  @RequestParam(defaultValue = "0") int page,
                                  @RequestParam(defaultValue = "10") int size,
                                  @RequestParam(defaultValue = "") String search,
@@ -521,6 +524,7 @@ public class AdminController {
         vocab.setExampleKr(exampleKr != null && !exampleKr.isBlank() ? exampleKr.trim() : null);
         vocab.setExampleEn(exampleEn != null && !exampleEn.isBlank() ? exampleEn.trim() : null);
         vocab.setMnemonic(mnemonic != null && !mnemonic.isBlank() ? mnemonic.trim() : null);
+        vocab.setVietnameseMeaning(vietnameseMeaning != null && !vietnameseMeaning.isBlank() ? vietnameseMeaning.trim() : null);
         vocabularyRepository.save(vocab);
         redirectAttributes.addFlashAttribute("success", "Word \"" + vocab.getKoreanWord() + "\" updated successfully.");
         return "redirect:/admin/vocabulary?page=" + page + "&size=" + size

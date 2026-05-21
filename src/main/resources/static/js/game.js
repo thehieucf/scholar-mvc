@@ -6,7 +6,12 @@ let questions = [];
 
 if (typeof serverQuestions !== 'undefined' && serverQuestions.length > 0) {
     questions = serverQuestions.map(q => {
-        const options = [q.correctAnswer, q.wrongAnswer1, q.wrongAnswer2, q.wrongAnswer3];
+        // Chọn đáp án đúng theo ngôn ngữ hiện tại
+        const correctDisplay = (typeof currentLang !== 'undefined' && currentLang === 'vi' && q.vietnameseMeaning)
+            ? q.vietnameseMeaning
+            : q.correctAnswer;
+
+        const options = [correctDisplay, q.wrongAnswer1, q.wrongAnswer2, q.wrongAnswer3];
         // Shuffle options
         for (let i = options.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -18,8 +23,8 @@ if (typeof serverQuestions !== 'undefined' && serverQuestions.length > 0) {
             type: q.questionType,
             topic: q.topic,
             options: options,
-            correct: options.indexOf(q.correctAnswer),
-            vocabId: q.vocabularyId   // dùng để gọi API lưu kết quả
+            correct: options.indexOf(correctDisplay),
+            vocabId: q.vocabularyId
         };
     });
 } else {

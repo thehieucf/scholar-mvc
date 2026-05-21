@@ -157,7 +157,7 @@
                                     <button type="button"
                                             class="admin-btn admin-btn--ghost admin-btn--sm"
                                             style="font-size:0.75rem;padding:0.25rem 0.6rem;"
-                                            th:onclick="'openEditModal(' + ${v.id} + ', \'' + ${#strings.escapeXml(v.koreanWord)} + '\', \'' + ${#strings.escapeXml(v.romaji)} + '\', \'' + ${#strings.escapeXml(v.englishMeaning)} + '\', \'' + ${v.wordType != null ? v.wordType : ''} + '\', ' + ${v.category != null ? v.category.id : 0} + ', \'' + ${v.exampleKr != null ? #strings.escapeXml(v.exampleKr) : ''} + '\', \'' + ${v.exampleEn != null ? #strings.escapeXml(v.exampleEn) : ''} + '\', \'' + ${v.mnemonic != null ? #strings.escapeXml(v.mnemonic) : ''} + '\')'">
+                                            th:onclick="'openEditModal(' + ${v.id} + ', \'' + ${#strings.escapeXml(v.koreanWord)} + '\', \'' + ${#strings.escapeXml(v.romaji)} + '\', \'' + ${#strings.escapeXml(v.englishMeaning)} + '\', \'' + ${v.wordType != null ? v.wordType : ''} + '\', ' + ${v.category != null ? v.category.id : 0} + ', \'' + ${v.exampleKr != null ? #strings.escapeXml(v.exampleKr) : ''} + '\', \'' + ${v.exampleEn != null ? #strings.escapeXml(v.exampleEn) : ''} + '\', \'' + ${v.mnemonic != null ? #strings.escapeXml(v.mnemonic) : ''} + '\', \'' + ${v.vietnameseMeaning != null ? #strings.escapeXml(v.vietnameseMeaning) : ''} + '\')'">
                                         <span class="material-symbols-outlined" style="font-size:14px;">edit</span>
                                         Edit
                                     </button>
@@ -290,6 +290,11 @@
                         <label for="mnemonic">Mnemonic / Note</label>
                         <textarea id="mnemonic" name="mnemonic" placeholder="Memory tip (optional)"></textarea>
                     </div>
+                    <!-- Vietnamese Meaning -->
+                    <div class="form-field full">
+                        <label for="vietnameseMeaning">Vietnamese Meaning</label>
+                        <input type="text" id="vietnameseMeaning" name="vietnameseMeaning" placeholder="e.g. Táo (tùy chọn)" />
+                    </div>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="admin-btn admin-btn--ghost" onclick="closeAddModal()">Cancel</button>
@@ -359,6 +364,11 @@
                         <label for="editMnemonic">Mnemonic / Note</label>
                         <textarea id="editMnemonic" name="mnemonic" placeholder="Memory tip (optional)"></textarea>
                     </div>
+                    <!-- Vietnamese Meaning -->
+                    <div class="form-field full">
+                        <label for="editVietnameseMeaning">Vietnamese Meaning</label>
+                        <input type="text" id="editVietnameseMeaning" name="vietnameseMeaning" placeholder="e.g. Táo (tùy chọn)" />
+                    </div>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="admin-btn admin-btn--ghost" onclick="closeEditModal()">Cancel</button>
@@ -389,7 +399,7 @@
             if (e.target === this) closeAddModal();
         });
 
-        function openEditModal(id, korean, romaji, english, wordType, categoryId, exampleKr, exampleEn, mnemonic) {
+        function openEditModal(id, korean, romaji, english, wordType, categoryId, exampleKr, exampleEn, mnemonic, vietnamese) {
             document.getElementById('editWordForm').action = '/admin/vocabulary/' + id + '/edit';
             document.getElementById('editKoreanWord').value = korean;
             document.getElementById('editRomaji').value = romaji;
@@ -399,9 +409,9 @@
             document.getElementById('editExampleKr').value = exampleKr || '';
             document.getElementById('editExampleEn').value = exampleEn || '';
             document.getElementById('editMnemonic').value = mnemonic || '';
+            document.getElementById('editVietnameseMeaning').value = vietnamese || '';
             document.getElementById('editWordModal').classList.add('open');
-        }
-        function closeEditModal() {
+        }        function closeEditModal() {
             document.getElementById('editWordModal').classList.remove('open');
         }
         document.getElementById('editWordModal').addEventListener('click', function(e) {

@@ -18,6 +18,19 @@ let listenWrong      = 0;
 let flashXpEarned    = 0;      // XP accumulated during flashcard phase (for transition screen)
 let lastStreakValue  = 0;
 
+/**
+ * Trả về nghĩa hiển thị theo ngôn ngữ hiện tại.
+ * Nếu ngôn ngữ là 'vi' và từ có vietnameseMeaning → dùng tiếng Việt.
+ * Ngược lại dùng englishMeaning.
+ */
+function getMeaning(word) {
+    if (typeof currentLang !== 'undefined' && currentLang === 'vi'
+            && word.vietnameseMeaning) {
+        return word.vietnameseMeaning;
+    }
+    return word.englishMeaning;
+}
+
 // ─── DOM: Flashcard phase ─────────────────────────────────────────────────────
 const flashContainer   = document.getElementById('flashcard-container');
 const cardKorean       = document.getElementById('card-korean');
@@ -176,7 +189,7 @@ function renderFlashcard() {
     flashContainer.classList.remove('is-flipped');
     cardKorean.textContent  = word.koreanWord;
     cardRomaji.textContent  = word.romaji;
-    cardEnglish.textContent = word.englishMeaning;
+    cardEnglish.textContent = getMeaning(word);
 
     if (word.mnemonic) {
         cardMnemonic.textContent = word.mnemonic;
@@ -265,10 +278,11 @@ function skipToQuiz() {
  * so no button ever has empty/undefined text.
  */
 function buildChoices(word) {
+    const correctMeaning = getMeaning(word);
     // Pool of distractor meanings — filter out the correct answer
     const distractorPool = vocabList
-        .filter(v => v.englishMeaning && v.englishMeaning !== word.englishMeaning)
-        .map(v => v.englishMeaning)
+        .filter(v => getMeaning(v) && getMeaning(v) !== correctMeaning)
+        .map(v => getMeaning(v))
         // deduplicate
         .filter((m, i, arr) => arr.indexOf(m) === i)
         .sort(() => Math.random() - 0.5);
@@ -283,7 +297,7 @@ function buildChoices(word) {
     }
 
     const choices = [
-        { text: word.englishMeaning, isCorrect: true },
+        { text: correctMeaning, isCorrect: true },
         ...distractors.map(m => ({ text: m, isCorrect: false }))
     ].sort(() => Math.random() - 0.5);
 
@@ -377,13 +391,13 @@ function showListenResult(isCorrect, word) {
         listenResult.classList.remove('wrong-result');
         listenResultIcon.textContent = 'check_circle';
         listenResultText.textContent = 'Correct! 🎉';
-        listenResultDetail.textContent = word.koreanWord + ' = ' + word.englishMeaning;
+        listenResultDetail.textContent = word.koreanWord + ' = ' + getMeaning(word);
     } else {
         listenResult.classList.add('wrong-result');
         listenResult.classList.remove('correct-result');
         listenResultIcon.textContent = 'cancel';
         listenResultText.textContent = 'Not quite!';
-        listenResultDetail.textContent = 'Answer: ' + word.englishMeaning;
+        listenResultDetail.textContent = 'Answer: ' + getMeaning(word);
     }
 }
 

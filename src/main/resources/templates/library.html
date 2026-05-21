@@ -275,7 +275,12 @@
             <span class="text-[10px] font-medium mt-1" th:text="#{common.stats}">Stats</span>
         </a>
     </nav>
-    <script th:src="@{/js/library.js(v=2)}"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const currentLang = /*[[${#locale.language}]]*/ 'en';
+        /*]]>*/
+    </script>
+    <script th:src="@{/js/library.js(v=4)}"></script>
     <script>
         // ── Avatar dropdown ──────────────────────────────────────────
         var avatarBtn = document.getElementById('avatarMenuBtn');
