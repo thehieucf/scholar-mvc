@@ -6,8 +6,6 @@ import com.rhythmicscholar.scholar_mvc.model.Category;
 import com.rhythmicscholar.scholar_mvc.model.User;
 import com.rhythmicscholar.scholar_mvc.model.UserBadge;
 import com.rhythmicscholar.scholar_mvc.model.UserProgress;
-import com.rhythmicscholar.scholar_mvc.model.UserWordProgress;
-import com.rhythmicscholar.scholar_mvc.model.Vocabulary;
 import com.rhythmicscholar.scholar_mvc.repository.BadgeRepository;
 import com.rhythmicscholar.scholar_mvc.repository.CategoryRepository;
 import com.rhythmicscholar.scholar_mvc.repository.UserBadgeRepository;
@@ -16,6 +14,7 @@ import com.rhythmicscholar.scholar_mvc.repository.UserRepository;
 import com.rhythmicscholar.scholar_mvc.repository.UserWordProgressRepository;
 import com.rhythmicscholar.scholar_mvc.repository.VocabularyRepository;
 import com.rhythmicscholar.scholar_mvc.service.BadgeService;
+import com.rhythmicscholar.scholar_mvc.service.StudyProgressService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -28,12 +27,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Controller xử lý các chức năng liên quan đến người dùng (Hồ sơ, Tiến độ, Bảng xếp hạng).
@@ -49,27 +46,14 @@ public class UserController {
     @Autowired private BadgeService badgeService;
     @Autowired private BadgeRepository badgeRepository;
     @Autowired private UserBadgeRepository userBadgeRepository;
+    @Autowired private StudyProgressService studyProgressService;
 
     // ----------------------------------------------------------------
-    // XP thresholds cho từng level
-    // ----------------------------------------------------------------
-    private String calculateLevel(int xp) {
-        if (xp >= 2000) return "Master";
-        if (xp >= 800)  return "Advanced";
-        if (xp >= 250)  return "Intermediate";
-        return "Beginner";
-    }
-
-    // ----------------------------------------------------------------
-    // API ghi nhận tiến độ học một từ vựng
+    // API ghi nhận tiến độ học một từ vựng (Flashcard)
     // ----------------------------------------------------------------
     /**
      * Được gọi từ study.js mỗi khi user lật thẻ flashcard.
-     * - Tạo hoặc cập nhật UserWordProgress
-     * - Cộng XP (+5 từ mới, +2 ôn lại)
-     * - Cập nhật streak (với logic reset nếu bỏ ngày)
-     * - Tự động nâng level dựa trên XP
-     * - Kiểm tra và trao badge mới
+     * Dùng StudyProgressService để xử lý XP, streak, SM-2, UserProgress.
      */
     @PostMapping("/api/study/progress")
     @ResponseBody
@@ -78,78 +62,75 @@ public class UserController {
             HttpSession session) {
 
         Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) userId = 1L;
+        if (userId == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+
+        StudyProgressService.ProgressResult result = studyProgressService.recordFlashcard(userId, vocabId);
+        if (result.isError()) return ResponseEntity.badRequest().body(Map.of("error", result.errorMessage));
 
         User user = userRepository.findById(userId).orElse(null);
-        if (user == null) return ResponseEntity.badRequest().body(Map.of("error", "User not found"));
 
-        Vocabulary vocab = vocabularyRepository.findById(vocabId).orElse(null);
-        if (vocab == null) return ResponseEntity.badRequest().body(Map.of("error", "Vocabulary not found"));
-
-        // ---- 1. Cập nhật UserWordProgress ----
-        Optional<UserWordProgress> existing = userWordProgressRepository.findByUserIdAndVocabularyId(userId, vocabId);
-        boolean isNew = existing.isEmpty();
-
-        UserWordProgress progress = existing.orElseGet(UserWordProgress::new);
-        if (isNew) {
-            progress.setUser(user);
-            progress.setVocabulary(vocab);
-            progress.setLearningStatus("LEARNING");
-        } else {
-            int consec = progress.getConsecutiveCorrect() != null ? progress.getConsecutiveCorrect() : 0;
-            progress.setConsecutiveCorrect(consec + 1);
-            if (consec + 1 >= 5) progress.setLearningStatus("MASTERED");
-        }
-        progress.setIsFlashcardDone(true);
-        progress.setNextReviewDate(LocalDate.now().plusDays(1));
-        progress.setLastStudiedAt(java.time.LocalDateTime.now());
-        userWordProgressRepository.save(progress);
-
-        // ---- 2. Cộng XP ----
-        int xpGain = isNew ? 5 : 2;
-        int newXp = (user.getTotalXp() != null ? user.getTotalXp() : 0) + xpGain;
-        user.setTotalXp(newXp);
-
-        // ---- 3. Tự động nâng/hạ level theo XP ----
-        user.setCurrentLevel(calculateLevel(newXp));
-
-        // ---- 4. Cập nhật streak (logic reset đúng) ----
-        LocalDate today = LocalDate.now();
-        LocalDate lastDate = user.getLastStudiedDate();
-
-        if (lastDate == null || lastDate.isBefore(today.minusDays(1))) {
-            // Bỏ lỡ ít nhất 1 ngày → reset streak về 1
-            user.setCurrentStreak(1);
-        } else if (lastDate.isBefore(today)) {
-            // Học ngày hôm qua → tăng streak
-            user.setCurrentStreak((user.getCurrentStreak() != null ? user.getCurrentStreak() : 0) + 1);
-        }
-        // Nếu lastDate == today → không thay đổi streak (đã tính rồi)
-
-        // Cập nhật longest streak
-        int streak = user.getCurrentStreak();
-        int longest = user.getLongestStreak() != null ? user.getLongestStreak() : 0;
-        if (streak > longest) user.setLongestStreak(streak);
-
-        // Cập nhật ngày học cuối
-        user.setLastStudiedDate(today);
-        userRepository.save(user);
-
-        // ---- 5. Kiểm tra và trao badge mới ----
-        List<Badge> newBadges = badgeService.checkAndAwardBadges(user);
+        // Kiểm tra và trao badge mới
+        List<Badge> newBadges = user != null ? badgeService.checkAndAwardBadges(user) : List.of();
         List<Map<String, String>> newBadgeData = newBadges.stream().map(b -> Map.of(
-            "name", b.getName(),
-            "emoji", b.getIconEmoji() != null ? b.getIconEmoji() : "🏅",
+            "name",        b.getName(),
+            "emoji",       b.getIconEmoji() != null ? b.getIconEmoji() : "🏅",
             "description", b.getDescription() != null ? b.getDescription() : ""
         )).toList();
 
         return ResponseEntity.ok(Map.of(
-            "xpGained",   xpGain,
-            "totalXp",    user.getTotalXp(),
-            "streak",     user.getCurrentStreak(),
-            "level",      user.getCurrentLevel(),
-            "newBadges",  newBadgeData,
-            "status",     progress.getLearningStatus()
+            "xpGained",  result.xpGained,
+            "totalXp",   result.totalXp,
+            "streak",    result.streak,
+            "level",     result.level,
+            "newBadges", newBadgeData,
+            "status",    result.status
+        ));
+    }
+
+    // ----------------------------------------------------------------
+    // API ghi nhận kết quả một câu trả lời trong Quiz
+    // ----------------------------------------------------------------
+    /**
+     * Được gọi từ game.js sau mỗi câu trả lời.
+     * Cập nhật UserWordProgress, XP, streak, SM-2 và UserProgress.
+     *
+     * @param vocabId  ID từ vựng liên kết với câu hỏi (từ QuizQuestion.vocabularyId)
+     * @param correct  true nếu user trả lời đúng
+     */
+    @PostMapping("/api/game/result")
+    @ResponseBody
+    public ResponseEntity<?> recordQuizResult(
+            @RequestParam Long vocabId,
+            @RequestParam boolean correct,
+            HttpSession session) {
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+
+        StudyProgressService.ProgressResult result = studyProgressService.recordQuizAnswer(userId, vocabId, correct);
+        if (result.isError()) return ResponseEntity.badRequest().body(Map.of("error", result.errorMessage));
+
+        User user = userRepository.findById(userId).orElse(null);
+
+        // Kiểm tra badge chỉ khi trả lời đúng (có XP mới)
+        List<Map<String, String>> newBadgeData = List.of();
+        if (correct && user != null) {
+            List<Badge> newBadges = badgeService.checkAndAwardBadges(user);
+            newBadgeData = newBadges.stream().map(b -> Map.of(
+                "name",        b.getName(),
+                "emoji",       b.getIconEmoji() != null ? b.getIconEmoji() : "🏅",
+                "description", b.getDescription() != null ? b.getDescription() : ""
+            )).toList();
+        }
+
+        return ResponseEntity.ok(Map.of(
+            "xpGained",  result.xpGained,
+            "totalXp",   result.totalXp,
+            "streak",    result.streak,
+            "level",     result.level,
+            "status",    result.status,
+            "correct",   result.correct,
+            "newBadges", newBadgeData
         ));
     }
 

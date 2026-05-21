@@ -61,6 +61,13 @@ public class Vocabulary {
     private String exampleEn;
 
     /**
+     * Nghĩa tiếng Việt (tùy chọn).
+     * Hiển thị thay cho englishMeaning khi người dùng chọn ngôn ngữ tiếng Việt.
+     */
+    @Column(name = "vietnamese_meaning", columnDefinition = "TEXT")
+    private String vietnameseMeaning;
+
+    /**
      * Ghi chú hoặc cách ghi nhớ từ (Mnemonic).
      */
     @Column(columnDefinition = "TEXT")

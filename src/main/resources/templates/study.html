@@ -294,6 +294,7 @@
   <script th:inline="javascript">
     /*<![CDATA[*/
     const vocabList = /*[[${vocabList}]]*/ [];
+    const currentLang = /*[[${#locale.language}]]*/ 'en';
     /*]]>*/
   </script>
   <script th:src="@{/js/study.js(v=4)}"></script>

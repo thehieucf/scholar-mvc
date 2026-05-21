@@ -49,6 +49,13 @@
             <span class="material-symbols-outlined">category</span>
             Categories
         </a>
+
+        <a th:href="@{/admin/vocab-groups}"
+           th:classappend="${activePage == 'vocab-groups'} ? ' active' : ''"
+           class="admin-nav-link">
+            <span class="material-symbols-outlined">collections_bookmark</span>
+            Vocab Groups
+        </a>
     </nav>
 
     <div class="admin-sidebar__footer">

@@ -153,18 +153,27 @@
                             <td th:text="${v.wordType != null ? v.wordType : '—'}">Noun</td>
                             <td th:text="${v.category != null ? v.category.nameEn : '—'}">—</td>
                             <td>
-                                <form th:action="@{/admin/vocabulary/{id}/delete(id=${v.id})}"
-                                      method="post"
-                                      onsubmit="return confirm('Delete this word?')">
-                                    <input type="hidden" name="page" th:value="${currentPage}" />
-                                    <input type="hidden" name="size" th:value="${pageSize}" />
-                                    <button type="submit"
-                                            class="admin-btn admin-btn--danger admin-btn--sm"
-                                            style="font-size:0.75rem;padding:0.25rem 0.6rem;">
-                                        <span class="material-symbols-outlined" style="font-size:14px;">delete</span>
-                                        Delete
+                                <div style="display:flex;gap:0.4rem;align-items:center;">
+                                    <button type="button"
+                                            class="admin-btn admin-btn--ghost admin-btn--sm"
+                                            style="font-size:0.75rem;padding:0.25rem 0.6rem;"
+                                            th:onclick="'openEditModal(' + ${v.id} + ', \'' + ${#strings.escapeXml(v.koreanWord)} + '\', \'' + ${#strings.escapeXml(v.romaji)} + '\', \'' + ${#strings.escapeXml(v.englishMeaning)} + '\', \'' + ${v.wordType != null ? v.wordType : ''} + '\', ' + ${v.category != null ? v.category.id : 0} + ', \'' + ${v.exampleKr != null ? #strings.escapeXml(v.exampleKr) : ''} + '\', \'' + ${v.exampleEn != null ? #strings.escapeXml(v.exampleEn) : ''} + '\', \'' + ${v.mnemonic != null ? #strings.escapeXml(v.mnemonic) : ''} + '\')'">
+                                        <span class="material-symbols-outlined" style="font-size:14px;">edit</span>
+                                        Edit
                                     </button>
-                                </form>
+                                    <form th:action="@{/admin/vocabulary/{id}/delete(id=${v.id})}"
+                                          method="post"
+                                          onsubmit="return confirm('Delete this word?')">
+                                        <input type="hidden" name="page" th:value="${currentPage}" />
+                                        <input type="hidden" name="size" th:value="${pageSize}" />
+                                        <button type="submit"
+                                                class="admin-btn admin-btn--danger admin-btn--sm"
+                                                style="font-size:0.75rem;padding:0.25rem 0.6rem;">
+                                            <span class="material-symbols-outlined" style="font-size:14px;">delete</span>
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         <tr th:if="${vocabPage.numberOfElements == 0}">
@@ -293,6 +302,75 @@
         </div>
     </div>
 
+    <!-- ===== Edit Word Modal ===== -->
+    <div class="modal-overlay" id="editWordModal">
+        <div class="modal-box">
+            <h2>
+                <span class="material-symbols-outlined" style="vertical-align:middle;font-size:1.2rem;margin-right:4px;">edit</span>
+                Edit Word
+            </h2>
+            <form id="editWordForm" method="post">
+                <input type="hidden" name="page" th:value="${currentPage}" />
+                <input type="hidden" name="size" th:value="${pageSize}" />
+                <input type="hidden" name="search" th:value="${search}" />
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="editKoreanWord">Korean Word <span style="color:#ef4444">*</span></label>
+                        <input type="text" id="editKoreanWord" name="koreanWord" required placeholder="예: 사과" />
+                    </div>
+                    <div class="form-field">
+                        <label for="editRomaji">Romanization <span style="color:#ef4444">*</span></label>
+                        <input type="text" id="editRomaji" name="romaji" required placeholder="e.g. sagwa" />
+                    </div>
+                    <div class="form-field full">
+                        <label for="editEnglishMeaning">English Meaning <span style="color:#ef4444">*</span></label>
+                        <input type="text" id="editEnglishMeaning" name="englishMeaning" required placeholder="e.g. Apple" />
+                    </div>
+                    <div class="form-field">
+                        <label for="editCategoryId">Category <span style="color:#ef4444">*</span></label>
+                        <select id="editCategoryId" name="categoryId" required>
+                            <option value="">— Select category —</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.id}"
+                                    th:text="${cat.nameEn} + ' (' + ${cat.nameKr} + ')'">Category</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="editWordType">Word Type</label>
+                        <select id="editWordType" name="wordType">
+                            <option value="">— Optional —</option>
+                            <option value="Noun">Noun</option>
+                            <option value="Verb">Verb</option>
+                            <option value="Adjective">Adjective</option>
+                            <option value="Adverb">Adverb</option>
+                            <option value="Expression">Expression</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-field full">
+                        <label for="editExampleKr">Example (Korean)</label>
+                        <textarea id="editExampleKr" name="exampleKr" placeholder="Korean example sentence (optional)"></textarea>
+                    </div>
+                    <div class="form-field full">
+                        <label for="editExampleEn">Example (English)</label>
+                        <textarea id="editExampleEn" name="exampleEn" placeholder="English translation of example (optional)"></textarea>
+                    </div>
+                    <div class="form-field full">
+                        <label for="editMnemonic">Mnemonic / Note</label>
+                        <textarea id="editMnemonic" name="mnemonic" placeholder="Memory tip (optional)"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="admin-btn admin-btn--ghost" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="admin-btn admin-btn--primary">
+                        <span class="material-symbols-outlined" style="font-size:15px;">save</span>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script th:inline="javascript">
         /*<![CDATA[*/
         var currentSearch = /*[[${search}]]*/ '';
@@ -307,9 +385,27 @@
         function closeAddModal() {
             document.getElementById('addWordModal').classList.remove('open');
         }
-        // Close on overlay click
         document.getElementById('addWordModal').addEventListener('click', function(e) {
             if (e.target === this) closeAddModal();
+        });
+
+        function openEditModal(id, korean, romaji, english, wordType, categoryId, exampleKr, exampleEn, mnemonic) {
+            document.getElementById('editWordForm').action = '/admin/vocabulary/' + id + '/edit';
+            document.getElementById('editKoreanWord').value = korean;
+            document.getElementById('editRomaji').value = romaji;
+            document.getElementById('editEnglishMeaning').value = english;
+            document.getElementById('editWordType').value = wordType || '';
+            document.getElementById('editCategoryId').value = categoryId || '';
+            document.getElementById('editExampleKr').value = exampleKr || '';
+            document.getElementById('editExampleEn').value = exampleEn || '';
+            document.getElementById('editMnemonic').value = mnemonic || '';
+            document.getElementById('editWordModal').classList.add('open');
+        }
+        function closeEditModal() {
+            document.getElementById('editWordModal').classList.remove('open');
+        }
+        document.getElementById('editWordModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
         });
         /*]]>*/
     </script>

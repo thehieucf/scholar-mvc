@@ -18,7 +18,8 @@ if (typeof serverQuestions !== 'undefined' && serverQuestions.length > 0) {
             type: q.questionType,
             topic: q.topic,
             options: options,
-            correct: options.indexOf(q.correctAnswer)
+            correct: options.indexOf(q.correctAnswer),
+            vocabId: q.vocabularyId   // dùng để gọi API lưu kết quả
         };
     });
 } else {
@@ -28,9 +29,9 @@ if (typeof serverQuestions !== 'undefined' && serverQuestions.length > 0) {
             kr: "저는 학교에 갑니다.", rom: "Jeoneun hakgyoe gamnida.",
             type: "Translate This Phrase", topic: "Sentence Patterns · 문장",
             options: ["I am going to school.", "I study at school.", "I like the school.", "I go back home."],
-            correct: 0
+            correct: 0,
+            vocabId: null
         },
-        // ... other static questions
     ];
 }
 
@@ -40,6 +41,59 @@ let current = 0,         // Current question index
     wrongCount = 0,      // Number of wrong answers
     xpEarned = 0,        // XP earned
     answered = false;    // Whether current question has been answered
+
+/**
+ * Gọi API lưu kết quả một câu trả lời quiz.
+ * Không block UI — fire-and-forget, chỉ log lỗi nếu có.
+ */
+function saveQuizResult(vocabId, correct) {
+    if (!vocabId) return;  // câu hỏi không liên kết từ vựng → bỏ qua
+    const params = new URLSearchParams({ vocabId, correct });
+    fetch('/api/game/result', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            console.warn('[Quiz] API error:', data.error);
+            return;
+        }
+        // Cập nhật XP hiển thị nếu có element
+        const statXp = document.getElementById('stat-xp');
+        if (statXp && data.xpGained > 0) {
+            const current = parseInt(statXp.textContent.replace('+', '')) || 0;
+            statXp.textContent = '+' + (current + data.xpGained);
+        }
+        // Hiển thị badge mới nếu có
+        if (data.newBadges && data.newBadges.length > 0) {
+            data.newBadges.forEach(b => {
+                showBadgeToast(b.emoji, b.name, b.description);
+            });
+        }
+    })
+    .catch(err => console.warn('[Quiz] Failed to save result:', err));
+}
+
+/**
+ * Hiển thị toast thông báo badge mới.
+ */
+function showBadgeToast(emoji, name, description) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999;
+        background:#1e293b; color:#fff; border-radius:12px;
+        padding:0.75rem 1.25rem; display:flex; align-items:center; gap:0.75rem;
+        box-shadow:0 8px 32px rgba(0,0,0,0.3); font-family:inherit;
+        animation: slideIn 0.3s ease;
+    `;
+    toast.innerHTML = `<span style="font-size:1.5rem">${emoji}</span>
+        <div><div style="font-weight:700;font-size:0.9rem">Badge Unlocked: ${name}</div>
+        <div style="font-size:0.78rem;opacity:0.75">${description}</div></div>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
 
 /**
  * Render the current question on screen
@@ -84,7 +138,13 @@ function selectAnswer(idx, correctIdx, clickedBtn) {
     const btns = document.querySelectorAll('.option-btn');
     btns.forEach(b => { b.disabled = true; });
 
-    if (idx === correctIdx) {
+    const isCorrect = idx === correctIdx;
+    const q = questions[current];
+
+    // Lưu kết quả lên server (async, không block UI)
+    saveQuizResult(q.vocabId, isCorrect);
+
+    if (isCorrect) {
         clickedBtn.classList.add('correct');
         correctCount++;
         xpEarned += 20;
@@ -142,7 +202,7 @@ function showResult() {
                     <button id="restart-btn" class="bg-primary text-on-primary font-bold py-4 px-10 rounded-full hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined">refresh</span>Play Again
                     </button>
-                    <a href="index.html" class="bg-surface-container-low text-on-surface font-bold py-4 px-10 rounded-full hover:bg-surface-container-high transition-colors flex items-center justify-center gap-2 border border-outline-variant">
+                    <a href="/" class="bg-surface-container-low text-on-surface font-bold py-4 px-10 rounded-full hover:bg-surface-container-high transition-colors flex items-center justify-center gap-2 border border-outline-variant">
                         <span class="material-symbols-outlined">dashboard</span>Dashboard
                     </a>
                 </div>

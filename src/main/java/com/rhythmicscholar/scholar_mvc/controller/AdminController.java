@@ -3,6 +3,7 @@ package com.rhythmicscholar.scholar_mvc.controller;
 import com.rhythmicscholar.scholar_mvc.model.Category;
 import com.rhythmicscholar.scholar_mvc.model.QuizQuestion;
 import com.rhythmicscholar.scholar_mvc.model.User;
+import com.rhythmicscholar.scholar_mvc.model.VocabGroup;
 import com.rhythmicscholar.scholar_mvc.model.Vocabulary;
 import com.rhythmicscholar.scholar_mvc.repository.*;
 import jakarta.servlet.http.HttpSession;
@@ -48,6 +49,12 @@ public class AdminController {
 
     @Autowired
     private UserBadgeRepository userBadgeRepository;
+
+    @Autowired
+    private VocabGroupRepository vocabGroupRepository;
+
+    @Autowired
+    private VocabGroupItemRepository vocabGroupItemRepository;
 
     // ----------------------------------------------------------------
     // Helper: get the currently logged-in admin from session
@@ -477,5 +484,93 @@ public class AdminController {
         categoryRepository.save(cat);
         redirectAttributes.addFlashAttribute("success", "Category updated successfully.");
         return "redirect:/admin/categories";
+    }
+
+    // ----------------------------------------------------------------
+    // Edit Vocabulary
+    // ----------------------------------------------------------------
+    @PostMapping("/vocabulary/{id}/edit")
+    public String editVocabulary(@PathVariable Long id,
+                                 @RequestParam String koreanWord,
+                                 @RequestParam String romaji,
+                                 @RequestParam String englishMeaning,
+                                 @RequestParam(required = false) String wordType,
+                                 @RequestParam Long categoryId,
+                                 @RequestParam(required = false) String exampleKr,
+                                 @RequestParam(required = false) String exampleEn,
+                                 @RequestParam(required = false) String mnemonic,
+                                 @RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "10") int size,
+                                 @RequestParam(defaultValue = "") String search,
+                                 RedirectAttributes redirectAttributes) {
+        Vocabulary vocab = vocabularyRepository.findById(id).orElse(null);
+        if (vocab == null) {
+            redirectAttributes.addFlashAttribute("error", "Word not found.");
+            return "redirect:/admin/vocabulary";
+        }
+        Category category = categoryRepository.findById(categoryId).orElse(null);
+        if (category == null) {
+            redirectAttributes.addFlashAttribute("error", "Invalid category selected.");
+            return "redirect:/admin/vocabulary";
+        }
+        vocab.setKoreanWord(koreanWord.trim());
+        vocab.setRomaji(romaji.trim());
+        vocab.setEnglishMeaning(englishMeaning.trim());
+        vocab.setWordType(wordType != null && !wordType.isBlank() ? wordType.trim() : null);
+        vocab.setCategory(category);
+        vocab.setExampleKr(exampleKr != null && !exampleKr.isBlank() ? exampleKr.trim() : null);
+        vocab.setExampleEn(exampleEn != null && !exampleEn.isBlank() ? exampleEn.trim() : null);
+        vocab.setMnemonic(mnemonic != null && !mnemonic.isBlank() ? mnemonic.trim() : null);
+        vocabularyRepository.save(vocab);
+        redirectAttributes.addFlashAttribute("success", "Word \"" + vocab.getKoreanWord() + "\" updated successfully.");
+        return "redirect:/admin/vocabulary?page=" + page + "&size=" + size
+               + (search.isBlank() ? "" : "&search=" + search);
+    }
+
+    // ----------------------------------------------------------------
+    // Manage Vocab Groups
+    // ----------------------------------------------------------------
+    @GetMapping("/vocab-groups")
+    public String listVocabGroups(@RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(defaultValue = "10") int size,
+                                  HttpSession session,
+                                  Model model) {
+        User admin = getCurrentAdmin(session);
+        model.addAttribute("admin", admin);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<VocabGroup> groupPage = vocabGroupRepository.findAll(pageable);
+
+        // Word count per group
+        Map<Long, Long> wordCountMap = new HashMap<>();
+        for (VocabGroup g : groupPage.getContent()) {
+            wordCountMap.put(g.getId(), vocabGroupItemRepository.countByGroupId(g.getId()));
+        }
+
+        // Owner name per group
+        Map<Long, String> ownerNameMap = new HashMap<>();
+        for (VocabGroup g : groupPage.getContent()) {
+            userRepository.findById(g.getUserId()).ifPresent(u -> ownerNameMap.put(g.getId(), u.getFullName()));
+        }
+
+        model.addAttribute("groupPage", groupPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("totalPages", groupPage.getTotalPages());
+        model.addAttribute("totalElements", groupPage.getTotalElements());
+        model.addAttribute("wordCountMap", wordCountMap);
+        model.addAttribute("ownerNameMap", ownerNameMap);
+        return "admin/vocab-groups";
+    }
+
+    @PostMapping("/vocab-groups/{id}/delete")
+    public String deleteVocabGroup(@PathVariable Long id,
+                                   @RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "10") int size,
+                                   RedirectAttributes redirectAttributes) {
+        vocabGroupItemRepository.deleteByGroupId(id);
+        vocabGroupRepository.deleteById(id);
+        redirectAttributes.addFlashAttribute("success", "Vocab group deleted successfully.");
+        return "redirect:/admin/vocab-groups?page=" + page + "&size=" + size;
     }
 }
