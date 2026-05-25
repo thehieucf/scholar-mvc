@@ -6,12 +6,19 @@ let questions = [];
 
 if (typeof serverQuestions !== 'undefined' && serverQuestions.length > 0) {
     questions = serverQuestions.map(q => {
+        const isVi = typeof currentLang !== 'undefined' && currentLang === 'vi';
+
         // Chọn đáp án đúng theo ngôn ngữ hiện tại
-        const correctDisplay = (typeof currentLang !== 'undefined' && currentLang === 'vi' && q.vietnameseMeaning)
-            ? q.vietnameseMeaning
+        const correctDisplay = (isVi && q.correctAnswerVi)
+            ? q.correctAnswerVi
             : q.correctAnswer;
 
-        const options = [correctDisplay, q.wrongAnswer1, q.wrongAnswer2, q.wrongAnswer3];
+        // Chọn đáp án sai theo ngôn ngữ hiện tại (fallback về tiếng Anh nếu chưa có bản VI)
+        const wrong1 = (isVi && q.wrongAnswer1Vi) ? q.wrongAnswer1Vi : q.wrongAnswer1;
+        const wrong2 = (isVi && q.wrongAnswer2Vi) ? q.wrongAnswer2Vi : q.wrongAnswer2;
+        const wrong3 = (isVi && q.wrongAnswer3Vi) ? q.wrongAnswer3Vi : q.wrongAnswer3;
+
+        const options = [correctDisplay, wrong1, wrong2, wrong3];
         // Shuffle options
         for (let i = options.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));

@@ -40,21 +40,37 @@ public class QuizQuestion {
     @Column(nullable = false)
     private String romaji;
 
-    /** Đáp án đúng của câu hỏi. */
+    /** Đáp án đúng của câu hỏi (tiếng Anh). */
     @Column(name = "correct_answer", nullable = false)
     private String correctAnswer;
 
-    /** Đáp án sai thứ nhất (nhiễu). */
+    /** Đáp án đúng của câu hỏi (tiếng Việt, tùy chọn). */
+    @Column(name = "correct_answer_vi")
+    private String correctAnswerVi;
+
+    /** Đáp án sai thứ nhất (tiếng Anh). */
     @Column(name = "wrong_answer_1", nullable = false)
     private String wrongAnswer1;
 
-    /** Đáp án sai thứ hai (nhiễu). */
+    /** Đáp án sai thứ nhất (tiếng Việt, tùy chọn). */
+    @Column(name = "wrong_answer_1_vi")
+    private String wrongAnswer1Vi;
+
+    /** Đáp án sai thứ hai (tiếng Anh). */
     @Column(name = "wrong_answer_2", nullable = false)
     private String wrongAnswer2;
 
-    /** Đáp án sai thứ ba (nhiễu). */
+    /** Đáp án sai thứ hai (tiếng Việt, tùy chọn). */
+    @Column(name = "wrong_answer_2_vi")
+    private String wrongAnswer2Vi;
+
+    /** Đáp án sai thứ ba (tiếng Anh). */
     @Column(name = "wrong_answer_3", nullable = false)
     private String wrongAnswer3;
+
+    /** Đáp án sai thứ ba (tiếng Việt, tùy chọn). */
+    @Column(name = "wrong_answer_3_vi")
+    private String wrongAnswer3Vi;
 
     /**
      * ID của từ vựng liên kết với câu hỏi này (tùy chọn).

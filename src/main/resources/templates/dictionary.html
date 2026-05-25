@@ -4,24 +4,34 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Dictionary Lookup | Rhythmic Scholar</title>
+    <title th:text="#{dictionary.page.title}">Dictionary Lookup | Rhythmic Scholar</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@300;400;500;600&amp;display=swap"
         rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap"
-        rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <script th:src="@{/js/tailwind-config.js}"></script>
+    <style>
+        .avatar-dropdown { display:none; position:absolute; right:0; top:calc(100% + 10px); min-width:200px; background:#fff; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,0.13); border:1px solid rgba(0,0,0,0.07); z-index:200; overflow:hidden; }
+        .avatar-dropdown.open { display:block; }
+        .avatar-dropdown-item { display:flex; align-items:center; gap:10px; padding:11px 16px; font-size:0.875rem; font-weight:500; color:#1e293b; cursor:pointer; transition:background 0.15s; text-decoration:none; }
+        .avatar-dropdown-item:hover { background:#f1f5f9; }
+        .avatar-dropdown-item.danger { color:#dc2626; }
+        .avatar-dropdown-item.danger:hover { background:#fef2f2; }
+        .avatar-dropdown-divider { height:1px; background:#f1f5f9; margin:4px 0; }
+        .lang-switcher { display:flex; align-items:center; gap:3px; background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); border:1px solid rgba(0,0,0,0.08); border-radius:999px; padding:3px 5px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+        .lang-btn { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:999px; font-size:0.72rem; font-weight:700; letter-spacing:0.04em; cursor:pointer; transition:all 0.18s; text-decoration:none; color:#94a3b8; border:none; background:transparent; }
+        .lang-btn:hover { background:#f1f5f9; color:#475569; }
+        .lang-btn.active { background:#059669; color:#fff; box-shadow:0 2px 8px rgba(5,150,105,0.25); }
+        .lang-divider { width:1px; height:14px; background:#e2e8f0; margin:0 1px; }
+    </style>
 </head>
 
-<body
-    class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
+<body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
 
     <!-- Header -->
-    <header
-        class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-8 h-16 border-b border-outline-variant/10">
+    <header class="fixed top-0 w-full z-50 bg-emerald-50/80 backdrop-blur-xl flex justify-between items-center px-8 h-16 border-b border-outline-variant/10">
         <div class="flex items-center gap-2">
             <span class="text-2xl font-bold tracking-tight text-emerald-800 font-headline">Rhythmic Scholar</span>
         </div>
@@ -32,66 +42,98 @@
                 </div>
                 <input name="q"
                     th:value="${query}"
-                    class="bg-surface-container-highest border-none rounded-full py-1.5 pl-10 pr-16 text-sm focus:ring-2 focus:ring-primary/20 w-64 md:w-80 transition-all"
-                    placeholder="Search Korean vocabulary…" type="text" />
+                    class="bg-surface-container-highest border-none rounded-full py-1.5 pl-10 pr-20 text-sm focus:ring-2 focus:ring-primary/20 w-64 md:w-80 transition-all"
+                    th:placeholder="#{common.search.placeholder}" placeholder="Search Korean vocabulary…" type="text" />
                 <button type="submit"
-                    class="absolute inset-y-0 right-0 px-4 text-xs font-bold text-primary hover:text-primary/80 transition-colors rounded-r-full">
-                    Search
-                </button>
+                    class="absolute inset-y-1 right-1 px-4 text-xs font-bold text-primary bg-surface-container-highest hover:bg-surface-container-high transition-colors rounded-full"
+                    th:text="#{common.search.btn}">Search</button>
             </form>
             <button class="text-on-surface-variant hover:scale-95 duration-200 transition-transform">
                 <span class="material-symbols-outlined">notifications</span>
             </button>
-            <!-- Fix: separate null check from string concat to avoid NPE -->
-            <a th:href="@{/profile}"
-                class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer">
-                <img class="w-full h-full object-cover"
-                    th:if="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty()}"
-                    th:src="${user.avatarUrl}"
-                    alt="User Avatar" />
-                <img class="w-full h-full object-cover"
-                    th:unless="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty()}"
-                    th:src="${'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&background=059669&color=fff'}"
-                    alt="User Avatar" />
-            </a>
+            <!-- Language Switcher -->
+            <div class="lang-switcher" aria-label="Language switcher">
+                <a th:href="@{/dictionary(lang=en, q=${query})}"
+                   th:classappend="${#locale.language == 'en'} ? ' active' : ''"
+                   class="lang-btn">&#x1F1FA;&#x1F1F8; EN</a>
+                <div class="lang-divider"></div>
+                <a th:href="@{/dictionary(lang=vi, q=${query})}"
+                   th:classappend="${#locale.language == 'vi'} ? ' active' : ''"
+                   class="lang-btn">&#x1F1FB;&#x1F1F3; VI</a>
+            </div>
+            <!-- Avatar dropdown -->
+            <div class="relative" id="avatarMenuWrapper">
+                <button id="avatarMenuBtn" class="block w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer focus:outline-none">
+                    <img class="w-full h-full object-cover" alt="Avatar"
+                        th:src="${user != null and user.avatarUrl != null and !user.avatarUrl.isEmpty()} ? ${user.avatarUrl} : ${'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'Scholar') + '&amp;background=059669&amp;color=fff'}" />
+                </button>
+                <div class="avatar-dropdown" id="avatarDropdown">
+                    <div style="padding:12px 16px 8px;">
+                        <div class="text-xs text-slate-400 font-medium" th:text="#{common.signed.in.as}">Signed in as</div>
+                        <div class="text-sm font-bold text-slate-800 truncate" th:text="${user != null ? user.fullName : 'Scholar'}">Scholar</div>
+                    </div>
+                    <div class="avatar-dropdown-divider"></div>
+                    <a th:href="@{/profile}" class="avatar-dropdown-item">
+                        <span class="material-symbols-outlined" style="font-size:18px;">person</span>
+                        <span th:text="#{common.my.profile}">My Profile</span>
+                    </a>
+                    <a th:href="@{/change-password}" class="avatar-dropdown-item">
+                        <span class="material-symbols-outlined" style="font-size:18px;">lock</span>
+                        <span th:text="#{common.change.password}">Change Password</span>
+                    </a>
+                    <div class="avatar-dropdown-divider"></div>
+                    <a th:href="@{/logout}" class="avatar-dropdown-item danger">
+                        <span class="material-symbols-outlined" style="font-size:18px;">logout</span>
+                        <span th:text="#{common.log.out}">Log Out</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </header>
 
     <!-- Sidebar -->
-    <aside
-        class="hidden md:flex flex-col h-screen fixed left-0 w-64 bg-slate-50 p-4 pt-20 gap-2 border-r border-outline-variant/10 z-30">
+    <aside class="hidden md:flex flex-col h-screen fixed left-0 w-64 bg-slate-50 p-4 pt-20 gap-2 border-r border-outline-variant/10 z-30">
         <div class="px-4 py-6 mb-4 bg-surface-container-low rounded-xl">
-            <p class="text-sm font-label text-slate-500">Annyeong!</p>
+            <p class="text-sm font-label text-slate-500" th:text="#{common.annyeong}">Annyeong!</p>
             <h3 class="text-lg font-headline font-bold text-emerald-700"
                 th:text="${user != null ? user.currentLevel + ' Scholar' : 'Scholar'}">Scholar</h3>
         </div>
         <nav class="flex flex-col gap-1">
             <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
-                th:href="@{/index}">
+                th:href="@{/}">
                 <span class="material-symbols-outlined">dashboard</span>
-                <span class="font-label">Dashboard</span>
+                <span class="font-label" th:text="#{common.dashboard}">Dashboard</span>
             </a>
             <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
                 th:href="@{/library}">
                 <span class="material-symbols-outlined">menu_book</span>
-                <span class="font-label">Library</span>
+                <span class="font-label" th:text="#{common.library}">Library</span>
             </a>
             <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
                 th:href="@{/vocabulary}">
                 <span class="material-symbols-outlined">bookmark</span>
-                <span class="font-label">My Vocabulary</span>
+                <span class="font-label" th:text="#{common.my.vocabulary}">My Vocabulary</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out bg-emerald-50 text-emerald-700 font-bold"
+                th:href="@{/dictionary}">
+                <span class="material-symbols-outlined">manage_search</span>
+                <span class="font-label" th:text="#{common.dictionary}">Dictionary</span>
             </a>
             <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
-                href="progress.html">
+                th:href="@{/progress}">
                 <span class="material-symbols-outlined">leaderboard</span>
-                <span class="font-label">Progress</span>
+                <span class="font-label" th:text="#{common.progress}">Progress</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ease-in-out text-slate-500 hover:bg-emerald-50"
+                th:href="@{/leaderboard}">
+                <span class="material-symbols-outlined">emoji_events</span>
+                <span class="font-label" th:text="#{common.leaderboard}">Leaderboard</span>
             </a>
         </nav>
         <div class="mt-auto p-4">
             <a th:href="@{/study}"
-                class="block text-center w-full bg-primary text-on-primary font-bold py-4 rounded-full transition-transform active:scale-95">
-                Start Study
-            </a>
+                class="block text-center w-full bg-primary text-on-primary font-bold py-4 rounded-full transition-transform active:scale-95"
+                th:text="#{common.start.study}">Start Study</a>
         </div>
     </aside>
 
@@ -102,18 +144,24 @@
             <!-- Search Hero -->
             <div class="mb-10 relative text-center pt-8">
                 <div class="absolute top-0 left-1/2 -translate-x-1/2 text-[100px] md:text-[140px] font-bold text-primary/5 select-none pointer-events-none whitespace-nowrap">
-                    사전</div>
+                    &#xC0AC;&#xC804;</div>
                 <h1 class="text-4xl md:text-5xl font-extrabold font-headline text-on-surface mb-8 tracking-tight relative z-10">
-                    Korean <span class="text-primary">Dictionary</span>
+                    <span th:text="#{dictionary.heading}">Korean</span>
+                    <span class="text-primary" th:text="#{dictionary.heading.highlight}">Dictionary</span>
                 </h1>
 
                 <!-- Filter chips -->
                 <div class="flex flex-wrap justify-center gap-3 relative z-10">
-                    <button class="px-5 py-2 bg-primary-container text-on-primary-container rounded-full text-sm font-bold border border-primary/20 hover:shadow-sm transition-all">All Words</button>
-                    <button class="px-5 py-2 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/30 rounded-full text-sm font-medium transition-all">Nouns</button>
-                    <button class="px-5 py-2 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/30 rounded-full text-sm font-medium transition-all">Verbs</button>
-                    <button class="px-5 py-2 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/30 rounded-full text-sm font-medium transition-all">Adjectives</button>
-                    <button class="px-5 py-2 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/30 rounded-full text-sm font-medium transition-all">Grammar</button>
+                    <button class="px-5 py-2 bg-primary-container text-on-primary-container rounded-full text-sm font-bold border border-primary/20 hover:shadow-sm transition-all"
+                            th:text="#{dictionary.all.words}">All Words</button>
+                    <button class="px-5 py-2 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/30 rounded-full text-sm font-medium transition-all"
+                            th:text="#{dictionary.nouns}">Nouns</button>
+                    <button class="px-5 py-2 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/30 rounded-full text-sm font-medium transition-all"
+                            th:text="#{dictionary.verbs}">Verbs</button>
+                    <button class="px-5 py-2 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/30 rounded-full text-sm font-medium transition-all"
+                            th:text="#{dictionary.adjectives}">Adjectives</button>
+                    <button class="px-5 py-2 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/30 rounded-full text-sm font-medium transition-all"
+                            th:text="#{dictionary.grammar}">Grammar</button>
                 </div>
             </div>
 
@@ -123,9 +171,8 @@
                 <!-- Result count -->
                 <p th:if="${results != null and !#lists.isEmpty(results)}"
                    class="text-sm text-on-surface-variant mb-6">
-                    Found
-                    <span class="font-bold text-primary" th:text="${#lists.size(results)}">0</span>
-                    result(s) for &ldquo;<span class="font-semibold text-on-surface" th:text="${query}"></span>&rdquo;
+                    <span th:text="#{dictionary.found(${#lists.size(results)})}">Found 0 result(s) for</span>
+                    &ldquo;<span class="font-semibold text-on-surface" th:text="${query}"></span>&rdquo;
                 </p>
 
                 <!-- Result cards -->
@@ -139,7 +186,7 @@
                                 <!-- Korean word + type/category badges -->
                                 <div class="flex items-center gap-3 flex-wrap">
                                     <h2 class="text-5xl font-extrabold font-headline text-on-surface"
-                                        th:text="${vocab.koreanWord}">사과</h2>
+                                        th:text="${vocab.koreanWord}">&#xC0AC;&#xACFC;</h2>
                                     <div class="flex flex-col gap-1 mt-1">
                                         <span th:if="${vocab.wordType != null}"
                                               class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider w-fit uppercase"
@@ -151,7 +198,6 @@
                                 </div>
 
                                 <!-- Romaji + audio button -->
-                                <!-- Fix: use data-word instead of th:onclick to avoid errors with special characters -->
                                 <div class="flex items-center gap-3 mt-4">
                                     <p class="text-base text-on-surface-variant font-medium tracking-wide"
                                        th:text="'[' + ${vocab.romaji} + ']'">[sa-gwa]</p>
@@ -159,7 +205,7 @@
                                             class="speak-btn w-9 h-9 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 hover:bg-teal-100 transition-colors"
                                             th:attr="data-text=${vocab.koreanWord}">
                                         <span class="material-symbols-outlined text-[18px]"
-                                              style="font-variation-settings:&apos;FILL&apos; 1;">volume_up</span>
+                                              style="font-variation-settings:'FILL' 1;">volume_up</span>
                                     </button>
                                 </div>
                             </div>
@@ -168,14 +214,14 @@
                             <button
                                 class="flex items-center gap-2 text-primary bg-primary-container/30 hover:bg-primary-container px-5 py-2.5 rounded-full transition-colors font-bold text-sm border border-primary/10 shrink-0">
                                 <span class="material-symbols-outlined text-lg">bookmark_add</span>
-                                <span class="hidden sm:inline">Add to List</span>
+                                <span class="hidden sm:inline" th:text="#{dictionary.add.to.list}">Add to List</span>
                             </button>
                         </div>
 
                         <!-- Meanings section -->
                         <div class="space-y-5 mt-8">
 
-                            <!-- Meaning — hiển thị theo ngôn ngữ -->
+                            <!-- Meaning -->
                             <div class="rounded-2xl p-5 border border-outline-variant/15 bg-slate-50/60">
                                 <h3 class="text-lg font-bold text-on-surface mb-4 flex items-center gap-3">
                                     <span class="w-7 h-7 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-sm font-black">1</span>
@@ -192,11 +238,10 @@
                                     <div class="flex justify-between items-start gap-4">
                                         <div>
                                             <p class="text-on-surface text-base font-medium mb-1 tracking-wide"
-                                               th:text="${vocab.exampleKr}">저는 아침에 사과를 먹어요.</p>
+                                               th:text="${vocab.exampleKr}">&#xC800;&#xB294; &#xC544;&#xCE68;&#xC5D0; &#xC0AC;&#xACFC;&#xB97C; &#xBA39;&#xC5B4;&#xC694;.</p>
                                             <p class="text-on-surface-variant text-sm"
                                                th:text="${vocab.exampleEn}">I eat an apple in the morning.</p>
                                         </div>
-                                        <!-- Fix: use data-text instead of th:onclick -->
                                         <button type="button"
                                                 class="speak-btn text-teal-500 p-2 rounded-full hover:bg-teal-50 transition-colors shrink-0"
                                                 th:attr="data-text=${vocab.exampleKr}">
@@ -220,10 +265,10 @@
                 <div th:if="${results == null or #lists.isEmpty(results)}"
                      class="text-center py-24">
                     <span class="material-symbols-outlined text-6xl text-outline-variant mb-4 block">search_off</span>
-                    <h3 class="text-xl font-bold text-on-surface mb-2">No results found</h3>
+                    <h3 class="text-xl font-bold text-on-surface mb-2" th:text="#{dictionary.no.results}">No results found</h3>
                     <p class="text-on-surface-variant">
-                        No words matched &ldquo;<span class="font-semibold text-on-surface" th:text="${query}"></span>&rdquo;.
-                        Try a different keyword.
+                        <span th:text="#{dictionary.no.results.sub}">No words matched. Try a different keyword.</span>
+                        &ldquo;<span class="font-semibold text-on-surface" th:text="${query}"></span>&rdquo;
                     </p>
                 </div>
             </div>
@@ -233,28 +278,28 @@
                 <div class="mt-4 bg-surface-container-low rounded-3xl p-8 border border-outline-variant/10">
                     <h3 class="text-lg font-bold font-headline mb-6 flex items-center gap-2 text-on-surface-variant">
                         <span class="material-symbols-outlined text-tertiary">trending_up</span>
-                        Trending Searches Today
+                        <span th:text="#{dictionary.trending}">Trending Searches Today</span>
                     </h3>
                     <div class="flex flex-wrap gap-3">
                         <a th:href="@{/dictionary(q='사랑')}"
                            class="px-5 py-2.5 bg-surface-container-lowest border border-outline-variant/20 rounded-full text-sm font-medium hover:bg-surface-container cursor-pointer transition-colors flex items-center gap-2 shadow-sm">
-                            사랑 <span class="text-xs text-outline font-normal">Love</span>
+                            &#xC0AC;&#xB791; <span class="text-xs text-outline font-normal">Love</span>
                         </a>
                         <a th:href="@{/dictionary(q='행복')}"
                            class="px-5 py-2.5 bg-surface-container-lowest border border-outline-variant/20 rounded-full text-sm font-medium hover:bg-surface-container cursor-pointer transition-colors flex items-center gap-2 shadow-sm">
-                            행복 <span class="text-xs text-outline font-normal">Happiness</span>
+                            &#xD589;&#xBCF5; <span class="text-xs text-outline font-normal">Happiness</span>
                         </a>
                         <a th:href="@{/dictionary(q='감사하다')}"
                            class="px-5 py-2.5 bg-surface-container-lowest border border-outline-variant/20 rounded-full text-sm font-medium hover:bg-surface-container cursor-pointer transition-colors flex items-center gap-2 shadow-sm">
-                            감사하다 <span class="text-xs text-outline font-normal">Thank you</span>
+                            &#xAC10;&#xC0AC;&#xD558;&#xB2E4; <span class="text-xs text-outline font-normal">Thank you</span>
                         </a>
                         <a th:href="@{/dictionary(q='귀엽다')}"
                            class="px-5 py-2.5 bg-surface-container-lowest border border-outline-variant/20 rounded-full text-sm font-medium hover:bg-surface-container cursor-pointer transition-colors flex items-center gap-2 shadow-sm">
-                            귀엽다 <span class="text-xs text-outline font-normal">Cute</span>
+                            &#xADC0;&#xC5FD;&#xB2E4; <span class="text-xs text-outline font-normal">Cute</span>
                         </a>
                         <a th:href="@{/dictionary(q='도서관')}"
                            class="px-5 py-2.5 bg-surface-container-lowest border border-outline-variant/20 rounded-full text-sm font-medium hover:bg-surface-container cursor-pointer transition-colors flex items-center gap-2 shadow-sm">
-                            도서관 <span class="text-xs text-outline font-normal">Library</span>
+                            &#xB3C4;&#xC11C;&#xAD00; <span class="text-xs text-outline font-normal">Library</span>
                         </a>
                     </div>
                 </div>
@@ -265,29 +310,29 @@
 
     <!-- Bottom Nav (mobile) -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel h-16 flex items-center justify-around px-4 z-50 border-t border-outline-variant/10">
-        <a th:href="@{/index}" class="flex flex-col items-center text-on-surface-variant">
+        <a th:href="@{/}" class="flex flex-col items-center text-on-surface-variant">
             <span class="material-symbols-outlined">dashboard</span>
-            <span class="text-[10px] font-medium mt-1">Home</span>
+            <span class="text-[10px] font-medium mt-1" th:text="#{common.home}">Home</span>
         </a>
         <a th:href="@{/library}" class="flex flex-col items-center text-on-surface-variant">
             <span class="material-symbols-outlined">menu_book</span>
-            <span class="text-[10px] font-medium mt-1">Library</span>
+            <span class="text-[10px] font-medium mt-1" th:text="#{common.library}">Library</span>
         </a>
         <a th:href="@{/study}"
             class="-mt-8 w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all">
-            <span class="material-symbols-outlined text-3xl" style="font-variation-settings:&apos;FILL&apos; 1;">play_arrow</span>
+            <span class="material-symbols-outlined text-3xl" style="font-variation-settings:'FILL' 1;">play_arrow</span>
         </a>
         <a th:href="@{/vocabulary}" class="flex flex-col items-center text-on-surface-variant">
             <span class="material-symbols-outlined">person</span>
-            <span class="text-[10px] font-medium mt-1">Vocab</span>
+            <span class="text-[10px] font-medium mt-1" th:text="#{common.vocab}">Vocab</span>
         </a>
-        <a href="progress.html" class="flex flex-col items-center text-on-surface-variant">
+        <a th:href="@{/progress}" class="flex flex-col items-center text-on-surface-variant">
             <span class="material-symbols-outlined">leaderboard</span>
-            <span class="text-[10px] font-medium mt-1">Stats</span>
+            <span class="text-[10px] font-medium mt-1" th:text="#{common.stats}">Stats</span>
         </a>
     </nav>
 
-    <!-- TTS: use event delegation instead of inline onclick -->
+    <!-- TTS -->
     <script>
         document.addEventListener('click', function (e) {
             var btn = e.target.closest('.speak-btn');
@@ -298,6 +343,17 @@
             utt.lang = 'ko-KR';
             window.speechSynthesis.cancel();
             window.speechSynthesis.speak(utt);
+        });
+
+        // Avatar dropdown
+        var avatarBtn = document.getElementById('avatarMenuBtn');
+        var avatarDropdown = document.getElementById('avatarDropdown');
+        avatarBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            avatarDropdown.classList.toggle('open');
+        });
+        document.addEventListener('click', function() {
+            avatarDropdown.classList.remove('open');
         });
     </script>
 </body>
