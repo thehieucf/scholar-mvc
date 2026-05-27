@@ -265,7 +265,7 @@
                     <div>
                         <h3 class="text-2xl font-headline font-bold text-on-surface" th:text="#{index.badges.title}">Badges &amp; Milestones</h3>
                         <p class="text-sm text-on-surface-variant mt-1"
-                           th:text="${earnedBadgeCount + ' / ' + allBadges.size() + ' ' + #messages.msg('index.badges.earned', earnedBadgeCount, allBadges.size())}">0 / 0 badges earned</p>
+                           th:text="${(earnedBadgeCount ?: 0) + ' / ' + (allBadges?.size() ?: 0) + ' ' + #messages.msg('index.badges.earned', (earnedBadgeCount ?: 0), (allBadges?.size() ?: 0))}">0 / 0 badges earned</p>
                     </div>
                     <a th:href="@{/leaderboard}" class="text-primary font-bold text-sm flex items-center gap-1 hover:underline">
                         <span th:text="#{common.leaderboard}">Leaderboard</span>

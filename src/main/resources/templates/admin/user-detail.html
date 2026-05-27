@@ -89,8 +89,8 @@
             <div class="profile-header">
                 <img class="profile-avatar"
                      th:src="${target.avatarUrl != null and !target.avatarUrl.isEmpty()}
-                             ? ${target.avatarUrl}
-                             : ${'https://ui-avatars.com/api/?name=' + target.fullName + '&background=1e40af&color=fff&size=72'}"
+             ? ${target.avatarUrl}
+             : ${'https://ui-avatars.com/api/?name=' + target.fullName + '&amp;background=1e40af&amp;color=fff&amp;size=72'}"
                      th:alt="${target.fullName}" />
                 <div style="flex:1;min-width:0;">
                     <div class="profile-name" th:text="${target.fullName}">Full Name</div>
@@ -180,7 +180,7 @@
                             </div>
                             <div class="prog-bar-track">
                                 <div class="prog-bar-fill prog-bar-fill--green"
-                                     th:style="'width:' + (totalStudied gt 0 ? (totalMastered * 100 / totalStudied) : 0) + '%'"></div>
+                                     th:style="|width: ${totalStudied > 0 ? (totalMastered * 100 / totalStudied) : 0}%|"></div>
                             </div>
                         </div>
                         <div th:if="${totalStudied == 0}" class="empty-state" style="padding:1rem;">
