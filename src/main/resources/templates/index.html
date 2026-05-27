@@ -133,9 +133,9 @@
                     <span class="text-primary" th:text="#{index.greeting}">Ready to learn today?</span>
                 </h1>
                 <p class="text-lg text-on-surface-variant font-body leading-relaxed max-w-md">
-                    <span th:if="${studiedToday >= dailyGoal}"
+                    <span th:if="${studiedToday ge dailyGoal}"
                           th:text="'You completed your daily goal — ' + ${studiedToday} + ' words studied today!'"></span>
-                    <span th:if="${studiedToday > 0 and studiedToday < dailyGoal}"
+                    <span th:if="${studiedToday gt 0 and studiedToday lt dailyGoal}"
                           th:text="'You have studied ' + ${studiedToday} + ' words today. Keep the rhythm going!'"></span>
                     <span th:if="${studiedToday == 0}" th:text="#{index.goal.remaining(0)}">You haven't studied yet today. Let's get started!</span>
                 </p>
@@ -176,7 +176,7 @@
                         </div>
                     </div>
                 </div>
-                <div th:if="${studiedToday >= dailyGoal}"
+                <div th:if="${studiedToday ge dailyGoal}"
                      class="flex items-center gap-3 p-4 bg-emerald-50 rounded-lg border border-emerald-100">
                     <span class="material-symbols-outlined fill-icon text-emerald-600">celebration</span>
                     <div>
@@ -185,7 +185,7 @@
                            th:text="'You studied ' + ${studiedToday} + ' words today. Amazing work!'"></p>
                     </div>
                 </div>
-                <div th:unless="${studiedToday >= dailyGoal}"
+                <div th:unless="${studiedToday ge dailyGoal}"
                      class="flex items-center gap-3 p-4 bg-tertiary-container/30 rounded-lg">
                     <span class="material-symbols-outlined text-tertiary">auto_awesome</span>
                     <p class="text-sm font-medium text-on-tertiary-container"

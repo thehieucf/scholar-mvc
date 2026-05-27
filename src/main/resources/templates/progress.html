@@ -161,11 +161,11 @@
                 <div class="flex-1">
                     <div class="flex justify-between text-sm text-emerald-100 mb-2">
                         <span>Overall Progress</span>
-                        <span th:text="${grandTotal > 0 ? #numbers.formatDecimal(totalStudied * 100.0 / grandTotal, 1, 0) + '%' : '0%'}">0%</span>
+                        <span th:text="${grandTotal gt 0 ? #numbers.formatDecimal(totalStudied * 100.0 / grandTotal, 1, 0) + '%' : '0%'}">0%</span>
                     </div>
                     <div class="h-3 w-full bg-emerald-800/50 rounded-full overflow-hidden">
                         <div class="h-full bg-white rounded-full transition-all duration-700"
-                             th:style="${'width: ' + (grandTotal > 0 ? #numbers.formatDecimal(totalStudied * 100.0 / grandTotal, 1, 0) : 0) + '%'}"></div>
+                             th:style="${'width: ' + (grandTotal gt 0 ? #numbers.formatDecimal(totalStudied * 100.0 / grandTotal, 1, 0) : 0) + '%'}"></div>
                     </div>
                 </div>
             </div>
@@ -209,7 +209,7 @@
 
                     <!-- Remaining small cards -->
                     <div th:each="cp, stat : ${categoryProgressList}"
-                         th:if="${stat.index > 0}"
+                         th:if="${stat.index gt 0}"
                          th:with="colorClass=${cp.colorTheme}"
                          class="bg-surface-container-lowest rounded-lg p-6 relative overflow-hidden border border-outline-variant/15 flex flex-col group">
                         <div class="flex justify-between mb-4">

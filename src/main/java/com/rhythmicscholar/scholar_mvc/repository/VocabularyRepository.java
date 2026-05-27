@@ -44,4 +44,9 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Long> {
                         "OR LOWER(v.englishMeaning) LIKE LOWER(CONCAT('%', :q, '%')) " +
                         "OR LOWER(v.romaji) LIKE LOWER(CONCAT('%', :q, '%'))")
     Page<Vocabulary> searchPaged(@Param("q") String q, Pageable pageable);
+
+    /** Lấy tất cả từ vựng có phân trang với JOIN FETCH category để tránh LazyInitializationException. */
+    @Query(value = "SELECT v FROM Vocabulary v JOIN FETCH v.category",
+           countQuery = "SELECT COUNT(v) FROM Vocabulary v")
+    Page<Vocabulary> findAllWithCategory(Pageable pageable);
 }

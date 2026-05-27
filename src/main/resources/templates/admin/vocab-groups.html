@@ -130,7 +130,7 @@
                 </table>
 
                 <!-- Pagination controls -->
-                <div class="admin-pagination" th:if="${totalPages > 1}">
+                <div class="admin-pagination" th:if="${totalPages gt 1}">
                     <span class="admin-pagination__info"
                           th:text="'Page ' + (${currentPage} + 1) + ' of ' + ${totalPages}">
                         Page 1 of 1
@@ -156,12 +156,12 @@
                                class="admin-page-btn">1</a>
                         </th:block>
                         <a th:href="@{/admin/vocab-groups(page=${currentPage + 1}, size=${pageSize})}"
-                           th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
+                           th:classappend="${currentPage + 1 ge totalPages} ? ' disabled' : ''"
                            class="admin-page-btn" title="Next page">
                             <span class="material-symbols-outlined">chevron_right</span>
                         </a>
                         <a th:href="@{/admin/vocab-groups(page=${totalPages - 1}, size=${pageSize})}"
-                           th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
+                           th:classappend="${currentPage + 1 ge totalPages} ? ' disabled' : ''"
                            class="admin-page-btn" title="Last page">
                             <span class="material-symbols-outlined">last_page</span>
                         </a>

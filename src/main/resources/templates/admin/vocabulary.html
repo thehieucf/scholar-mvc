@@ -155,9 +155,18 @@
                             <td>
                                 <div style="display:flex;gap:0.4rem;align-items:center;">
                                     <button type="button"
-                                            class="admin-btn admin-btn--ghost admin-btn--sm"
+                                            class="admin-btn admin-btn--ghost admin-btn--sm edit-word-btn"
                                             style="font-size:0.75rem;padding:0.25rem 0.6rem;"
-                                            th:onclick="'openEditModal(' + ${v.id} + ', \'' + ${#strings.escapeXml(v.koreanWord)} + '\', \'' + ${#strings.escapeXml(v.romaji)} + '\', \'' + ${#strings.escapeXml(v.englishMeaning)} + '\', \'' + ${v.wordType != null ? v.wordType : ''} + '\', ' + ${v.category != null ? v.category.id : 0} + ', \'' + ${v.exampleKr != null ? #strings.escapeXml(v.exampleKr) : ''} + '\', \'' + ${v.exampleEn != null ? #strings.escapeXml(v.exampleEn) : ''} + '\', \'' + ${v.mnemonic != null ? #strings.escapeXml(v.mnemonic) : ''} + '\', \'' + ${v.vietnameseMeaning != null ? #strings.escapeXml(v.vietnameseMeaning) : ''} + '\')'">
+                                            th:data-id="${v.id}"
+                                            th:data-korean="${v.koreanWord}"
+                                            th:data-romaji="${v.romaji}"
+                                            th:data-english="${v.englishMeaning}"
+                                            th:data-wordtype="${v.wordType}"
+                                            th:data-categoryid="${v.category != null ? v.category.id : 0}"
+                                            th:data-examplekr="${v.exampleKr}"
+                                            th:data-exampleen="${v.exampleEn}"
+                                            th:data-mnemonic="${v.mnemonic}"
+                                            th:data-vietnamese="${v.vietnameseMeaning}">
                                         <span class="material-symbols-outlined" style="font-size:14px;">edit</span>
                                         Edit
                                     </button>
@@ -183,7 +192,7 @@
                 </table>
 
                 <!-- Pagination controls -->
-                <div class="admin-pagination" th:if="${totalPages > 1}">
+                <div class="admin-pagination" th:if="${totalPages gt 1}">
                     <span class="admin-pagination__info"
                           th:text="'Page ' + (${currentPage} + 1) + ' of ' + ${totalPages}">
                         Page 1 of 1
@@ -209,12 +218,12 @@
                                class="admin-page-btn">1</a>
                         </th:block>
                         <a th:href="@{/admin/vocabulary(page=${currentPage + 1}, size=${pageSize}, search=${search})}"
-                           th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
+                           th:classappend="${currentPage + 1 ge totalPages} ? ' disabled' : ''"
                            class="admin-page-btn" title="Next page">
                             <span class="material-symbols-outlined">chevron_right</span>
                         </a>
                         <a th:href="@{/admin/vocabulary(page=${totalPages - 1}, size=${pageSize}, search=${search})}"
-                           th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
+                           th:classappend="${currentPage + 1 ge totalPages} ? ' disabled' : ''"
                            class="admin-page-btn" title="Last page">
                             <span class="material-symbols-outlined">last_page</span>
                         </a>
@@ -401,9 +410,9 @@
 
         function openEditModal(id, korean, romaji, english, wordType, categoryId, exampleKr, exampleEn, mnemonic, vietnamese) {
             document.getElementById('editWordForm').action = '/admin/vocabulary/' + id + '/edit';
-            document.getElementById('editKoreanWord').value = korean;
-            document.getElementById('editRomaji').value = romaji;
-            document.getElementById('editEnglishMeaning').value = english;
+            document.getElementById('editKoreanWord').value = korean || '';
+            document.getElementById('editRomaji').value = romaji || '';
+            document.getElementById('editEnglishMeaning').value = english || '';
             document.getElementById('editWordType').value = wordType || '';
             document.getElementById('editCategoryId').value = categoryId || '';
             document.getElementById('editExampleKr').value = exampleKr || '';
@@ -416,6 +425,24 @@
         }
         document.getElementById('editWordModal').addEventListener('click', function(e) {
             if (e.target === this) closeEditModal();
+        });
+
+        // Gắn sự kiện cho các nút Edit sử dụng data attributes
+        document.querySelectorAll('.edit-word-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                openEditModal(
+                    this.dataset.id,
+                    this.dataset.korean,
+                    this.dataset.romaji,
+                    this.dataset.english,
+                    this.dataset.wordtype,
+                    this.dataset.categoryid,
+                    this.dataset.examplekr,
+                    this.dataset.exampleen,
+                    this.dataset.mnemonic,
+                    this.dataset.vietnamese
+                );
+            });
         });
         /*]]>*/
     </script>

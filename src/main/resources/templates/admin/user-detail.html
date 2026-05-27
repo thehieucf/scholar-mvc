@@ -172,15 +172,15 @@
                         </div>
 
                         <!-- Mastery progress bar -->
-                        <div class="prog-bar-wrap" th:if="${totalStudied > 0}">
+                        <div class="prog-bar-wrap" th:if="${totalStudied gt 0}">
                             <div class="prog-bar-header">
                                 <span class="prog-bar-label">Mastery rate</span>
                                 <span class="prog-bar-pct"
-                                      th:text="${#numbers.formatInteger(totalStudied > 0 ? (totalMastered * 100 / totalStudied) : 0, 1)} + '%'">0%</span>
+                                      th:text="${#numbers.formatInteger(totalStudied gt 0 ? (totalMastered * 100 / totalStudied) : 0, 1)} + '%'">0%</span>
                             </div>
                             <div class="prog-bar-track">
                                 <div class="prog-bar-fill prog-bar-fill--green"
-                                     th:style="'width:' + (totalStudied > 0 ? (totalMastered * 100 / totalStudied) : 0) + '%'"></div>
+                                     th:style="'width:' + (totalStudied gt 0 ? (totalMastered * 100 / totalStudied) : 0) + '%'"></div>
                             </div>
                         </div>
                         <div th:if="${totalStudied == 0}" class="empty-state" style="padding:1rem;">
@@ -227,7 +227,7 @@
                             </div>
                             <div class="prog-bar-track">
                                 <div class="prog-bar-fill"
-                                     th:classappend="${cp.pct >= 80} ? ' prog-bar-fill--green' : (${cp.pct >= 40} ? ' prog-bar-fill--amber' : '')"
+                                     th:classappend="${cp.pct ge 80} ? ' prog-bar-fill--green' : (${cp.pct ge 40} ? ' prog-bar-fill--amber' : '')"
                                      th:style="'width:' + ${cp.pct} + '%'"></div>
                             </div>
                         </div>

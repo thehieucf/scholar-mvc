@@ -68,13 +68,21 @@ public interface UserWordProgressRepository extends JpaRepository<UserWordProgre
     long countStudiedByUserId(@Param("userId") Long userId);
 
     /**
-     * Lấy danh sách tiến độ học gần đây nhất của một user (có kèm vocabulary).
+     * Lấy danh sách tiến độ học gần đây nhất của một user (có kèm vocabulary + category).
+     * Dùng JPQL với Pageable — JOIN FETCH chỉ trên @ManyToOne nên không gây HHH90003004.
      */
     @Query("SELECT u FROM UserWordProgress u JOIN FETCH u.vocabulary v JOIN FETCH v.category " +
            "WHERE u.user.id = :userId AND u.lastStudiedAt IS NOT NULL " +
            "ORDER BY u.lastStudiedAt DESC")
     List<UserWordProgress> findRecentByUserId(@Param("userId") Long userId,
                                               org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * Bước 2: fetch đầy đủ entities theo IDs (JOIN FETCH vocabulary + category).
+     */
+    @Query("SELECT u FROM UserWordProgress u JOIN FETCH u.vocabulary v JOIN FETCH v.category " +
+           "WHERE u.id IN :ids ORDER BY u.lastStudiedAt DESC")
+    List<UserWordProgress> findByIdsWithVocabulary(@Param("ids") List<Long> ids);
 
     /**
      * Đếm số từ theo từng trạng thái học của một user cụ thể.

@@ -55,6 +55,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // LocaleChangeInterceptor phải đăng ký trước AuthInterceptor
         registry.addInterceptor(localeChangeInterceptor());
         // Áp dụng AuthInterceptor cho tất cả các đường dẫn (/**) theo mặc định
-        registry.addInterceptor(authInterceptor);
+        // Loại trừ /error để Spring Boot có thể render trang lỗi mặc định
+        registry.addInterceptor(authInterceptor)
+                .excludePathPatterns("/error", "/error/**");
     }
 }

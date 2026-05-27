@@ -26,6 +26,11 @@ public class AuthInterceptor implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // Nếu response đã được commit, không thể redirect → bỏ qua
+        if (response.isCommitted()) {
+            return false;
+        }
+
         // Lấy URI của request và loại bỏ context path nếu có
         String uri = request.getRequestURI();
         String contextPath = request.getContextPath();
@@ -42,7 +47,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             uri.equals("register") || uri.equals("register.html") ||
             uri.startsWith("css/") || uri.startsWith("js/") ||
             uri.startsWith("images/") || uri.equals("favicon.ico") ||
-            uri.startsWith("webjars/")) {
+            uri.startsWith("webjars/") || uri.startsWith("error")) {
             return true; // Cho phép truy cập tự do
         }
 
@@ -52,7 +57,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         // Chưa đăng nhập → redirect về trang login
         if (userId == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
+            if (!response.isCommitted()) {
+                response.sendRedirect(request.getContextPath() + "/login");
+            }
             return false;
         }
 
@@ -61,7 +68,9 @@ public class AuthInterceptor implements HandlerInterceptor {
             String role = (String) session.getAttribute("userRole");
             if (!"ADMIN".equals(role)) {
                 // User thường cố truy cập admin → redirect về trang chủ user
-                response.sendRedirect(request.getContextPath() + "/");
+                if (!response.isCommitted()) {
+                    response.sendRedirect(request.getContextPath() + "/");
+                }
                 return false;
             }
         }

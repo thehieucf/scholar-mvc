@@ -229,7 +229,7 @@ public class AdminController {
         // Sắp xếp: category có tiến độ cao nhất lên đầu
         categoryProgress.sort((a, b) -> Integer.compare((int) b.get("pct"), (int) a.get("pct")));
 
-        // 20 từ học gần nhất — format lastStudiedAt thành String để tránh dùng #temporals
+        // 20 từ học gần nhất
         List<com.rhythmicscholar.scholar_mvc.model.UserWordProgress> recentWordsRaw =
             userWordProgressRepository.findRecentByUserId(id, PageRequest.of(0, 20));
 
@@ -310,7 +310,7 @@ public class AdminController {
         if (search != null && !search.isBlank()) {
             vocabPage = vocabularyRepository.searchPaged(search.trim(), pageable);
         } else {
-            vocabPage = vocabularyRepository.findAll(pageable);
+            vocabPage = vocabularyRepository.findAllWithCategory(pageable);
         }
 
         model.addAttribute("vocabPage", vocabPage);
