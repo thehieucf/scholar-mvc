@@ -3,7 +3,6 @@ package com.rhythmicscholar.scholar_mvc.controller;
 import com.rhythmicscholar.scholar_mvc.model.Category;
 import com.rhythmicscholar.scholar_mvc.model.QuizQuestion;
 import com.rhythmicscholar.scholar_mvc.model.User;
-import com.rhythmicscholar.scholar_mvc.model.VocabGroup;
 import com.rhythmicscholar.scholar_mvc.model.Vocabulary;
 import com.rhythmicscholar.scholar_mvc.repository.*;
 import jakarta.servlet.http.HttpSession;
@@ -49,12 +48,6 @@ public class AdminController {
 
     @Autowired
     private UserBadgeRepository userBadgeRepository;
-
-    @Autowired
-    private VocabGroupRepository vocabGroupRepository;
-
-    @Autowired
-    private VocabGroupItemRepository vocabGroupItemRepository;
 
     // ----------------------------------------------------------------
     // Helper: get the currently logged-in admin from session
@@ -531,50 +524,4 @@ public class AdminController {
                + (search.isBlank() ? "" : "&search=" + search);
     }
 
-    // ----------------------------------------------------------------
-    // Manage Vocab Groups
-    // ----------------------------------------------------------------
-    @GetMapping("/vocab-groups")
-    public String listVocabGroups(@RequestParam(defaultValue = "0") int page,
-                                  @RequestParam(defaultValue = "10") int size,
-                                  HttpSession session,
-                                  Model model) {
-        User admin = getCurrentAdmin(session);
-        model.addAttribute("admin", admin);
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<VocabGroup> groupPage = vocabGroupRepository.findAll(pageable);
-
-        // Word count per group
-        Map<Long, Long> wordCountMap = new HashMap<>();
-        for (VocabGroup g : groupPage.getContent()) {
-            wordCountMap.put(g.getId(), vocabGroupItemRepository.countByGroupId(g.getId()));
-        }
-
-        // Owner name per group
-        Map<Long, String> ownerNameMap = new HashMap<>();
-        for (VocabGroup g : groupPage.getContent()) {
-            userRepository.findById(g.getUserId()).ifPresent(u -> ownerNameMap.put(g.getId(), u.getFullName()));
-        }
-
-        model.addAttribute("groupPage", groupPage);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("pageSize", size);
-        model.addAttribute("totalPages", groupPage.getTotalPages());
-        model.addAttribute("totalElements", groupPage.getTotalElements());
-        model.addAttribute("wordCountMap", wordCountMap);
-        model.addAttribute("ownerNameMap", ownerNameMap);
-        return "admin/vocab-groups";
-    }
-
-    @PostMapping("/vocab-groups/{id}/delete")
-    public String deleteVocabGroup(@PathVariable Long id,
-                                   @RequestParam(defaultValue = "0") int page,
-                                   @RequestParam(defaultValue = "10") int size,
-                                   RedirectAttributes redirectAttributes) {
-        vocabGroupItemRepository.deleteByGroupId(id);
-        vocabGroupRepository.deleteById(id);
-        redirectAttributes.addFlashAttribute("success", "Vocab group deleted successfully.");
-        return "redirect:/admin/vocab-groups?page=" + page + "&size=" + size;
-    }
 }
