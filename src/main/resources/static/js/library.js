@@ -1,5 +1,12 @@
 /**
- * library.js — Handles interactions for the vocabulary library modal
+ * library.js — Xử lý tương tác cho trang thư viện từ vựng (Library)
+ *
+ * Chức năng chính:
+ *   - openModal(categoryId, ...): Gọi API lấy danh sách từ vựng theo category,
+ *     hiển thị trong modal overlay.
+ *   - closeModal(): Ẩn modal và khôi phục scroll.
+ *   - playWord(text): Phát âm từ tiếng Hàn bằng Web Speech API.
+ *   - getMeaning(word): Trả về nghĩa theo ngôn ngữ hiện tại (en/vi).
  */
 
 /**

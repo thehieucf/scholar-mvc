@@ -31,6 +31,13 @@ public class StudyProgressService {
     // ----------------------------------------------------------------
     // XP thresholds
     // ----------------------------------------------------------------
+    /**
+     * Tính trình độ người dùng dựa trên tổng XP.
+     * Beginner (0–249), Intermediate (250–799), Advanced (800–1999), Master (2000+).
+     *
+     * @param xp Tổng XP hiện tại của người dùng
+     * @return Tên trình độ tương ứng
+     */
     public String calculateLevel(int xp) {
         if (xp >= 2000) return "Master";
         if (xp >= 800)  return "Advanced";
@@ -212,6 +219,10 @@ public class StudyProgressService {
     // ----------------------------------------------------------------
     // Result DTO nội bộ
     // ----------------------------------------------------------------
+    /**
+     * DTO nội bộ chứa kết quả sau khi ghi nhận tiến độ học tập.
+     * Bao gồm XP kiếm được, tổng XP, streak, level, trạng thái học và kết quả đúng/sai.
+     */
     public static class ProgressResult {
         public final int xpGained;
         public final int totalXp;

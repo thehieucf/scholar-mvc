@@ -29,6 +29,10 @@ public class HomeController {
     @Autowired private BadgeRepository badgeRepository;
     @Autowired private UserBadgeRepository userBadgeRepository;
 
+    /**
+     * Hiển thị trang chủ (Dashboard) của người dùng.
+     * Bao gồm: tiến độ hôm nay, mục tiêu hàng ngày, streak, XP và danh sách badge.
+     */
     @GetMapping({"/", "/index", "/index.html"})
     public String index(HttpSession session, Model model) {
         Long userId = (Long) session.getAttribute("userId");
@@ -51,7 +55,7 @@ public class HomeController {
         model.addAttribute("percentage", percentage);
         model.addAttribute("remaining", Math.max(0, dailyGoal - (int) studiedToday));
 
-        // Badge data cho Milestones section
+        // Dữ liệu badge cho phần Milestones
         List<Badge> allBadges = badgeRepository.findAllByOrderByDisplayOrderAsc();
         List<UserBadge> userBadges = userBadgeRepository.findByUserIdWithBadge(userId);
         List<Long> earnedBadgeIds = userBadges.stream().map(ub -> ub.getBadge().getId()).toList();

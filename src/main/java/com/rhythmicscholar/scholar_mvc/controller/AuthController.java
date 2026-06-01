@@ -89,7 +89,7 @@ public class AuthController {
                                  HttpSession session,
                                  HttpServletRequest request,
                                  Model model) {
-        // Check if email is already in use
+        // Kiểm tra email đã được đăng ký chưa
         if (userRepository.findByEmail(email).isPresent()) {
             Locale locale = localeResolver.resolveLocale(request);
             model.addAttribute("error", messageSource.getMessage("register.error.email.taken", null, locale));

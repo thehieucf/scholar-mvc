@@ -144,7 +144,11 @@ public class VocabularyController {
 
     /**
      * API trả về danh sách từ vựng thuộc một danh mục cụ thể.
-     * Trả về Map thay vì entity trực tiếp để kiểm soát chính xác các field được serialize.
+     * Dùng Map thay vì entity trực tiếp để kiểm soát chính xác các field được serialize sang JSON.
+     * Được gọi từ study.html khi user chọn một danh mục để học.
+     *
+     * @param id ID của danh mục cần lấy từ vựng
+     * @return Danh sách từ vựng dưới dạng JSON
      */
     @GetMapping("/api/categories/{id}/vocabularies")
     @ResponseBody
@@ -168,8 +172,11 @@ public class VocabularyController {
     }
 
     /**
-     * API trả về toàn bộ từ vựng trong hệ thống (dùng cho modal tìm kiếm trong vocabulary page).
-     * Endpoint: /api/vocabularies
+     * API trả về toàn bộ từ vựng trong hệ thống (không phân trang).
+     * Dùng cho modal tìm kiếm trong trang vocabulary.html để user thêm từ vào nhóm cá nhân.
+     * <p>Lưu ý: Nếu dữ liệu lớn, nên đổi sang có phân trang để tránh quá tải.</p>
+     *
+     * @return Danh sách tất cả từ vựng dưới dạng JSON
      */
     @GetMapping("/api/vocabularies")
     @ResponseBody

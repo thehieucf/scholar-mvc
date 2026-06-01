@@ -1,22 +1,26 @@
 /**
- * study.js — Two-phase study session
+ * study.js — Phiên học 2 pha (Flashcard + Listening)
  *
- * Flow:
- *   Phase 1 (Flashcard)  →  Transition screen  →  Phase 2 (Listening)  →  Quiz
+ * Luồng học:
+ *   Phase 1 (Flashcard)  →  Màn hình chuyển tiếp  →  Phase 2 (Listening)  →  Quiz Game
  *
- * Phases are shown/hidden by toggling CSS class "hidden".
- * No manual mode toggle — the user always goes through both phases in order.
+ * Các pha được ẩn/hiện bằng cách toggle class CSS "hidden".
+ * Người dùng PHẢI trải qua cả 2 pha theo thứ tự (không có chế độ tự chọn pha).
+ *
+ * Dữ liệu từ server:
+ *   - vocabList: mảng từ vựng được nhúng sẵn từ Thymeleaf vào trang HTML.
+ *   - currentLang: ngôn ngữ hiện tại ('en' hoặc 'vi'), cũng nhúng từ Thymeleaf.
  */
 
-// ─── State ────────────────────────────────────────────────────────────────────
-let flashIndex   = 0;          // current word index in flashcard phase
-let listenIndex  = 0;          // current word index in listening phase
-let listenPlayCount  = 0;
-let listenAnswered   = false;
-let listenCorrect    = 0;
-let listenWrong      = 0;
-let flashXpEarned    = 0;      // XP accumulated during flashcard phase (for transition screen)
-let lastStreakValue  = 0;
+// ─── Biến trạng thái ─────────────────────────────────────────────────────────────────────
+let flashIndex   = 0;          // chỉ số từ hiện tại trong pha flashcard
+let listenIndex  = 0;          // chỉ số từ hiện tại trong pha listening
+let listenPlayCount  = 0;      // số lần đã phát âm từ hiện tại
+let listenAnswered   = false;  // đã trả lời câu listening hiện tại chưa
+let listenCorrect    = 0;      // số câu đúng trong pha listening
+let listenWrong      = 0;      // số câu sai trong pha listening
+let flashXpEarned    = 0;      // XP tích lũy trong pha flashcard (hiển thị trên màn hình chuyển tiếp)
+let lastStreakValue  = 0;      // giá trị streak gần nhất từ API
 
 /**
  * Trả về nghĩa hiển thị theo ngôn ngữ hiện tại.
@@ -31,7 +35,7 @@ function getMeaning(word) {
     return word.englishMeaning;
 }
 
-// ─── DOM: Flashcard phase ─────────────────────────────────────────────────────
+// ─── DOM: Pha Flashcard ─────────────────────────────────────────────────────────────
 const flashContainer   = document.getElementById('flashcard-container');
 const cardKorean       = document.getElementById('card-korean');
 const cardRomaji       = document.getElementById('card-romaji');
@@ -45,13 +49,13 @@ const nextBtnIcon      = document.getElementById('next-btn-icon');
 const currentCountEl   = document.getElementById('current-count');
 const totalCountEl     = document.getElementById('total-count');
 
-// ─── DOM: Transition screen ───────────────────────────────────────────────────
+// ─── DOM: Màn hình chuyển tiếp ───────────────────────────────────────────────────────
 const transitionWordCount = document.getElementById('transition-word-count');
 const transitionTotal     = document.getElementById('transition-total');
 const transitionStreak    = document.getElementById('transition-streak');
 const transitionXp        = document.getElementById('transition-xp');
 
-// ─── DOM: Listening phase ─────────────────────────────────────────────────────
+// ─── DOM: Pha Listening ─────────────────────────────────────────────────────────────
 const listenPlayBtn    = document.getElementById('listen-play-btn');
 const listenIcon       = document.getElementById('listen-icon');
 const soundRings       = document.getElementById('sound-rings');
@@ -72,25 +76,25 @@ const listenTotalEl    = document.getElementById('listen-total-count');
 const listenCorrectEl  = document.getElementById('listen-correct-count');
 const listenWrongEl    = document.getElementById('listen-wrong-count');
 
-// ─── DOM: Shared ──────────────────────────────────────────────────────────────
+// ─── DOM: Dùng chung ────────────────────────────────────────────────────────────────
 const progressBar    = document.getElementById('progress-bar');
 const progressLabel  = document.getElementById('progress-label');
 const scoreLabel     = document.getElementById('score-label');
 const sessionTitle   = document.getElementById('session-title');
 
-// ─── Phase sections ───────────────────────────────────────────────────────────
+// ─── Các phần (section) của từng pha ───────────────────────────────────────────────────
 const phaseFlashcard  = document.getElementById('phase-flashcard');
 const phaseTransition = document.getElementById('phase-transition');
 const phaseListening  = document.getElementById('phase-listening');
 
-// ─── Phase stepper elements ───────────────────────────────────────────────────
+// ─── Phần tử stepper (thanh bước) ─────────────────────────────────────────────────────
 const step1 = document.getElementById('step-1');
 const step2 = document.getElementById('step-2');
 const step3 = document.getElementById('step-3');
 const conn1 = document.getElementById('connector-1');
 const conn2 = document.getElementById('connector-2');
 
-// ─── Speech Synthesis ─────────────────────────────────────────────────────────
+// ─── Tổng hợp giọng nói (Speech Synthesis) ───────────────────────────────────────────
 const synth = window.speechSynthesis;
 let koreanVoice = null;
 
@@ -102,10 +106,11 @@ if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
 loadVoices();
 
 /**
- * Speak a Korean word.
- * @param {Event|null} e            - click event to stop propagation (flashcard mode)
- * @param {string}     word         - Korean text to speak
- * @param {boolean}    withAnimation - animate the listening button/rings
+ * Phát âm một từ tiếng Hàn bằng Web Speech API.
+ *
+ * @param {Event|null} e             - Sự kiện click (để gọi stopPropagation, tránh lật thẻ)
+ * @param {string}     word          - Từ tiếng Hàn cần đọc
+ * @param {boolean}    withAnimation - Nếu true, hiển thị animation sóng âm trên nút play
  */
 function speak(e, word, withAnimation) {
     if (e) e.stopPropagation();
@@ -131,13 +136,16 @@ function speak(e, word, withAnimation) {
     synth.speak(utt);
 }
 
-/** Called by the speak buttons on the flashcard */
+/** Được gọi khi user nhấn nút loa trên thẻ Flashcard. */
 function speakCurrentWord(e) {
     if (vocabList.length === 0) return;
     speak(e, vocabList[flashIndex].koreanWord, false);
 }
 
-/** Called by the big play button in listening phase */
+/**
+ * Được gọi khi user bấm nút phát âm lớn trong Listening phase.
+ * Sau ≥2 lần bấm, hiện gợi ý Romaji giúp người học đọc đúng chính tả.
+ */
 function speakListenWord() {
     if (vocabList.length === 0) return;
     listenPlayCount++;
@@ -146,7 +154,7 @@ function speakListenWord() {
     speak(null, vocabList[listenIndex].koreanWord, true);
 }
 
-// ─── Phase helpers ────────────────────────────────────────────────────────────
+// ─── Hàm hỗ trợ chuyển pha ──────────────────────────────────────────────────────────
 function showOnly(section) {
     [phaseFlashcard, phaseTransition, phaseListening].forEach(el => {
         if (el) el.classList.add('hidden');
@@ -155,7 +163,7 @@ function showOnly(section) {
 }
 
 function setStepperPhase(phase) {
-    // Reset all
+    // Reset tất cả bước
     [step1, step2, step3].forEach(s => { if (s) { s.classList.remove('active', 'done'); } });
     [conn1, conn2].forEach(c => { if (c) c.classList.remove('done'); });
 
@@ -181,7 +189,7 @@ function updateProgressBar(index, total) {
     if (scoreLabel)    scoreLabel.textContent = pct + '%';
 }
 
-// ─── PHASE 1: FLASHCARD ───────────────────────────────────────────────────────
+// ─── PHA 1: FLASHCARD ─────────────────────────────────────────────────────────────
 function renderFlashcard() {
     if (vocabList.length === 0) return;
     const word = vocabList[flashIndex];
@@ -214,7 +222,8 @@ function renderFlashcard() {
     updateProgressBar(flashIndex, vocabList.length);
 }
 
-// Flip on click
+// Lật thẻ khi click vào flashcard.
+// Khi lật lần đầu (chưa flipped), gọi API ghi nhận tiến độ học.
 flashContainer.addEventListener('click', () => {
     const wasFlipped = flashContainer.classList.contains('is-flipped');
     flashContainer.classList.toggle('is-flipped');
@@ -232,12 +241,12 @@ nextBtn.addEventListener('click', () => {
         flashIndex++;
         renderFlashcard();
     } else {
-        // Done with flashcards → show transition screen
+        // Hoàn thành flashcard → hiển thị màn hình chuyển tiếp
         enterTransition();
     }
 });
 
-// ─── TRANSITION SCREEN ────────────────────────────────────────────────────────
+// ─── MÀN HÌNH CHUYỂN TIẾPP ────────────────────────────────────────────────────────
 function enterTransition() {
     synth.cancel();
     showOnly(phaseTransition);
@@ -250,7 +259,7 @@ function enterTransition() {
     if (transitionStreak)    transitionStreak.textContent    = lastStreakValue;
     if (transitionXp)        transitionXp.textContent        = '+' + flashXpEarned;
 
-    // Reset progress bar to 0 for listening phase
+    // Reset thanh tiến trình về 0 cho pha listening
     if (progressBar)   progressBar.style.width = '0%';
     if (progressLabel) progressLabel.textContent = '0 of ' + n + ' words';
     if (scoreLabel)    scoreLabel.textContent = '0%';
@@ -271,26 +280,29 @@ function skipToQuiz() {
     window.location.href = '/game?vocabIds=' + ids;
 }
 
-// ─── PHASE 2: LISTENING ───────────────────────────────────────────────────────
+// ─── PHA 2: LISTENING ──────────────────────────────────────────────────────────────
 /**
- * Build exactly 4 answer choices: 1 correct + up to 3 distractors.
- * If vocabList is too small, fills remaining slots with fallback options
- * so no button ever has empty/undefined text.
+ * Xây dựng mảng 4 đáp án: 1 đúng + 3 sai (distractor).
+ * Distractor được chọn ngẫu nhiên từ vocabList (trừ đáp án đúng).
+ * Nếu vocabList nhỏ hơn 4, bổ sung bằng placeholder để luôn có đủ 4 nút.
+ *
+ * @param {Object} word - Từ vựng hiện tại (đáp án đúng)
+ * @returns {Array<{text: string, isCorrect: boolean}>} Mảng 4 đáp án đã xáo trộn
  */
 function buildChoices(word) {
     const correctMeaning = getMeaning(word);
-    // Pool of distractor meanings — filter out the correct answer
+    // Tạo pool đáp án sai — loại bỏ đáp án đúng
     const distractorPool = vocabList
         .filter(v => getMeaning(v) && getMeaning(v) !== correctMeaning)
         .map(v => getMeaning(v))
-        // deduplicate
+        // loại bỏ trùng lặp
         .filter((m, i, arr) => arr.indexOf(m) === i)
         .sort(() => Math.random() - 0.5);
 
-    // Take up to 3 distractors
+    // Lấy tối đa 3 đáp án sai
     const distractors = distractorPool.slice(0, 3);
 
-    // If we still don't have 3, pad with generic fallbacks
+    // Nếu chưa đủ 3, bổ sung bằng giá trị mặc định
     const fallbacks = ['(unknown)', '(other)', '(none)'];
     while (distractors.length < 3) {
         distractors.push(fallbacks[distractors.length]);
@@ -308,7 +320,7 @@ function renderListeningCard() {
     if (vocabList.length === 0) return;
     const word = vocabList[listenIndex];
 
-    // Reset per-word state
+    // Reset trạng thái cho từng từ
     listenPlayCount = 0;
     listenAnswered  = false;
     if (playCountEl)  playCountEl.textContent = '0';
@@ -322,12 +334,9 @@ function renderListeningCard() {
     soundRings.classList.remove('playing');
     listenIcon.textContent = 'volume_up';
 
-    // Build choices
+    // Xây dựng các lựa chọn đáp án
     answerChoices.innerHTML = '';
     const choices = buildChoices(word);
-    
-    console.log('Building answer choices:', choices);
-    console.log('Answer choices container:', answerChoices);
     
     choices.forEach((choice, index) => {
         const btn = document.createElement('button');
@@ -340,10 +349,9 @@ function renderListeningCard() {
             handleAnswer(this, choice.isCorrect, word);
         });
         answerChoices.appendChild(btn);
-        console.log('Created button:', btn, 'with class:', btn.className, 'computed style:', window.getComputedStyle(btn).display);
     });
 
-    // Nav
+    // Điều hướng (Navigation)
     listenPrevBtn.disabled = listenIndex === 0;
     listenPrevBtn.style.opacity = listenIndex === 0 ? '0.35' : '1';
     listenPrevBtn.style.pointerEvents = listenIndex === 0 ? 'none' : 'auto';
@@ -352,12 +360,12 @@ function renderListeningCard() {
     listenNextIcon.textContent = isLast ? 'quiz' : 'arrow_forward';
     listenNextBtn.style.background = isLast ? '#6366f1' : '#059669';
 
-    // Stats
+    // Thống kê
     if (listenCurrentEl) listenCurrentEl.textContent = listenIndex + 1;
     if (listenTotalEl)   listenTotalEl.textContent   = vocabList.length;
     updateProgressBar(listenIndex, vocabList.length);
 
-    // Auto-play after short delay
+    // Tự động phát âm sau một khoảng ngắn
     setTimeout(speakListenWord, 450);
 }
 
@@ -410,14 +418,14 @@ listenNextBtn.addEventListener('click', () => {
         listenIndex++;
         renderListeningCard();
     } else {
-        // Done with listening → go to Quiz
+        // Hoàn thành listening → chuyển sang Quiz
         setStepperPhase(3);
         const ids = vocabList.map(v => v.id).join(',');
         window.location.href = '/game?vocabIds=' + ids;
     }
 });
 
-// ─── Progress API ─────────────────────────────────────────────────────────────
+// ─── API ghi nhận tiến độ ─────────────────────────────────────────────────────────────
 function recordProgress(vocabId) {
     if (!vocabId) return;
     fetch('/api/study/progress?vocabId=' + vocabId, { method: 'POST' })
@@ -436,7 +444,7 @@ function recordProgress(vocabId) {
         .catch(() => {});
 }
 
-// ─── Toast notifications ──────────────────────────────────────────────────────
+// ─── Thông báo toast ──────────────────────────────────────────────────────────────
 function showXpToast(xp) {
     const t = document.createElement('div');
     t.className = 'fixed top-20 right-4 z-50 flex items-center gap-2 bg-secondary text-on-secondary px-4 py-2 rounded-full shadow-lg text-sm font-bold';
@@ -446,6 +454,7 @@ function showXpToast(xp) {
     setTimeout(() => t.remove(), 2000);
 }
 
+/** Hiển thị thông báo mở khóa badge mới ở giữa dưới màn hình, tự biến mất sau 3.6 giây. */
 function showBadgeToast(badge) {
     const t = document.createElement('div');
     t.className = 'fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-white border border-amber-200 shadow-xl px-5 py-4 rounded-2xl max-w-xs w-full';
@@ -461,7 +470,7 @@ function showBadgeToast(badge) {
     setTimeout(() => t.remove(), 3600);
 }
 
-// ─── Init ─────────────────────────────────────────────────────────────────────
+// ─── Khởi tạo ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     if (vocabList.length === 0) return;
     showOnly(phaseFlashcard);

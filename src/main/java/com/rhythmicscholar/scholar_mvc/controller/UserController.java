@@ -135,8 +135,12 @@ public class UserController {
     }
 
     // ----------------------------------------------------------------
-    // Profile
+    // Trang hồ sơ cá nhân
     // ----------------------------------------------------------------
+    /**
+     * Hiển thị trang hồ sơ cá nhân của người dùng đang đăng nhập.
+     * Bao gồm thông tin cá nhân, danh sách badge đã đạt và tất cả badge (locked/unlocked).
+     */
     @GetMapping({"/profile", "/profile.html"})
     public String profile(HttpSession session, Model model) {
         Long userId = (Long) session.getAttribute("userId");
@@ -157,8 +161,18 @@ public class UserController {
     }
 
     // ----------------------------------------------------------------
-    // Progress
+    // Trang tiến độ học tập
     // ----------------------------------------------------------------
+    /**
+     * Hiển thị tiến độ học tập của người dùng theo từng danh mục từ vựng.
+     * Bao gồm:
+     * <ul>
+     *   <li>Phần trăm hoàn thành từng category</li>
+     *   <li>Tổng số từ đã học và tổng số từ</li>
+     *   <li>Số từ MASTERED</li>
+     *   <li>Danh sách badge và xếp hạng (rank)</li>
+     * </ul>
+     */
     @GetMapping({"/progress", "/progress.html"})
     public String progress(HttpSession session, Model model) {
         Long userId = (Long) session.getAttribute("userId");
@@ -182,12 +196,12 @@ public class UserController {
 
         List<UserProgress> progressList = userProgressRepository.findByUserId(userId);
 
-        // Badge data
+        // Dữ liệu badge của user
         List<UserBadge> userBadges = userBadgeRepository.findByUserIdWithBadge(userId);
         List<Badge> allBadges = badgeRepository.findAllByOrderByDisplayOrderAsc();
         List<Long> earnedBadgeIds = userBadges.stream().map(ub -> ub.getBadge().getId()).toList();
 
-        // Rank
+        // Tính thứ hạng (rank) của user dựa trên XP
         long rank = userRepository.countUsersWithMoreXp(user != null && user.getTotalXp() != null ? user.getTotalXp() : 0) + 1;
 
         model.addAttribute("user", user);
@@ -204,8 +218,12 @@ public class UserController {
     }
 
     // ----------------------------------------------------------------
-    // Leaderboard
+    // Bảng xếp hạng
     // ----------------------------------------------------------------
+    /**
+     * Hiển thị bảng xếp hạng top 20 người dùng có XP cao nhất.
+     * Cũng hiển thị rank của người dùng hiện tại và số badge mỗi user.
+     */
     @GetMapping({"/leaderboard", "/leaderboard.html"})
     public String leaderboard(HttpSession session, Model model) {
         Long userId = (Long) session.getAttribute("userId");
@@ -233,8 +251,16 @@ public class UserController {
     }
 
     // ----------------------------------------------------------------
-    // Update Profile
+    // Cập nhật hồ sơ cá nhân
     // ----------------------------------------------------------------
+    /**
+     * Xử lý cập nhật thông tin hồ sơ cá nhân (tên, email, avatar).
+     * Avatar chỉ được cập nhật nếu URL bắt đầu bằng http:// hoặc https://.
+     *
+     * @param fullName Tên hiển thị mới
+     * @param email    Email mới
+     * @param avatarUrl URL ảnh đại diện (tùy chọn)
+     */
     @PostMapping("/profile/update")
     public String updateProfile(HttpSession session,
                                 @RequestParam String fullName,
@@ -259,8 +285,12 @@ public class UserController {
     }
 
     // ----------------------------------------------------------------
-    // Change Password
+    // Đổi mật khẩu
     // ----------------------------------------------------------------
+    /**
+     * Hiển thị trang đổi mật khẩu.
+     * Redirect về /login nếu chưa đăng nhập.
+     */
     @GetMapping({"/change-password"})
     public String changePasswordPage(HttpSession session, Model model) {
         Long userId = (Long) session.getAttribute("userId");
@@ -270,6 +300,19 @@ public class UserController {
         return "change-password";
     }
 
+    /**
+     * Xử lý yêu cầu đổi mật khẩu.
+     * Kiểm tra:
+     * <ul>
+     *   <li>Mật khẩu hiện tại phải khớp</li>
+     *   <li>Mật khẩu mới và xác nhận phải giống nhau</li>
+     *   <li>Mật khẩu mới phải có ít nhất 6 ký tự</li>
+     * </ul>
+     *
+     * @param currentPassword  Mật khẩu hiện tại của user
+     * @param newPassword      Mật khẩu mới muốn đổi
+     * @param confirmPassword  Xác nhận lại mật khẩu mới
+     */
     @PostMapping("/change-password")
     public String handleChangePassword(HttpSession session,
                                        @RequestParam String currentPassword,

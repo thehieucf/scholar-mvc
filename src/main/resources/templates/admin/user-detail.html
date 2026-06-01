@@ -16,21 +16,21 @@
         .card__title       { font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--admin-text-muted); margin-bottom:1rem; display:flex; align-items:center; gap:.4rem; }
         .card__title .material-symbols-outlined { font-size:16px; }
 
-        /* Profile header */
+        /* Phần đầu hồ sơ */
         .profile-header    { display:flex; align-items:center; gap:1.25rem; margin-bottom:1.5rem; background:var(--admin-surface); border:1px solid var(--admin-border); border-radius:12px; padding:1.5rem; }
         .profile-avatar    { width:72px; height:72px; border-radius:50%; object-fit:cover; border:3px solid var(--admin-primary-light); flex-shrink:0; }
         .profile-name      { font-size:1.25rem; font-weight:700; color:var(--admin-text); }
         .profile-email     { font-size:.875rem; color:var(--admin-text-muted); margin-top:2px; }
         .profile-meta      { display:flex; gap:.5rem; margin-top:.5rem; flex-wrap:wrap; }
 
-        /* Stat mini cards */
+        /* Thẻ thống kê nhỏ */
         .mini-stat         { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1rem; background:#f8fafc; border-radius:10px; text-align:center; }
         .mini-stat__value  { font-size:1.6rem; font-weight:800; color:var(--admin-text); line-height:1; }
         .mini-stat__label  { font-size:.7rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--admin-text-muted); margin-top:4px; }
         .mini-stats-row    { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; margin-bottom:1.25rem; }
         @media(max-width:600px){ .mini-stats-row{ grid-template-columns:repeat(2,1fr); } }
 
-        /* Progress bar */
+        /* Thanh tiến trình */
         .prog-bar-wrap     { margin-bottom:.75rem; }
         .prog-bar-header   { display:flex; justify-content:space-between; align-items:center; margin-bottom:.3rem; font-size:.8rem; }
         .prog-bar-label    { font-weight:600; color:var(--admin-text); }
@@ -41,7 +41,7 @@
         .prog-bar-fill--amber  { background:#d97706; }
         .prog-bar-fill--red    { background:#dc2626; }
 
-        /* Status distribution */
+        /* Phân bổ trạng thái */
         .status-row        { display:flex; gap:.75rem; margin-bottom:1.25rem; }
         .status-chip       { flex:1; padding:.75rem; border-radius:10px; text-align:center; }
         .status-chip__val  { font-size:1.4rem; font-weight:800; }
@@ -50,7 +50,7 @@
         .chip--mastered    { background:#dcfce7; color:#15803d; }
         .chip--today       { background:#fef3c7; color:#b45309; }
 
-        /* Recent words table */
+        /* Bảng từ vựng gần đây */
         .word-table        { width:100%; border-collapse:collapse; font-size:.85rem; }
         .word-table th     { background:#f8fafc; padding:.6rem 1rem; text-align:left; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--admin-text-muted); border-bottom:1px solid var(--admin-border); }
         .word-table td     { padding:.7rem 1rem; border-bottom:1px solid var(--admin-border); color:var(--admin-text); vertical-align:middle; }
@@ -61,12 +61,12 @@
         .pill--mastered    { background:#dcfce7; color:#15803d; }
         .pill--new         { background:#f1f5f9; color:#64748b; }
 
-        /* Badge chips */
+        /* Huy hiệu dạng chip */
         .badge-grid        { display:flex; flex-wrap:wrap; gap:.5rem; }
         .badge-chip        { display:flex; align-items:center; gap:.4rem; padding:.35rem .75rem; background:#f8fafc; border:1px solid var(--admin-border); border-radius:99px; font-size:.78rem; font-weight:600; color:var(--admin-text); }
         .badge-chip__emoji { font-size:1rem; }
 
-        /* Empty state */
+        /* Trạng thái rỗng */
         .empty-state       { text-align:center; padding:2.5rem 1rem; color:var(--admin-text-muted); }
         .empty-state .material-symbols-outlined { font-size:2.5rem; display:block; margin-bottom:.5rem; opacity:.4; }
     </style>
@@ -79,13 +79,13 @@
     <div class="admin-main">
         <div class="admin-content">
 
-            <!-- Back link -->
+            <!-- Liên kết quay lại -->
             <a th:href="@{/admin/users}" style="display:inline-flex;align-items:center;gap:.35rem;font-size:.875rem;font-weight:600;color:var(--admin-text-muted);text-decoration:none;margin-bottom:1.25rem;">
                 <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
                 Back to Users
             </a>
 
-            <!-- ── Profile Header ─────────────────────────────────────── -->
+            <!-- ── Phần đầu hồ sơ ─────────────────────────────────────── -->
             <div class="profile-header">
                 <img class="profile-avatar"
                      th:src="${target.avatarUrl != null and !target.avatarUrl.isEmpty()}
@@ -108,7 +108,7 @@
                         </span>
                     </div>
                 </div>
-                <!-- XP + Streak summary -->
+                <!-- Tóm tắt XP + Streak -->
                 <div style="display:flex;gap:1rem;flex-shrink:0;">
                     <div class="mini-stat" style="min-width:80px;">
                         <div class="mini-stat__value" style="color:#1d4ed8;" th:text="${target.totalXp ?: 0}">0</div>
@@ -125,7 +125,7 @@
                 </div>
             </div>
 
-            <!-- ── Overview Stats ─────────────────────────────────────── -->
+            <!-- ── Thống kê tổng quan ─────────────────────────────────────── -->
             <div class="mini-stats-row">
                 <div class="mini-stat">
                     <div class="mini-stat__value" th:text="${totalStudied}">0</div>
@@ -147,10 +147,10 @@
 
             <div class="detail-grid">
 
-                <!-- ── Left column ──────────────────────────────────── -->
+                <!-- ── Cột trái ──────────────────────────────────── -->
                 <div style="display:flex;flex-direction:column;gap:1.25rem;">
 
-                    <!-- Word Status Distribution -->
+                    <!-- Phân bổ trạng thái từ vựng -->
                     <div class="card">
                         <div class="card__title">
                             <span class="material-symbols-outlined">bar_chart</span>
@@ -171,7 +171,7 @@
                             </div>
                         </div>
 
-                        <!-- Mastery progress bar -->
+                        <!-- Thanh tiến trình thành thạo -->
                         <div class="prog-bar-wrap" th:if="${totalStudied gt 0}">
                             <div class="prog-bar-header">
                                 <span class="prog-bar-label">Mastery rate</span>
@@ -189,7 +189,7 @@
                         </div>
                     </div>
 
-                    <!-- Badges -->
+                    <!-- Huy hiệu -->
                     <div class="card">
                         <div class="card__title">
                             <span class="material-symbols-outlined">emoji_events</span>
@@ -211,7 +211,7 @@
 
                 </div>
 
-                <!-- ── Right column: Category Progress ──────────────── -->
+                <!-- ── Cột phải: Tiến độ theo danh mục ──────────────── -->
                 <div class="card">
                     <div class="card__title">
                         <span class="material-symbols-outlined">category</span>
@@ -240,7 +240,7 @@
 
             </div><!-- /.detail-grid -->
 
-            <!-- ── Recent Words ───────────────────────────────────────── -->
+            <!-- ── Từ vựng học gần đây ───────────────────────────────────────── -->
             <div class="card">
                 <div class="card__title">
                     <span class="material-symbols-outlined">history</span>

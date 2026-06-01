@@ -1,10 +1,18 @@
 /**
- * game.js — Handles logic for the Korean vocabulary quiz game
+ * game.js — Logic cho trang Quiz game tiếng Hàn
+ *
+ * Luồng hoạt động:
+ *   1. Server nhúng dữ liệu câu hỏi (serverQuestions) vào HTML.
+ *   2. Script này transform serverQuestions → mảng questions đã xáo trộn đáp án.
+ *   3. renderQuestion() hiển thị từng câu hỏi và selectAnswer() xử lý kết quả.
+ *   4. showResult() hiển thị màn hình kết quả cuối cùng.
  */
 
+// Lấy dữ liệu câu hỏi từ server (serverQuestions được nhúng vào HTML bởi Thymeleaf)
 let questions = [];
 
 if (typeof serverQuestions !== 'undefined' && serverQuestions.length > 0) {
+    // Transform serverQuestions (dữ liệu thô) → questions (dữ liệu đã xử lý cho UI)
     questions = serverQuestions.map(q => {
         const isVi = typeof currentLang !== 'undefined' && currentLang === 'vi';
 
@@ -18,24 +26,24 @@ if (typeof serverQuestions !== 'undefined' && serverQuestions.length > 0) {
         const wrong2 = (isVi && q.wrongAnswer2Vi) ? q.wrongAnswer2Vi : q.wrongAnswer2;
         const wrong3 = (isVi && q.wrongAnswer3Vi) ? q.wrongAnswer3Vi : q.wrongAnswer3;
 
+        // Gộp 4 đáp án và xáo trộn ngẫu nhiên (thuật toán Fisher-Yates)
         const options = [correctDisplay, wrong1, wrong2, wrong3];
-        // Shuffle options
         for (let i = options.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [options[i], options[j]] = [options[j], options[i]];
         }
         return {
-            kr: q.koreanText,
-            rom: q.romaji,
-            type: q.questionType,
-            topic: q.topic,
-            options: options,
-            correct: options.indexOf(correctDisplay),
-            vocabId: q.vocabularyId
+            kr: q.koreanText,         // Từ/câu hỏi tiếng Hàn
+            rom: q.romaji,            // Phiên âm Latin
+            type: q.questionType,     // Loại câu hỏi (VD: "Translate This Word")
+            topic: q.topic,           // Chủ đề (VD: "Food · 음식")
+            options: options,         // Mảng 4 đáp án đã xáo trộn
+            correct: options.indexOf(correctDisplay), // Vị trí đáp án đúng
+            vocabId: q.vocabularyId   // ID từ vựng để gọi API lưu kết quả
         };
     });
 } else {
-    // Fallback to static data if no server questions (for testing)
+    // Dữ liệu mẫu khi chưa có server questions (dùng để test giao diện)
     questions = [
         {
             kr: "저는 학교에 갑니다.", rom: "Jeoneun hakgyoe gamnida.",
@@ -47,12 +55,12 @@ if (typeof serverQuestions !== 'undefined' && serverQuestions.length > 0) {
     ];
 }
 
-// Game state variables
-let current = 0,         // Current question index
-    correctCount = 0,    // Number of correct answers
-    wrongCount = 0,      // Number of wrong answers
-    xpEarned = 0,        // XP earned
-    answered = false;    // Whether current question has been answered
+// Biến trạng thái game
+let current = 0,         // Chỉ số câu hỏi hiện tại
+    correctCount = 0,    // Số câu đúng
+    wrongCount = 0,      // Số câu sai
+    xpEarned = 0,        // Tổng XP kiếm được (+20 mỗi câu đúng)
+    answered = false;    // Đã trả lời câu hiện tại chưa (tránh click đúp)
 
 /**
  * Gọi API lưu kết quả một câu trả lời quiz.
@@ -108,7 +116,8 @@ function showBadgeToast(emoji, name, description) {
 }
 
 /**
- * Render the current question on screen
+ * Render câu hỏi hiện tại lên màn hình.
+ * Bao gồm: từ tiếng Hàn, romaji, loại câu hỏi, topic, 4 nút đáp án.
  */
 function renderQuestion() {
     const q = questions[current];
@@ -141,7 +150,15 @@ function renderQuestion() {
 }
 
 /**
- * Handle answer selection
+ * Xử lý khi người dùng chọn một đáp án.
+ * - Tô màu xanh/đỏ cho các nút
+ * - Cập nhật số liệu (correctCount, wrongCount, xpEarned)
+ * - Gọi API lưu kết quả
+ * - Sau 1.4s tự động sang câu tiếp hoặc hiển thị trang kết quả
+ *
+ * @param {number} idx        - Chỉ số đáp án user chọn (0-3)
+ * @param {number} correctIdx - Chỉ số đáp án đúng
+ * @param {HTMLElement} clickedBtn - Nút user vừa click
  */
 function selectAnswer(idx, correctIdx, clickedBtn) {
     if (answered) return;
@@ -186,7 +203,8 @@ function selectAnswer(idx, correctIdx, clickedBtn) {
 }
 
 /**
- * Show the final results screen
+ * Hiển thị màn hình kết quả cuối quiz.
+ * Thực tế có 3 mức emoji: 🎉 (≥80%), 💪 (≥50%), 📖 (< 50%)
  */
 function showResult() {
     const main = document.querySelector('main');
@@ -225,12 +243,13 @@ function showResult() {
     }
 }
 
+/** Tải lại trang để chơi lại quiz (reset toàn bộ state). */
 function restartQuiz() {
     location.reload();
 }
 
 /**
- * Play audio for the current question
+ * Phát âm câu hỏi tiếng Hàn hiện tại bằng Web Speech API.
  */
 function playAudio() {
     const q = questions[current];
@@ -241,9 +260,11 @@ function playAudio() {
     }
 }
 
-// Initial render
+// Khởi tạo: render câu hỏi đầu tiên khi DOM đã sẵn sàng.
 document.addEventListener('DOMContentLoaded', () => {
     renderQuestion();
+    // Bind onclick bằng JavaScript thay vì attribute trong HTML
+    // → tương thích hơn với Content Security Policy
     const playBtn = document.querySelector('button[onclick="playAudio()"]');
     if (playBtn) {
         playBtn.removeAttribute('onclick');

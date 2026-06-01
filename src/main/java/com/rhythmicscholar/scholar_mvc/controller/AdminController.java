@@ -24,8 +24,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Controller for the Admin area.
- * All routes are prefixed with /admin — uses its own CSS/JS, independent of the user area.
+ * Controller quản lý khu vực Admin.
+ * Tất cả route được prefix bằng /admin — dùng CSS/JS riêng, độc lập với khu vực user.
+ *
+ * <p>Các chức năng bao gồm:</p>
+ * <ul>
+ *   <li>Dashboard: thống kê tổng quan và biểu đồ</li>
+ *   <li>Quản lý người dùng: xem danh sách, xóa, reset mật khẩu</li>
+ *   <li>Quản lý từ vựng: thêm, sửa, xóa từ</li>
+ *   <li>Quản lý danh mục: thêm, sửa, xóa category</li>
+ *   <li>Quản lý câu hỏi quiz: xem và xóa câu hỏi</li>
+ * </ul>
  */
 @Controller
 @RequestMapping("/admin")
@@ -50,8 +59,15 @@ public class AdminController {
     private UserBadgeRepository userBadgeRepository;
 
     // ----------------------------------------------------------------
-    // Helper: get the currently logged-in admin from session
+    // Helper: lấy thông tin admin đang đăng nhập từ session
     // ----------------------------------------------------------------
+    /**
+     * Lấy đối tượng User của admin đang đăng nhập từ session.
+     * Trả về null nếu chưa đăng nhập (session chưa có userId).
+     *
+     * @param session HTTP session hiện tại
+     * @return User admin hoặc null nếu chưa đăng nhập
+     */
     private User getCurrentAdmin(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) return null;
@@ -61,6 +77,15 @@ public class AdminController {
     // ----------------------------------------------------------------
     // Dashboard
     // ----------------------------------------------------------------
+    /**
+     * Trang tổng quan (Dashboard) cho admin.
+     * Hiển thị:
+     * - Tổng số user, từ vựng, admin
+     * - 6 user đăng ký gần nhất
+     * - Biểu đồ 1: Active learners (số user học) trong 7 ngày qua
+     * - Biểu đồ 2: Phân bổ trạng thái học từ (NEW / LEARNING / MASTERED)
+     * - Biểu đồ 3: Phân bổ trình độ user (Beginner / Intermediate / v.v.)
+     */
     @GetMapping({"/", "/dashboard"})
     public String dashboard(HttpSession session, Model model) {
         User admin = getCurrentAdmin(session);
@@ -76,11 +101,11 @@ public class AdminController {
         model.addAttribute("adminCount", adminCount);
         model.addAttribute("userCount", userCount);
 
-        // 6 most recently registered users
+        // Lấy 6 user đăng ký gần đây nhất
         List<User> recentUsers = userRepository.findTop6ByOrderByIdDesc();
         model.addAttribute("recentUsers", recentUsers);
 
-        // Check which recent users studied today
+        // Kiểm tra user nào đã học hôm nay
         LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
         Map<Long, Boolean> studiedTodayMap = new HashMap<>();
         for (User u : recentUsers) {
@@ -89,7 +114,7 @@ public class AdminController {
         }
         model.addAttribute("studiedTodayMap", studiedTodayMap);
 
-        // ---- Chart 1: Active learners per day (last 7 days) ----
+        // ---- Biểu đồ 1: Số người học mỗi ngày (7 ngày gần nhất) ----
         List<String> chartDayLabels = new ArrayList<>();
         List<Long>   chartDayCounts = new ArrayList<>();
         for (int i = 6; i >= 0; i--) {
@@ -103,7 +128,7 @@ public class AdminController {
         model.addAttribute("chartDayLabels", chartDayLabels);
         model.addAttribute("chartDayCounts", chartDayCounts);
 
-        // ---- Chart 2: Word status distribution (NEW / LEARNING / MASTERED) ----
+        // ---- Biểu đồ 2: Phân bổ trạng thái từ vựng (NEW / LEARNING / MASTERED) ----
         List<Object[]> statusRows = userWordProgressRepository.countByLearningStatus();
         Map<String, Long> statusMap = new HashMap<>();
         statusMap.put("NEW", 0L);
@@ -116,7 +141,7 @@ public class AdminController {
         model.addAttribute("statusLearning", statusMap.get("LEARNING"));
         model.addAttribute("statusMastered", statusMap.get("MASTERED"));
 
-        // ---- Chart 3: Doughnut — User level distribution ----
+        // ---- Biểu đồ 3: Doughnut — Phân bổ trình độ người dùng ----
         List<Object[]> levelRows = userRepository.countByLevel();
         List<String> chartLevelLabels = new ArrayList<>();
         List<Long>   chartLevelCounts = new ArrayList<>();
@@ -131,8 +156,15 @@ public class AdminController {
     }
 
     // ----------------------------------------------------------------
-    // Manage Users
+    // Quản lý người dùng
     // ----------------------------------------------------------------
+    /**
+     * Hiển thị danh sách người dùng với phân trang và tìm kiếm.
+     *
+     * @param page   Số trang hiện tại (bắt đầu từ 0)
+     * @param size   Số bản ghi mỗi trang (mặc định 10)
+     * @param search Từ khóa tìm kiếm theo tên hoặc email (có thể trống)
+     */
     @GetMapping("/users")
     public String listUsers(@RequestParam(defaultValue = "0") int page,
                             @RequestParam(defaultValue = "10") int size,
@@ -159,6 +191,12 @@ public class AdminController {
         return "admin/users";
     }
 
+    /**
+     * Xóa một người dùng theo ID.
+     * Admin không thể tự xóa tài khoản của chính mình.
+     *
+     * @param id ID của user cần xóa
+     */
     @PostMapping("/users/{id}/delete")
     public String deleteUser(@PathVariable Long id,
                              @RequestParam(defaultValue = "0") int page,
@@ -176,8 +214,15 @@ public class AdminController {
     }
 
     // ----------------------------------------------------------------
-    // User Detail — learning status
+    // Chi tiết người dùng — trạng thái học tập
     // ----------------------------------------------------------------
+    /**
+     * Trang chi tiết một người dùng cụ thể.
+     * Hiển thị: thống kê học tập, tiến độ theo từng category,
+     * 20 từ học gần nhất, và danh sách badge đã đạt được.
+     *
+     * @param id ID của user cần xem chi tiết
+     */
     @GetMapping("/users/{id}")
     public String userDetail(@PathVariable Long id,
                              HttpSession session,
@@ -247,7 +292,7 @@ public class AdminController {
         LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
         long studiedToday = userWordProgressRepository.countStudiedToday(id, startOfToday);
 
-        // Format joined date
+        // Định dạng ngày tham gia
         String joinedDate = target.getCreatedAt() != null
             ? target.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy"))
             : "—";
@@ -265,6 +310,12 @@ public class AdminController {
         return "admin/user-detail";
     }
 
+    /**
+     * Reset mật khẩu của một user về mặc định "123456789".
+     * Admin không thể reset mật khẩu của chính mình.
+     *
+     * @param id ID của user cần reset mật khẩu
+     */
     @PostMapping("/users/{id}/reset-password")
     public String resetPassword(@PathVariable Long id,
                                 @RequestParam(defaultValue = "0") int page,
@@ -287,8 +338,16 @@ public class AdminController {
     }
 
     // ----------------------------------------------------------------
-    // Manage Vocabulary
+    // Quản lý từ vựng
     // ----------------------------------------------------------------
+    /**
+     * Hiển thị danh sách từ vựng với phân trang và tìm kiếm.
+     * Luôn JOIN FETCH category để tránh LazyInitializationException.
+     *
+     * @param page   Số trang hiện tại (bắt đầu từ 0)
+     * @param size   Số bản ghi mỗi trang (mặc định 10)
+     * @param search Từ khóa tìm kiếm (tiếng Hàn, tiếng Anh hoặc romaji)
+     */
     @GetMapping("/vocabulary")
     public String listVocabulary(@RequestParam(defaultValue = "0") int page,
                                  @RequestParam(defaultValue = "10") int size,
@@ -316,6 +375,10 @@ public class AdminController {
         return "admin/vocabulary";
     }
 
+    /**
+     * Thêm một từ vựng mới vào database.
+     * Yêu cầu bắt buộc: koreanWord, romaji, englishMeaning, categoryId.
+     */
     @PostMapping("/vocabulary/add")
     public String addVocabulary(@RequestParam String koreanWord,
                                 @RequestParam String romaji,
@@ -349,6 +412,11 @@ public class AdminController {
         return "redirect:/admin/vocabulary?page=" + page + "&size=" + size;
     }
 
+    /**
+     * Xóa một từ vựng theo ID.
+     *
+     * @param id ID của từ vựng cần xóa
+     */
     @PostMapping("/vocabulary/{id}/delete")
     public String deleteVocabulary(@PathVariable Long id,
                                    @RequestParam(defaultValue = "0") int page,
@@ -360,8 +428,15 @@ public class AdminController {
     }
 
     // ----------------------------------------------------------------
-    // Manage Quiz Questions
+    // Quản lý câu hỏi quiz
     // ----------------------------------------------------------------
+    /**
+     * Hiển thị danh sách câu hỏi quiz với phân trang và tìm kiếm.
+     *
+     * @param page   Số trang hiện tại (bắt đầu từ 0)
+     * @param size   Số bản ghi mỗi trang (mặc định 10)
+     * @param search Từ khóa tìm kiếm theo topic, câu hỏi hoặc đáp án
+     */
     @GetMapping("/questions")
     public String listQuestions(@RequestParam(defaultValue = "0") int page,
                                 @RequestParam(defaultValue = "10") int size,
@@ -388,6 +463,11 @@ public class AdminController {
         return "admin/questions";
     }
 
+    /**
+     * Xóa một câu hỏi quiz theo ID.
+     *
+     * @param id ID của câu hỏi cần xóa
+     */
     @PostMapping("/questions/{id}/delete")
     public String deleteQuestion(@PathVariable Long id,
                                  RedirectAttributes redirectAttributes) {
@@ -397,8 +477,14 @@ public class AdminController {
     }
 
     // ----------------------------------------------------------------
-    // Manage Categories
+    // Quản lý danh mục (Categories)
     // ----------------------------------------------------------------
+    /**
+     * Hiển thị danh sách tất cả danh mục, kèm số từ trong mỗi danh mục.
+     * Hỗ trợ tìm kiếm theo tên tiếng Anh hoặc tiếng Hàn.
+     *
+     * @param search Từ khóa tìm kiếm (có thể trống để lấy tất cả)
+     */
     @GetMapping("/categories")
     public String listCategories(@RequestParam(defaultValue = "") String search,
                                  HttpSession session,
@@ -411,7 +497,7 @@ public class AdminController {
         } else {
             categories = categoryRepository.findAll(Sort.by("id").ascending());
         }
-        // Word count per category
+        // Đếm số từ trong mỗi danh mục
         Map<Long, Long> wordCountMap = new HashMap<>();
         for (Category c : categories) {
             wordCountMap.put(c.getId(), vocabularyRepository.countByCategoryId(c.getId()));
@@ -422,6 +508,10 @@ public class AdminController {
         return "admin/categories";
     }
 
+    /**
+     * Thêm một danh mục từ vựng mới.
+     * Yêu cầu bắt buộc: nameEn, nameKr, iconName, colorTheme.
+     */
     @PostMapping("/categories/add")
     public String addCategory(@RequestParam String nameEn,
                               @RequestParam String nameKr,
@@ -442,6 +532,12 @@ public class AdminController {
         return "redirect:/admin/categories";
     }
 
+    /**
+     * Xóa một danh mục.
+     * Không cho phép xóa nếu danh mục còn chứa từ vựng.
+     *
+     * @param id ID của danh mục cần xóa
+     */
     @PostMapping("/categories/{id}/delete")
     public String deleteCategory(@PathVariable Long id,
                                  RedirectAttributes redirectAttributes) {
@@ -456,6 +552,11 @@ public class AdminController {
         return "redirect:/admin/categories";
     }
 
+    /**
+     * Cập nhật thông tin một danh mục.
+     *
+     * @param id ID của danh mục cần cập nhật
+     */
     @PostMapping("/categories/{id}/edit")
     public String editCategory(@PathVariable Long id,
                                @RequestParam String nameEn,
@@ -482,8 +583,14 @@ public class AdminController {
     }
 
     // ----------------------------------------------------------------
-    // Edit Vocabulary
+    // Chỉnh sửa từ vựng
     // ----------------------------------------------------------------
+    /**
+     * Cập nhật thông tin một từ vựng.
+     * Sau khi lưu, redirect về trang vocabulary với đúng page/size/search.
+     *
+     * @param id ID của từ vựng cần cập nhật
+     */
     @PostMapping("/vocabulary/{id}/edit")
     public String editVocabulary(@PathVariable Long id,
                                  @RequestParam String koreanWord,

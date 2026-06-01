@@ -121,7 +121,7 @@ public class VocabGroupController {
                     .body(Map.of("error", "You do not have permission to delete this group"));
         }
 
-        // Delete all words in the group first, then delete the group
+        // Xóa tất cả từ trong nhóm trước, sau đó xóa nhóm
         vocabGroupItemRepository.deleteByGroupId(id);
         vocabGroupRepository.deleteById(id);
 
